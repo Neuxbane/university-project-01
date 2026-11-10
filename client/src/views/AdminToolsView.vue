@@ -128,94 +128,114 @@
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
-            <thead>
-              <tr class="border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                <th class="py-3 px-4 font-medium">Pengguna</th>
-                <th class="py-3 px-4 font-medium">Peran Akses</th>
-                <th class="py-3 px-4 font-medium">Status</th>
-                <th class="py-3 px-4 font-medium text-center">Sesi Ambil Baut</th>
-                <th class="py-3 px-4 font-medium">Tanggal Dibuat</th>
-                <th class="py-3 px-4 font-medium text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800/80 text-zinc-800 dark:text-zinc-200">
-              <tr v-for="u in filteredUsers" :key="u.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
-                <td class="py-3 px-4">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center font-bold text-xs uppercase text-zinc-800 dark:text-zinc-200 shrink-0">
-                      {{ u.username.slice(0, 2) }}
-                    </div>
-                    <div>
-                      <p class="font-bold text-zinc-900 dark:text-zinc-100 font-mono text-xs">{{ u.username }}</p>
-                      <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ u.name }}</p>
-                    </div>
-                  </div>
-                </td>
-                <td class="py-3 px-4">
-                  <span
-                    class="px-2 py-0.5 rounded font-mono text-[11px] font-semibold border whitespace-nowrap"
-                    :class="[
-                      u.role === 'ADMIN' ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20' :
-                      u.role === 'TECHNICIAN' ? 'bg-sky-50 text-sky-700 border-sky-300 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20' :
-                      'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-                    ]"
-                  >
-                    {{ u.roleRel?.displayName || u.role }}
-                  </span>
-                </td>
-                <td class="py-3 px-4">
-                  <span
-                    class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded border"
-                    :class="[u.isActive
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-                      : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20']"
-                  >
-                    {{ u.isActive ? 'Aktif' : 'Nonaktif' }}
-                  </span>
-                </td>
-                <td class="py-3 px-4 text-center font-mono font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
-                  <span class="bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded text-xs border border-zinc-300 dark:border-zinc-700">
-                    {{ u._count?.pickSessions || 0 }} sesi
-                  </span>
-                </td>
-                <td class="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 text-xs whitespace-nowrap">
-                  {{ formatDateTime(u.createdAt) }}
-                </td>
-                <td class="py-3 px-4 text-right">
-                  <div class="inline-flex items-center justify-end gap-2">
-                    <button
-                      @click="openEditUserModal(u)"
-                      type="button"
-                      class="min-h-[44px] px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg font-medium cursor-pointer"
-                    >
-                      Ubah
-                    </button>
-                    <button
-                      v-if="u.id !== auth.user?.id"
-                      @click="toggleUserStatus(u)"
-                      type="button"
-                      class="min-h-[44px] px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer"
-                      :class="[u.isActive ? 'text-amber-800 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-500/10' : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10']"
-                    >
-                      {{ u.isActive ? 'Nonaktifkan' : 'Aktifkan' }}
-                    </button>
-                    <button
-                      v-if="u.id !== auth.user?.id"
-                      @click="deleteUser(u)"
-                      type="button"
-                      class="min-h-[44px] px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 rounded-lg font-semibold cursor-pointer"
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-if="filteredUsers.length === 0" class="p-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          Tidak ada pengguna yang cocok dengan pencarian.
+        </div>
+
+        <div v-else class="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          <button
+            v-for="u in filteredUsers"
+            :key="u.id"
+            @click="selectedUserDetail = u"
+            type="button"
+            class="group text-left bg-zinc-50 dark:bg-[#18181c]/70 rounded-2xl border border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 dark:hover:border-zinc-500 p-4 transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-sm uppercase shrink-0">
+                {{ u.username.slice(0, 2) }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">{{ u.name }}</p>
+                <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400 truncate">@{{ u.username }}</p>
+              </div>
+              <span
+                class="w-2.5 h-2.5 rounded-full shrink-0"
+                :class="u.isActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-rose-600 dark:bg-rose-400'"
+                :title="u.isActive ? 'Aktif' : 'Nonaktif'"
+                aria-hidden="true"
+              ></span>
+            </div>
+
+            <div class="mt-3 flex flex-wrap items-center gap-1.5">
+              <span
+                class="px-2 py-0.5 rounded font-mono text-[11px] font-semibold border"
+                :class="[
+                  u.role === 'ADMIN' ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20' :
+                  u.role === 'TECHNICIAN' ? 'bg-sky-50 text-sky-700 border-sky-300 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20' :
+                  'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                ]"
+              >
+                {{ u.roleRel?.displayName || u.role }}
+              </span>
+              <span class="px-2 py-0.5 rounded font-mono text-[11px] border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300">
+                {{ u._count?.pickSessions || 0 }} sesi
+              </span>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+              <span class="font-mono text-zinc-600 dark:text-zinc-400">{{ u.isActive ? 'Aktif' : 'Nonaktif' }}</span>
+              <span class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline">Lihat Detail &rarr;</span>
+            </div>
+          </button>
         </div>
       </div>
+
+      <!-- User Detail Sheet -->
+      <DetailSheet
+        :open="Boolean(selectedUserDetail)"
+        :is-modal="true"
+        eyebrow="Akun Pengguna"
+        :title="selectedUserDetail?.name || ''"
+        @close="selectedUserDetail = null"
+      >
+        <div v-if="selectedUserDetail" class="space-y-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-16 h-16 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xl uppercase shrink-0">
+              {{ selectedUserDetail.username.slice(0, 2) }}
+            </div>
+            <div class="min-w-0">
+              <p class="text-lg font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ selectedUserDetail.name }}</p>
+              <p class="text-sm font-mono text-zinc-600 dark:text-zinc-400 truncate">@{{ selectedUserDetail.username }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <StatPill :icon="Shield" label="Peran" :value="selectedUserDetail.roleRel?.displayName || selectedUserDetail.role" />
+            <StatPill :icon="Activity" label="Sesi" :value="`${selectedUserDetail._count?.pickSessions || 0} sesi`" />
+            <StatPill :icon="Calendar" label="Dibuat" :value="formatDateTime(selectedUserDetail.createdAt)" />
+            <StatPill :icon="Power" label="Status" :value="selectedUserDetail.isActive ? 'Aktif' : 'Nonaktif'" />
+          </div>
+
+          <div class="grid grid-cols-1 gap-2 pt-2">
+            <button
+              @click="openEditUserModal(selectedUserDetail)"
+              type="button"
+              class="min-h-[48px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Pencil class="w-4 h-4" aria-hidden="true" />
+              Ubah Akun
+            </button>
+            <button
+              v-if="selectedUserDetail.id !== auth.user?.id"
+              @click="toggleUserStatus(selectedUserDetail)"
+              type="button"
+              class="min-h-[48px] px-4 py-2.5 rounded-xl border border-zinc-400 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Power class="w-4 h-4" aria-hidden="true" />
+              {{ selectedUserDetail.isActive ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}
+            </button>
+            <button
+              v-if="selectedUserDetail.id !== auth.user?.id"
+              @click="deleteUser(selectedUserDetail)"
+              type="button"
+              class="min-h-[48px] px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Trash2 class="w-4 h-4" aria-hidden="true" />
+              Hapus Akun
+            </button>
+          </div>
+        </div>
+      </DetailSheet>
 
       <!-- SUB-TAB 2: DYNAMIC ROLES & ACCESS CONTROL -->
       <div v-if="userSubTab === 'roles'" class="space-y-5">
@@ -925,6 +945,9 @@ import { useAuthStore } from '../stores/auth';
 import { formatDateTime } from '../utils/date';
 import { useToast } from '../composables/useToast';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
+import DetailSheet from '../components/ui/DetailSheet.vue';
+import StatPill from '../components/ui/StatPill.vue';
+import { Activity, Calendar, Pencil, Power, Shield, Trash2 } from 'lucide-vue-next';
 
 const auth = useAuthStore();
 const activeTab = ref('users');
@@ -976,6 +999,7 @@ const users = ref([]);
 const userSearch = ref('');
 const isAddUserModalOpen = ref(false);
 const selectedUserForEdit = ref(null);
+const selectedUserDetail = ref(null);
 const isSubmittingUser = ref(false);
 
 const newUserForm = ref({
