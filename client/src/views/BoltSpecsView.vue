@@ -1,42 +1,31 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-5">
     <!-- Header -->
-    <div class="bg-white dark:bg-[#121215] p-5 sm:p-6 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+    <section class="bg-white dark:bg-[#121215] p-5 sm:p-6 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2 mb-1">
           <span class="w-2 h-2 rounded-full bg-zinc-500" aria-hidden="true"></span>
           <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Master Baut</span>
         </div>
-        <h1 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Spesifikasi &amp; Posisi Baut Titanium
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Koleksi Baut Titanium
         </h1>
         <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
-          Standar ukuran diameter (M5, M6, M8, M10), foto warna, dan titik posisi pasang
+          Kenali baut dari foto dan warna ukuran. Ketuk kartu untuk melihat detail dan mengelola foto.
         </p>
       </div>
 
-      <!-- Segmented Tab Switcher (Responsive width) -->
-      <div class="grid grid-cols-2 sm:inline-flex w-full sm:w-auto p-1 bg-zinc-100 dark:bg-[#18181c] rounded-xl border border-zinc-300 dark:border-zinc-700 gap-1 shrink-0">
-        <button
-          @click="activeTab = 'specs'"
-          type="button"
-          class="min-h-[44px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer text-center"
-          :class="[activeTab === 'specs' ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 font-semibold shadow-sm' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100']"
-        >
-          Spesifikasi ({{ specs.length }})
-        </button>
-        <button
-          @click="activeTab = 'positions'"
-          type="button"
-          class="min-h-[44px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer text-center"
-          :class="[activeTab === 'positions' ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 font-semibold shadow-sm' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100']"
-        >
-          Posisi Pasang ({{ positions.length }})
-        </button>
-      </div>
-    </div>
+      <SegmentedControl
+        v-model="activeTab"
+        :options="[
+          { value: 'specs', label: 'Baut', count: specs.length },
+          { value: 'positions', label: 'Posisi', count: positions.length },
+        ]"
+        class="shrink-0"
+      />
+    </section>
 
-    <!-- Error & Loading States -->
+    <!-- Error -->
     <div
       v-if="errorMsg"
       role="alert"
@@ -52,140 +41,92 @@
       </button>
     </div>
 
-    <div
-      v-if="isLoading"
-      role="status"
-      aria-live="polite"
-      class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-8 text-center text-sm text-zinc-600 dark:text-zinc-400"
-    >
-      Memuat daftar ukuran dan posisi baut...
+    <!-- Loading -->
+    <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3" role="status" aria-live="polite">
+      <SkeletonCard v-for="n in 10" :key="n" />
+      <span class="sr-only">Memuat koleksi baut...</span>
     </div>
 
-    <!-- TAB 1: BOLT SPECS -->
-    <div v-else-if="activeTab === 'specs'" class="space-y-4">
-      <!-- Search filter -->
-      <div class="flex items-center">
-        <label for="spec-search-input" class="sr-only">Cari spesifikasi baut</label>
-        <input
-          id="spec-search-input"
-          v-model="specSearch"
-          type="text"
-          placeholder="Cari kode baut, tipe kepala, warna, atau catatan..."
-          class="w-full sm:max-w-sm min-h-[44px] px-3.5 py-2.5 bg-white dark:bg-[#121215] border border-zinc-500 rounded-xl text-base sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 shadow-sm"
+    <template v-else>
+      <!-- Specs Grid -->
+      <div v-if="activeTab === 'specs'" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="w-full sm:max-w-sm">
+            <SearchInput v-model="specSearch" placeholder="Cari kode, kepala, atau warna..." aria-label="Cari spesifikasi baut" />
+          </div>
+          <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
+            {{ filteredSpecs.length }} dari {{ specs.length }} ukuran baut
+          </p>
+        </div>
+
+        <EmptyState
+          v-if="filteredSpecs.length === 0"
+          :icon="Nut"
+          title="Baut tidak ditemukan"
+          :description="`Tidak ada baut yang cocok dengan “${specSearch}”.`"
+          action-label="Hapus Pencarian"
+          @action="specSearch = ''"
         />
-      </div>
 
-      <div class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
-        <div v-if="filteredSpecs.length === 0" class="p-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Tidak ada spesifikasi baut yang cocok dengan pencarian "{{ specSearch }}".
-        </div>
-
-        <div v-else class="overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
-            <thead>
-              <tr class="border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                <th class="py-3 px-4 font-medium">Foto</th>
-                <th class="py-3 px-4 font-medium">Kode Baut</th>
-                <th class="py-3 px-4 font-medium">Diameter</th>
-                <th class="py-3 px-4 font-medium">Panjang</th>
-                <th class="py-3 px-4 font-medium">Tipe Kepala</th>
-                <th class="py-3 px-4 font-medium">Drat</th>
-                <th class="py-3 px-4 font-medium">Bahan &amp; Warna</th>
-                <th class="py-3 px-4 font-medium">Catatan Area</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800/80 text-zinc-800 dark:text-zinc-200">
-              <tr v-for="s in filteredSpecs" :key="s.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
-                <!-- Photo Thumbnail & Gallery Trigger -->
-                <td class="py-2.5 px-4">
-                  <button
-                    @click="openGallery(s)"
-                    type="button"
-                    class="min-h-[44px] flex items-center gap-2 cursor-pointer group text-left"
-                    :aria-label="`Kelola foto baut ${s.code}`"
-                  >
-                    <span
-                      class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-500 transition-all shrink-0 flex items-center justify-center relative"
-                    >
-                      <img
-                        v-if="s.images && s.images.length > 0"
-                        :src="s.images[0].url"
-                        :alt="s.code"
-                        class="w-full h-full object-cover"
-                      />
-                      <svg v-else class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                      </svg>
-                      <span
-                        v-if="s.images && s.images.length > 1"
-                        class="absolute bottom-0.5 right-0.5 bg-black/85 text-[9px] font-mono px-1 rounded text-zinc-100"
-                      >
-                        {{ s.images.length }}
-                      </span>
-                    </span>
-                    <span class="text-xs font-mono text-zinc-700 group-hover:text-zinc-950 dark:text-zinc-300 dark:group-hover:text-white underline underline-offset-2 whitespace-nowrap">
-                      {{ s.images && s.images.length > 0 ? `${s.images.length} foto` : '+ Foto' }}
-                    </span>
-                  </button>
-                </td>
-
-                <td class="py-3 px-4 font-mono font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
-                  <span class="bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded text-xs border border-zinc-300 dark:border-zinc-700">
-                    {{ s.code }}
-                  </span>
-                </td>
-                <td class="py-3 px-4 font-bold font-mono text-zinc-900 dark:text-zinc-100 whitespace-nowrap">M{{ Number(s.diameterMm) }}</td>
-                <td class="py-3 px-4 font-bold font-mono text-zinc-900 dark:text-zinc-100 whitespace-nowrap">{{ Number(s.lengthMm) }} mm</td>
-                <td class="py-3 px-4 text-zinc-700 dark:text-zinc-300">{{ s.headType }}</td>
-                <td class="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 text-xs">{{ s.threadPitch || '-' }}</td>
-                <td class="py-3 px-4">
-                  <span class="text-xs text-zinc-700 dark:text-zinc-300">
-                    {{ s.material }} &bull; {{ s.finish }}
-                  </span>
-                </td>
-                <td class="py-3 px-4 text-zinc-600 dark:text-zinc-400 text-xs">{{ s.notes || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <ItemCard
+            v-for="s in filteredSpecs"
+            :key="s.id"
+            :item="{ ...s, quantity: s._count?.requirements || 0 }"
+            quantity-label="titik"
+            @select="openGallery"
+          />
         </div>
       </div>
-    </div>
 
-    <!-- TAB 2: BOLT POSITIONS -->
-    <div v-else-if="activeTab === 'positions'" class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs sm:text-sm">
-          <thead>
-            <tr class="border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-4 font-medium">#</th>
-              <th class="py-3 px-4 font-medium">Area</th>
-              <th class="py-3 px-4 font-medium">Nama Titik Posisi</th>
-              <th class="py-3 px-4 font-medium">Catatan Peruntukan</th>
-              <th class="py-3 px-4 font-medium text-center">Dipakai di Motor</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800/80 text-zinc-800 dark:text-zinc-200">
-            <tr v-for="p in positions" :key="p.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
-              <td class="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 text-xs">{{ p.sortOrder }}</td>
-              <td class="py-3 px-4">
-                <span class="px-2 py-0.5 rounded text-[11px] font-mono text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700">
-                  {{ p.category }}
-                </span>
-              </td>
-              <td class="py-3 px-4 font-medium text-zinc-900 dark:text-zinc-100">{{ p.name }}</td>
-              <td class="py-3 px-4 text-zinc-600 dark:text-zinc-400 text-xs">{{ p.notes || '-' }}</td>
-              <td class="py-3 px-4 text-center font-mono font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
-                <span class="bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded text-xs border border-zinc-300 dark:border-zinc-700">
-                  {{ p._count?.requirements || 0 }} Titik
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Positions Grid -->
+      <div v-else-if="activeTab === 'positions'" class="space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
+            {{ positions.length }} titik pasang terdaftar
+          </p>
+        </div>
+
+        <EmptyState
+          v-if="positions.length === 0"
+          :icon="Wrench"
+          title="Belum ada titik pasang"
+          description="Tambahkan posisi baut melalui menu admin."
+        />
+
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <SlotCard
+            v-for="p in positions"
+            :key="p.id"
+            :slot-data="{ positionName: p.name, category: p.category, side: 'NONE', quantity: p._count?.requirements || 0 }"
+            @select="selectedPosition = p"
+          />
+        </div>
       </div>
-    </div>
+    </template>
 
-    <!-- PHOTO GALLERY MODAL -->
+    <!-- Position Detail -->
+    <DetailSheet
+      :open="Boolean(selectedPosition)"
+      :is-modal="true"
+      eyebrow="Titik Pasang"
+      :title="selectedPosition?.name || ''"
+      @close="selectedPosition = null"
+    >
+      <div v-if="selectedPosition" class="space-y-4">
+        <div class="flex flex-wrap gap-2">
+          <StatPill :icon="Wrench" label="Area" :value="selectedPosition.category" />
+          <StatPill :icon="Bike" label="Dipakai" :value="`${selectedPosition._count?.requirements || 0} motor`" />
+          <StatPill :icon="ListOrdered" label="Urutan" :value="selectedPosition.sortOrder" />
+        </div>
+        <div class="p-4 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
+          <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">Catatan Peruntukan</p>
+          <p class="text-sm text-zinc-800 dark:text-zinc-200">{{ selectedPosition.notes || 'Belum ada catatan untuk titik pasang ini.' }}</p>
+        </div>
+      </div>
+    </DetailSheet>
+
+    <!-- Photo Gallery -->
     <PhotoGalleryModal
       v-if="selectedSpecForGallery"
       :is-open="Boolean(selectedSpecForGallery)"
@@ -206,8 +147,17 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { Bike, ListOrdered, Nut, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
+import SegmentedControl from '../components/ui/SegmentedControl.vue';
+import SearchInput from '../components/ui/SearchInput.vue';
+import ItemCard from '../components/ui/ItemCard.vue';
+import SlotCard from '../components/ui/SlotCard.vue';
+import EmptyState from '../components/ui/EmptyState.vue';
+import SkeletonCard from '../components/ui/SkeletonCard.vue';
+import StatPill from '../components/ui/StatPill.vue';
+import DetailSheet from '../components/ui/DetailSheet.vue';
 
 const auth = useAuthStore();
 const activeTab = ref('specs');
@@ -215,6 +165,7 @@ const specs = ref([]);
 const positions = ref([]);
 const specSearch = ref('');
 const selectedSpecForGallery = ref(null);
+const selectedPosition = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
 
@@ -225,7 +176,8 @@ const filteredSpecs = computed(() => {
     s.code?.toLowerCase().includes(q) ||
     s.headType?.toLowerCase().includes(q) ||
     s.notes?.toLowerCase().includes(q) ||
-    s.finish?.toLowerCase().includes(q)
+    s.finish?.toLowerCase().includes(q) ||
+    s.material?.toLowerCase().includes(q)
   );
 });
 

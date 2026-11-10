@@ -45,7 +45,7 @@
       <!-- Bottom-right Dominant Quantity Badge -->
       <div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-xl bg-zinc-950/90 border border-white/20 text-white backdrop-blur-sm flex items-baseline gap-1 shadow-md">
         <span class="text-2xl font-mono font-bold leading-none">{{ quantity }}</span>
-        <span class="text-[11px] font-mono text-zinc-300">pcs</span>
+        <span class="text-[11px] font-mono text-zinc-300">{{ quantityLabel }}</span>
       </div>
     </div>
 
@@ -77,6 +77,7 @@ import { getDiameterTier } from '../../utils/boltTokens';
 const props = defineProps({
   item: { type: Object, required: true },
   selected: { type: Boolean, default: false },
+  quantityLabel: { type: String, default: 'pcs' },
 });
 
 defineEmits(['select']);

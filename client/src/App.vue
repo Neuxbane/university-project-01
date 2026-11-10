@@ -28,7 +28,11 @@
             : 'w-full flex-1 flex items-center justify-center p-4 focus:outline-none'
         ]"
       >
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <transition name="page" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </main>
 
       <!-- Footer (only shown inside main app shell) -->
