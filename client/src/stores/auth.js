@@ -1,9 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem('hextitanium-user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    localStorage.removeItem('hextitanium-user');
+    return null;
+  }
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('hextitanium-token') || null);
-  const user = ref(JSON.parse(localStorage.getItem('hextitanium-user') || 'null'));
+  const user = ref(readStoredUser());
 
   const isAuthenticated = computed(() => Boolean(token.value && user.value));
   const isAdmin = computed(() => user.value?.role === 'ADMIN');
@@ -36,8 +46,35 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('hextitanium-user');
   }
 
+  async function handleUnauthorized() {
+    logout();
+    try {
+      const { default: router } = await import('../router');
+      if (router.currentRoute.value.name !== 'login') {
+        await router.replace({ name: 'login', query: { expired: '1' } });
+      }
+    } catch {
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.replace('/login');
+      }
+    }
+  }
+
   function authHeaders() {
     return token.value ? { Authorization: `Bearer ${token.value}` } : {};
+  }
+
+  async function apiFetch(url, options = {}) {
+    const headers = {
+      ...authHeaders(),
+      ...(options.headers || {}),
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) {
+      await handleUnauthorized();
+      throw new Error('Sesi masuk Anda telah berakhir. Silakan masuk kembali.');
+    }
+    return res;
   }
 
   return {
@@ -48,7 +85,8 @@ export const useAuthStore = defineStore('auth', () => {
     isStaff,
     login,
     logout,
+    handleUnauthorized,
     authHeaders,
+    apiFetch,
   };
 });
-
