@@ -10,6 +10,7 @@ import BoltSpecsView from '../views/BoltSpecsView.vue';
 import PackagesView from '../views/PackagesView.vue';
 import AdminToolsView from '../views/AdminToolsView.vue';
 import ManualBookView from '../views/ManualBookView.vue';
+import HistoryView from '../views/HistoryView.vue';
 
 const routes = [
   { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
@@ -17,6 +18,7 @@ const routes = [
   { path: '/pick-list', name: 'pick-list', component: PickListView },
   { path: '/pick-list/:sessionId', name: 'pick-session', component: PickSessionView },
   { path: '/dashboard', name: 'dashboard', component: DashboardView },
+  { path: '/history', name: 'history', component: HistoryView },
   { path: '/motorcycles', name: 'motorcycles', component: MotorcyclesView },
   { path: '/bolt-specs', name: 'bolt-specs', component: BoltSpecsView },
   { path: '/packages', name: 'packages', component: PackagesView },
