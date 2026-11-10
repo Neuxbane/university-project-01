@@ -906,6 +906,16 @@
         </form>
       </div>
     </div>
+
+    <ConfirmDialog
+      :open="confirmDialog.open"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      :confirm-text="confirmDialog.confirmText"
+      :danger="confirmDialog.danger"
+      @cancel="confirmDialog.open = false"
+      @confirm="runConfirmedAction"
+    />
   </div>
 </template>
 
@@ -913,6 +923,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { formatDateTime } from '../utils/date';
+import { useToast } from '../composables/useToast';
+import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 
 const auth = useAuthStore();
 const activeTab = ref('users');
@@ -921,6 +933,33 @@ const adminErrorMsg = ref('');
 const userModalError = ref('');
 const roleModalError = ref('');
 const fileInput = ref(null);
+const toast = useToast();
+const confirmDialog = ref({
+  open: false,
+  title: '',
+  message: '',
+  confirmText: 'Ya, Lanjutkan',
+  danger: false,
+  action: null,
+});
+
+const askConfirm = (opts) => {
+  confirmDialog.value = {
+    open: true,
+    title: '',
+    message: '',
+    confirmText: 'Ya, Lanjutkan',
+    danger: false,
+    action: null,
+    ...opts,
+  };
+};
+
+const runConfirmedAction = async () => {
+  const action = confirmDialog.value.action;
+  confirmDialog.value.open = false;
+  if (action) await action();
+};
 
 const actionLabels = {
   CREATE: 'Tambah',
@@ -1103,10 +1142,18 @@ const submitEditUser = async () => {
   }
 };
 
-const toggleUserStatus = async (u) => {
+const toggleUserStatus = (u) => {
   const actionText = u.isActive ? 'menonaktifkan' : 'mengaktifkan';
-  if (!confirm(`Apakah Anda yakin ingin ${actionText} akun @${u.username}?`)) return;
+  askConfirm({
+    title: `${u.isActive ? 'Nonaktifkan' : 'Aktifkan'} akun @${u.username}?`,
+    message: `Akun akan ${u.isActive ? 'dinonaktifkan dan tidak bisa masuk ke sistem' : 'diaktifkan kembali dan bisa masuk ke sistem'}.`,
+    confirmText: u.isActive ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan',
+    danger: u.isActive,
+    action: () => doToggleUserStatus(u),
+  });
+};
 
+const doToggleUserStatus = async (u) => {
   adminErrorMsg.value = '';
   try {
     const res = await auth.apiFetch(`/api/users/${u.id}/status`, {
@@ -1124,9 +1171,17 @@ const toggleUserStatus = async (u) => {
   }
 };
 
-const deleteUser = async (u) => {
-  if (!confirm(`Hapus akun @${u.username}? Bila pengguna memiliki riwayat sesi pengambilan baut, akun akan dinonaktifkan demi keutuhan data.`)) return;
+const deleteUser = (u) => {
+  askConfirm({
+    title: `Hapus akun @${u.username}?`,
+    message: 'Bila pengguna memiliki riwayat sesi pengambilan baut, akun akan dinonaktifkan demi keutuhan data.',
+    confirmText: 'Ya, Hapus Akun',
+    danger: true,
+    action: () => doDeleteUser(u),
+  });
+};
 
+const doDeleteUser = async (u) => {
   adminErrorMsg.value = '';
   try {
     const res = await auth.apiFetch(`/api/users/${u.id}`, {
@@ -1135,7 +1190,7 @@ const deleteUser = async (u) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gagal menghapus pengguna.');
 
-    if (data.message) alert(data.message);
+    if (data.message) toast.success(data.message);
     await loadUsers();
     await loadRolesAndPermissions();
     await loadAuditLogs();
@@ -1224,9 +1279,17 @@ const submitSaveRole = async () => {
   }
 };
 
-const deleteRole = async (role) => {
-  if (!confirm(`Hapus peran kustom "${role.displayName}" (${role.name})?`)) return;
+const deleteRole = (role) => {
+  askConfirm({
+    title: `Hapus peran "${role.displayName}"?`,
+    message: `Peran kustom ${role.name} akan dihapus permanen. Pengguna yang memakai peran ini perlu diberi peran lain.`,
+    confirmText: 'Ya, Hapus Peran',
+    danger: true,
+    action: () => doDeleteRole(role),
+  });
+};
 
+const doDeleteRole = async (role) => {
   adminErrorMsg.value = '';
   try {
     const res = await auth.apiFetch(`/api/roles/${role.id}`, {
@@ -1235,7 +1298,7 @@ const deleteRole = async (role) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gagal menghapus peran.');
 
-    if (data.message) alert(data.message);
+    if (data.message) toast.success(data.message);
     await loadRolesAndPermissions();
     await loadAuditLogs();
   } catch (err) {
@@ -1364,7 +1427,7 @@ const executeRestore = async () => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
 
-    alert(data.message);
+    toast.success(data.message);
     restoreJsonData.value = null;
     restoreConfirmText.value = '';
     await loadUsers();

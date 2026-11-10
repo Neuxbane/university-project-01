@@ -68,120 +68,84 @@
       </button>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
-      <div v-if="isLoading" role="status" aria-live="polite" class="p-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
-        Memuat daftar tipe motor...
-      </div>
-
-      <div v-else-if="filteredMotors.length === 0" class="p-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
-        Tidak ada motor yang cocok dengan filter atau pencarian.
-      </div>
-
-      <div v-else class="overflow-x-auto">
-        <table class="w-full text-left text-xs sm:text-sm">
-          <thead>
-            <tr class="border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-4 font-medium">Foto</th>
-              <th class="py-3 px-4 font-medium">Merek</th>
-              <th class="py-3 px-4 font-medium">Model &amp; Varian</th>
-              <th class="py-3 px-4 font-medium">Tahun Rilis</th>
-              <th class="py-3 px-4 font-medium text-center">Titik Baut</th>
-              <th class="py-3 px-4 font-medium">Status</th>
-              <th class="py-3 px-4 font-medium text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800/80 text-zinc-800 dark:text-zinc-200">
-            <tr
-              v-for="m in filteredMotors"
-              :key="m.id"
-              class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors"
-            >
-              <!-- Photo Thumbnail -->
-              <td class="py-2.5 px-4">
-                <button
-                  @click="openMotorGallery(m)"
-                  type="button"
-                  :aria-label="`Kelola foto motor ${m.displayName}`"
-                  class="min-h-[44px] flex items-center gap-2 cursor-pointer group text-left"
-                >
-                  <span
-                    class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-500 transition-all shrink-0 flex items-center justify-center relative"
-                  >
-                    <img
-                      v-if="m.images && m.images.length > 0"
-                      :src="m.images[0].url"
-                      :alt="m.displayName"
-                      class="w-full h-full object-cover"
-                    />
-                    <svg v-else class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span
-                      v-if="m.images && m.images.length > 1"
-                      class="absolute bottom-0.5 right-0.5 bg-black/85 text-[9px] font-mono px-1 rounded text-zinc-100"
-                    >
-                      {{ m.images.length }}
-                    </span>
-                  </span>
-                  <span class="text-xs font-mono text-zinc-700 group-hover:text-zinc-950 dark:text-zinc-300 dark:group-hover:text-white underline underline-offset-2 whitespace-nowrap">
-                    {{ m.images && m.images.length > 0 ? `${m.images.length} foto` : '+ Foto' }}
-                  </span>
-                </button>
-              </td>
-
-              <td class="py-3 px-4 font-bold text-zinc-900 dark:text-zinc-100">
-                {{ m.brand }}
-              </td>
-              <td class="py-3 px-4">
-                <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ m.model }}</span>
-                <span class="text-zinc-600 dark:text-zinc-400 text-xs ml-1.5">{{ m.variant }}</span>
-              </td>
-              <td class="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 text-xs whitespace-nowrap">
-                {{ m.yearStart }}{{ m.yearEnd ? ` - ${m.yearEnd}` : '' }}
-              </td>
-              <td class="py-3 px-4 text-center whitespace-nowrap">
-                <span
-                  class="inline-block px-2.5 py-1 rounded text-xs font-mono"
-                  :class="[(m._count?.requirements || 0) > 0 ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700' : 'bg-transparent text-zinc-600 dark:text-zinc-400']"
-                >
-                  {{ m._count?.requirements || 0 }} Titik
-                </span>
-              </td>
-              <td class="py-3 px-4">
-                <span
-                  class="inline-block px-2 py-0.5 text-[11px] font-mono font-semibold rounded border"
-                  :class="[m.isActive
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-                    : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20']"
-                >
-                  {{ m.isActive ? 'Aktif' : 'Nonaktif' }}
-                </span>
-              </td>
-              <td class="py-3 px-4 text-right">
-                <div class="inline-flex items-center justify-end gap-2">
-                  <button
-                    @click="openRequirementsModal(m)"
-                    type="button"
-                    class="min-h-[44px] px-3 py-2 text-xs font-semibold rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 transition-colors cursor-pointer whitespace-nowrap"
-                  >
-                    Matriks Baut
-                  </button>
-                  <button
-                    v-if="auth.isAdmin"
-                    @click="toggleActiveStatus(m)"
-                    type="button"
-                    class="min-h-[44px] px-3 py-2 text-xs font-medium rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors cursor-pointer whitespace-nowrap"
-                  >
-                    {{ m.isActive ? 'Nonaktifkan' : 'Aktifkan' }}
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Roster Grid -->
+    <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" role="status" aria-live="polite">
+      <SkeletonCard v-for="n in 8" :key="n" />
+      <span class="sr-only">Memuat daftar tipe motor...</span>
     </div>
+
+    <EmptyState
+      v-else-if="filteredMotors.length === 0"
+      :icon="Bike"
+      title="Motor tidak ditemukan"
+      description="Tidak ada motor yang cocok dengan filter atau pencarian."
+      action-label="Tampilkan Semua"
+      @action="search = ''; selectedBrand = 'Semua'"
+    />
+
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <RosterCard
+        v-for="m in filteredMotors"
+        :key="m.id"
+        :motorcycle="m"
+        @select="openMotorDetail"
+      />
+    </div>
+
+    <!-- Motor Detail Sheet -->
+    <DetailSheet
+      :open="Boolean(selectedMotorDetail)"
+      :is-modal="true"
+      eyebrow="Tipe Motor"
+      :title="selectedMotorDetail?.displayName || ''"
+      @close="selectedMotorDetail = null"
+    >
+      <div v-if="selectedMotorDetail" class="space-y-4">
+        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center">
+          <img
+            v-if="selectedMotorDetail.images && selectedMotorDetail.images.length > 0"
+            :src="selectedMotorDetail.images[0].url"
+            :alt="selectedMotorDetail.displayName"
+            class="w-full h-full object-cover"
+          />
+          <Bike v-else class="w-12 h-12 text-zinc-500" aria-hidden="true" />
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <StatPill :icon="Bike" label="Merek" :value="selectedMotorDetail.brand" />
+          <StatPill :icon="Calendar" label="Tahun" :value="`${selectedMotorDetail.yearStart}${selectedMotorDetail.yearEnd ? `-${selectedMotorDetail.yearEnd}` : ''}`" />
+          <StatPill :icon="Wrench" label="Titik" :value="`${selectedMotorDetail._count?.requirements || 0} baut`" />
+          <StatPill :icon="CircleCheck" label="Status" :value="selectedMotorDetail.isActive ? 'Aktif' : 'Nonaktif'" />
+        </div>
+
+        <div class="grid grid-cols-1 gap-2">
+          <button
+            @click="openMotorGallery(selectedMotorDetail)"
+            type="button"
+            class="min-h-[48px] px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <ImageIcon class="w-4 h-4" aria-hidden="true" />
+            Kelola Foto Motor
+          </button>
+          <button
+            @click="openRequirementsModal(selectedMotorDetail)"
+            type="button"
+            class="min-h-[48px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <Wrench class="w-4 h-4" aria-hidden="true" />
+            Buka Matriks Baut
+          </button>
+          <button
+            v-if="auth.isAdmin"
+            @click="toggleActiveStatus(selectedMotorDetail)"
+            type="button"
+            class="min-h-[48px] px-4 py-2.5 rounded-xl border border-zinc-400 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            {{ selectedMotorDetail.isActive ? 'Nonaktifkan Motor' : 'Aktifkan Motor' }}
+          </button>
+        </div>
+      </div>
+    </DetailSheet>
 
     <!-- REQUIREMENTS MATRIX MODAL -->
     <div
@@ -515,6 +479,16 @@
       @close="selectedMotorForGallery = null"
       @updated="onMotorGalleryUpdated"
     />
+
+    <ConfirmDialog
+      :open="confirmDialog.open"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      :confirm-text="confirmDialog.confirmText"
+      :danger="confirmDialog.danger"
+      @cancel="confirmDialog.open = false"
+      @confirm="runConfirmedAction"
+    />
   </div>
 </template>
 
@@ -522,12 +496,48 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
+import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
+import RosterCard from '../components/ui/RosterCard.vue';
+import DetailSheet from '../components/ui/DetailSheet.vue';
+import EmptyState from '../components/ui/EmptyState.vue';
+import SkeletonCard from '../components/ui/SkeletonCard.vue';
+import StatPill from '../components/ui/StatPill.vue';
+import { Bike, Calendar, CircleCheck, Image as ImageIcon, Wrench } from 'lucide-vue-next';
+import { useToast } from '../composables/useToast';
 
 const auth = useAuthStore();
+const toast = useToast();
+const confirmDialog = ref({
+  open: false,
+  title: '',
+  message: '',
+  confirmText: 'Ya, Lanjutkan',
+  danger: false,
+  action: null,
+});
+
+const askConfirm = (opts) => {
+  confirmDialog.value = {
+    open: true,
+    title: '',
+    message: '',
+    confirmText: 'Ya, Lanjutkan',
+    danger: false,
+    action: null,
+    ...opts,
+  };
+};
+
+const runConfirmedAction = async () => {
+  const action = confirmDialog.value.action;
+  confirmDialog.value.open = false;
+  if (action) await action();
+};
 const motorcycles = ref([]);
 const search = ref('');
 const selectedBrand = ref('Semua');
 const selectedMotorForGallery = ref(null);
+const selectedMotorDetail = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
 
@@ -539,6 +549,10 @@ const sideLabels = {
   REAR: 'Belakang',
 };
 const sideLabel = (side) => sideLabels[side] || side || '-';
+
+const openMotorDetail = (motor) => {
+  selectedMotorDetail.value = motor;
+};
 
 const openMotorGallery = (motor) => {
   selectedMotorForGallery.value = motor;
@@ -648,8 +662,17 @@ const handleAddRequirement = async () => {
   }
 };
 
-const handleDeleteReq = async (id) => {
-  if (!confirm('Hapus ukuran baut pada posisi ini?')) return;
+const handleDeleteReq = (id) => {
+  askConfirm({
+    title: 'Hapus ukuran baut ini?',
+    message: 'Titik baut akan dihapus dari matriks motor ini. Tindakan ini tidak bisa dibatalkan.',
+    confirmText: 'Ya, Hapus',
+    danger: true,
+    action: () => doDeleteReq(id),
+  });
+};
+
+const doDeleteReq = async (id) => {
   modalErrorMsg.value = '';
   try {
     const res = await auth.apiFetch(`/api/requirements/${id}`, {
@@ -657,6 +680,7 @@ const handleDeleteReq = async (id) => {
     });
     if (!res.ok) throw new Error('Gagal menghapus titik baut.');
     matrixList.value = matrixList.value.filter((r) => r.id !== id);
+    toast.success('Titik baut berhasil dihapus.');
     await loadMotors();
   } catch (err) {
     modalErrorMsg.value = err.message === 'Failed to fetch'
@@ -695,9 +719,18 @@ const handleCreateMotor = async () => {
   }
 };
 
-const toggleActiveStatus = async (motor) => {
+const toggleActiveStatus = (motor) => {
   const action = motor.isActive ? 'menonaktifkan' : 'mengaktifkan';
-  if (!confirm(`Yakin ingin ${action} motor "${motor.displayName}"?`)) return;
+  askConfirm({
+    title: `${motor.isActive ? 'Nonaktifkan' : 'Aktifkan'} motor ini?`,
+    message: `Motor "${motor.displayName}" akan ${motor.isActive ? 'disembunyikan dari roster ambil baut' : 'tampil kembali di roster ambil baut'}.`,
+    confirmText: motor.isActive ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan',
+    danger: motor.isActive,
+    action: () => doToggleActiveStatus(motor),
+  });
+};
+
+const doToggleActiveStatus = async (motor) => {
   errorMsg.value = '';
   try {
     const res = await auth.apiFetch(`/api/motorcycles/${motor.id}/deactivate`, {
@@ -706,6 +739,7 @@ const toggleActiveStatus = async (motor) => {
     const updated = await res.json();
     if (!res.ok) throw new Error(updated.error || 'Gagal mengubah status motor.');
     motor.isActive = updated.isActive;
+    toast.success(`Motor berhasil ${updated.isActive ? 'diaktifkan' : 'dinonaktifkan'}.`);
   } catch (err) {
     errorMsg.value = err.message === 'Failed to fetch'
       ? 'Sambungan terputus saat mengubah status motor.'
