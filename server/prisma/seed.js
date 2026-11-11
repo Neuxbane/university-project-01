@@ -499,6 +499,10 @@ async function main() {
 
   console.log('✅ Seeded sample photos for bolt specs and motorcycles.');
 
+  const { attachSampleGlbModels } = require('../scripts/attachSampleGlbModels');
+  const glbSummary = await attachSampleGlbModels(prisma, { overwrite: true });
+  console.log(`✅ Seeded ${glbSummary.attachedModels} 3D .glb models and ${glbSummary.attachedAnnotations} 3D position annotations.`);
+
   console.log('🎉 Seeding successfully completed!');
 }
 
