@@ -25,11 +25,37 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Posisi baut, tipe motor, dan koordinat (x, y) wajib diisi.' });
     }
 
+    const posId = parseInt(boltPositionId, 10);
+    const motorId = parseInt(motorcycleTypeId, 10);
+    const parsedModelId = modelId ? parseInt(modelId, 10) : null;
+
+    if (!Number.isInteger(posId) || !Number.isInteger(motorId)) {
+      return res.status(400).json({ error: 'ID posisi baut dan tipe motor harus berupa angka.' });
+    }
+
+    const [positionExists, motorExists, modelExists] = await Promise.all([
+      prisma.boltPosition.findUnique({ where: { id: posId }, select: { id: true } }),
+      prisma.motorcycleType.findUnique({ where: { id: motorId }, select: { id: true } }),
+      parsedModelId
+        ? prisma.motorcycleModel.findUnique({ where: { id: parsedModelId }, select: { id: true } })
+        : Promise.resolve(true),
+    ]);
+
+    if (!positionExists) {
+      return res.status(400).json({ error: 'Posisi baut yang dipilih tidak ditemukan.' });
+    }
+    if (!motorExists) {
+      return res.status(400).json({ error: 'Tipe motor yang dipilih tidak ditemukan.' });
+    }
+    if (parsedModelId && !modelExists) {
+      return res.status(400).json({ error: 'Model 3D yang dipilih tidak ditemukan.' });
+    }
+
     const created = await prisma.positionAnnotation.create({
       data: {
-        boltPositionId: parseInt(boltPositionId, 10),
-        motorcycleTypeId: parseInt(motorcycleTypeId, 10),
-        modelId: modelId ? parseInt(modelId, 10) : null,
+        boltPositionId: posId,
+        motorcycleTypeId: motorId,
+        modelId: parsedModelId,
         x: Number(x),
         y: Number(y),
         z: Number(z),

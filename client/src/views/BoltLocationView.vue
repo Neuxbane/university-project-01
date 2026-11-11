@@ -201,14 +201,16 @@
             </div>
           </section>
 
-          <!-- RIGHT COLUMN: LOCATION CANVAS (2D Hotspots + Floating Card + Leader Line) -->
+          <!-- RIGHT COLUMN: 3D MODEL VIEWER (lazy-loaded) or 2D LocationCanvas fallback -->
           <section
-            aria-label="Kanvas lokasi baut pada motor"
+            aria-label="Tampilan lokasi baut pada motor"
             class="lg:sticky lg:top-6"
             :class="mobileTab === 'lokasi' ? 'block' : 'hidden lg:block'"
           >
-            <LocationCanvas
+            <component
+              :is="locationData.model?.modelUrl ? AsyncModelViewer : LocationCanvas"
               :motorcycle="locationData.motorcycle"
+              :model="locationData.model"
               :positions="locationData.positions"
               :all-positions="locationData.allPositions || []"
               :annotations="locationData.annotations"
@@ -264,7 +266,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowRight, Crosshair, Nut, Printer } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
@@ -280,6 +282,8 @@ import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
 
+const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
+
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
@@ -288,7 +292,7 @@ const toast = useToast();
 const locationData = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
-const mobileTab = ref('lokasi');
+const mobileTab = ref('baut');
 const boltSearch = ref('');
 const selectedSizeTier = ref('ALL');
 const selectedBolt = ref(null);
@@ -368,9 +372,15 @@ const loadLocationMap = async () => {
 const onSelectBolt = (bolt) => {
   selectedBolt.value = bolt;
   const annotations = locationData.value?.annotations || [];
+  const modelId = locationData.value?.model?.id;
+  const pool = modelId
+    ? annotations.filter((a) => a.modelId === modelId || (a.modelId == null && Number(a.z) !== 0))
+    : annotations;
+  const searchList = pool.length > 0 ? pool : annotations;
+
   const posIds = Array.isArray(bolt.positionIds) ? bolt.positionIds : [];
-  const match = annotations.find((a) => posIds.includes(a.boltPositionId))
-    || annotations.find((a) => (bolt.positionsSummary || '').toLowerCase().includes((a.boltPosition?.name || '').toLowerCase()));
+  const match = searchList.find((a) => posIds.includes(a.boltPositionId))
+    || searchList.find((a) => (bolt.positionsSummary || '').toLowerCase().includes((a.boltPosition?.name || '').toLowerCase()));
 
   activeAnnotation.value = match || null;
 

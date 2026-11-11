@@ -397,6 +397,14 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(staffDenied.status, 403);
 
+    // Nonexistent foreign keys return 400
+    const badFk = await apiRequest('/api/position-annotations', {
+      method: 'POST',
+      token: adminToken,
+      body: { boltPositionId: 999999, motorcycleTypeId: nmax.id, x: 10, y: 10 },
+    });
+    assert.equal(badFk.status, 400);
+
     // Admin creates annotation
     const created = await apiRequest('/api/position-annotations', {
       method: 'POST',
