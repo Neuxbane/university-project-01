@@ -11,8 +11,8 @@
     <!-- Top Brand Rarity Band -->
     <div class="h-1.5 w-full shrink-0" :class="brandAccent.band" aria-hidden="true"></div>
 
-    <!-- Visual Art / Photo Area -->
-    <div class="relative aspect-[4/3] w-full overflow-hidden bg-zinc-900">
+    <!-- Visual Art / Photo Area (~80% card height) -->
+    <div class="relative aspect-square w-full overflow-hidden bg-zinc-900">
       <img
         v-if="primaryImage"
         :src="primaryImage"
@@ -44,6 +44,14 @@
         {{ motorcycle.brand }}
       </span>
 
+      <!-- Top-right Completeness Pill -->
+      <span
+        class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-zinc-950/90 border border-white/15 text-white text-[10px] font-medium inline-flex items-center gap-1 backdrop-blur-sm"
+      >
+        <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="completeness.dot" aria-hidden="true"></span>
+        <span>{{ completeness.label }}</span>
+      </span>
+
       <!-- Bottom-right Bolt Points Badge -->
       <span
         class="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-zinc-950/90 text-white border border-white/20 text-xs font-mono font-bold shadow-sm backdrop-blur-sm"
@@ -52,26 +60,14 @@
       </span>
     </div>
 
-    <!-- Short Card Label -->
-    <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between gap-2 w-full">
-      <div class="min-w-0">
-        <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 leading-snug truncate">
-          {{ motorcycle.model }}
-        </h3>
-        <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">
-          {{ motorcycle.variant }}
-        </p>
-      </div>
-
-      <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-200/80 dark:border-zinc-800 text-xs">
-        <span class="font-mono text-zinc-600 dark:text-zinc-400 truncate">
-          {{ yearRange }}
-        </span>
-        <span class="inline-flex items-center gap-1.5 font-medium shrink-0" :class="completeness.text">
-          <span class="w-2 h-2 rounded-full shrink-0" :class="completeness.dot" aria-hidden="true"></span>
-          <span>{{ completeness.label }}</span>
-        </span>
-      </div>
+    <!-- ~20% Compact Card Label -->
+    <div class="px-3 py-2 w-full bg-white dark:bg-[#121215] border-t border-zinc-200/80 dark:border-zinc-800">
+      <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-tight truncate">
+        {{ motorcycle.model }} {{ motorcycle.variant }}
+      </h3>
+      <p class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight">
+        {{ yearRange }}
+      </p>
     </div>
   </button>
 </template>

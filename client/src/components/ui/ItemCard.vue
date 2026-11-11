@@ -49,20 +49,14 @@
       </div>
     </div>
 
-    <!-- Short Info Footer -->
-    <div class="p-3 space-y-1 w-full">
-      <div class="flex items-center justify-between gap-1">
-        <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-          {{ dimensionText }}
-        </span>
-        <span class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
-          {{ headType }}
+    <!-- Short Info Footer (~20% card height) -->
+    <div class="px-2.5 py-2 w-full bg-white dark:bg-[#121215] border-t border-zinc-200/80 dark:border-zinc-800">
+      <div class="flex items-center justify-between gap-1.5">
+        <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate leading-tight">
+          {{ dimensionText }} &bull; {{ code }}
         </span>
       </div>
-      <p class="font-mono text-xs text-zinc-700 dark:text-zinc-300 truncate">
-        {{ code }}
-      </p>
-      <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">
+      <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight">
         {{ positionLabel }}
       </p>
     </div>
