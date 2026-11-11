@@ -9,18 +9,19 @@
     <!-- ~80% Image Stage -->
     <div class="relative flex-1 min-h-0 w-full bg-zinc-950 overflow-hidden flex items-center justify-center">
       <img
-        v-if="boltImage"
-        :src="boltImage"
-        :alt="bolt.code"
+        v-if="displayImage"
+        :src="displayImage"
+        :alt="minimalMode ? positionName : bolt.code"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150"
         :class="checkStatus === 'done' ? 'opacity-65 grayscale-[25%]' : ''"
       />
       <div
         v-else
-        class="w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-1"
-        :class="[tier.cardTint, checkStatus === 'done' ? 'opacity-65' : '']"
+        class="w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-1 text-center"
+        :class="[minimalMode ? 'from-zinc-800 to-zinc-950' : tier.cardTint, checkStatus === 'done' ? 'opacity-65' : '']"
       >
-        <Nut class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-200" aria-hidden="true" />
+        <MapPin v-if="minimalMode" class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400" aria-hidden="true" />
+        <Nut v-else class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-200" aria-hidden="true" />
       </div>
 
       <!-- Subtle bottom gradient scrim -->
@@ -78,7 +79,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { Check, Nut } from 'lucide-vue-next';
+import { Check, MapPin, Nut } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';
 
 const props = defineProps({
@@ -95,7 +96,13 @@ const props = defineProps({
 defineEmits(['select']);
 
 const tier = computed(() => getDiameterTier(props.bolt.diameterMm));
-const boltImage = computed(() => props.imageUrl || props.bolt.images?.[0]?.url || props.bolt.boltSpec?.images?.[0]?.url || null);
+const displayImage = computed(() => {
+  // Position cards (minimalMode) strictly use part/close-up photo, never bolt image fallback
+  if (props.minimalMode) {
+    return props.imageUrl || null;
+  }
+  return props.imageUrl || props.bolt.images?.[0]?.url || props.bolt.boltSpec?.images?.[0]?.url || null;
+});
 
 const cardBorderClass = computed(() => {
   if (props.checkStatus === 'done') return 'border-emerald-500/80 dark:border-emerald-500/70';

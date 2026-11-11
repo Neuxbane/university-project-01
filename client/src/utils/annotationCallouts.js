@@ -86,10 +86,9 @@ export function resolvePartCalloutForAnnotation(
 
   const posId = annotation.boltPositionId;
   const closeup = (closeUpPhotos || []).find((c) => c.boltPositionId === posId) || null;
+  // Never fall back to bolt photos or full motorcycle photos for an area/position card
   const partImageUrl = closeup?.imageUrl
     || annotation.boltPosition?.photoUrl
-    || boltResolved.bolt?.images?.[0]?.url
-    || motorcycle?.images?.[0]?.url
     || null;
 
   return {

@@ -234,7 +234,6 @@ const areaTitle = computed(() => {
 const partPhotoUrl = computed(() => {
   return matchingCloseup.value?.imageUrl
     || props.annotation?.boltPosition?.photoUrl
-    || props.motorcycle?.images?.[0]?.url
     || null;
 });
 
