@@ -1,6 +1,6 @@
 /**
  * Shared helpers to resolve bolt details & checklist status for 2D/3D annotations
- * and lay out non-overlapping auto-callout mini-cards around visible points.
+ * and dynamically lay out auto-callout mini-cards hugging visible points / model silhouette.
  */
 
 export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdown = []) {
@@ -110,104 +110,211 @@ export function resolveChecklistStatus(annotation, sessionItems = null, bolts = 
   return { status, matchingItems, checkedCount, totalCount };
 }
 
-function solveVerticalColumn(items, cardH, gap, minY, maxY) {
-  if (!items.length) return [];
-  const available = Math.max(cardH, maxY - minY);
-  const maxFit = Math.max(1, Math.floor((available + gap) / (cardH + gap)));
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
 
-  let chosen = [...items].sort((a, b) => a.screenY - b.screenY);
-  if (chosen.length > maxFit) {
-    const picked = [];
-    for (let i = 0; i < maxFit; i++) {
-      const idx = Math.min(chosen.length - 1, Math.round((i * (chosen.length - 1)) / Math.max(1, maxFit - 1)));
-      if (!picked.includes(chosen[idx])) picked.push(chosen[idx]);
-    }
-    chosen = picked;
+function pushBoxOutsideObstacle(box, obs, gap) {
+  const ox1 = obs.minX - gap;
+  const oy1 = obs.minY - gap;
+  const ox2 = obs.maxX + gap;
+  const oy2 = obs.maxY + gap;
+
+  const bx2 = box.x + box.w;
+  const by2 = box.y + box.h;
+
+  if (bx2 <= ox1 || box.x >= ox2 || by2 <= oy1 || box.y >= oy2) {
+    return;
   }
 
-  const placed = chosen.map((item) => {
-    const ideal = item.screenY - cardH / 2;
-    return {
-      ...item,
-      y: Math.max(minY, Math.min(maxY - cardH, ideal)),
-    };
-  });
+  const pushLeft = bx2 - ox1;
+  const pushRight = ox2 - box.x;
+  const pushUp = by2 - oy1;
+  const pushDown = oy2 - box.y;
+  const minPush = Math.min(pushLeft, pushRight, pushUp, pushDown);
 
-  for (let i = 1; i < placed.length; i++) {
-    const minTop = placed[i - 1].y + cardH + gap;
-    if (placed[i].y < minTop) {
-      placed[i].y = minTop;
-    }
-  }
-
-  const lastIdx = placed.length - 1;
-  if (placed[lastIdx].y + cardH > maxY) {
-    placed[lastIdx].y = Math.max(minY, maxY - cardH);
-    for (let i = lastIdx - 1; i >= 0; i--) {
-      const maxTop = placed[i + 1].y - cardH - gap;
-      if (placed[i].y > maxTop) {
-        placed[i].y = Math.max(minY, maxTop);
-      }
-    }
-  }
-
-  return placed;
+  if (minPush === pushLeft) box.x -= pushLeft;
+  else if (minPush === pushRight) box.x += pushRight;
+  else if (minPush === pushUp) box.y -= pushUp;
+  else box.y += pushDown;
 }
 
 /**
- * Computes non-overlapping left/right perimeter callout slots + SVG leader line coordinates.
+ * Dynamically positions callout cards in a natural halo around the motorcycle / visible points
+ * rather than pinning them far away to the extreme corners/edges.
+ *
+ * @param {Array} visibleEntries - [{ annotation, index, screenX, screenY, resolved }]
+ * @param {number} stageW
+ * @param {number} stageH
+ * @param {Object|null} modelScreenBounds - optional { minX, maxX, minY, maxY } of 3D bike on screen
  */
-export function layoutVisibleCallouts(visibleEntries, stageW, stageH) {
+export function layoutVisibleCallouts(visibleEntries, stageW, stageH, modelScreenBounds = null) {
   if (!visibleEntries?.length || !stageW || !stageH) return [];
+
+  const valid = visibleEntries.filter((entry) => Boolean(entry.resolved?.bolt));
+  if (!valid.length) return [];
 
   const isCompact = stageW < 500;
   const isWide = stageW >= 900;
-  const cardW = isCompact ? 92 : isWide ? 132 : 112;
-  const cardH = isCompact ? 80 : isWide ? 114 : 100;
-  const padX = isCompact ? 8 : isWide ? 18 : 12;
-  const gap = isCompact ? 6 : 8;
+  const cardW = isCompact ? 90 : isWide ? 124 : 108;
+  const cardH = isCompact ? 78 : isWide ? 108 : 96;
+  const pad = isCompact ? 8 : 14;
+  const gap = isCompact ? 6 : 10;
 
-  const midX = stageW * 0.5;
-  const leftItems = [];
-  const rightItems = [];
-
-  for (const entry of visibleEntries) {
-    if (!entry.resolved?.bolt) continue;
-    if (entry.screenX < midX) leftItems.push(entry);
-    else rightItems.push(entry);
+  // Derive bike bounds from projected 3D box (clamped sensibly) or fallback around points
+  let bikeBounds;
+  if (modelScreenBounds && Number.isFinite(modelScreenBounds.minX)) {
+    bikeBounds = {
+      minX: clamp(modelScreenBounds.minX, pad, stageW - pad),
+      maxX: clamp(modelScreenBounds.maxX, pad, stageW - pad),
+      minY: clamp(modelScreenBounds.minY, pad, stageH - pad),
+      maxY: clamp(modelScreenBounds.maxY, pad, stageH - pad),
+    };
+  } else {
+    const xs = valid.map((e) => e.screenX);
+    const ys = valid.map((e) => e.screenY);
+    const pMinX = Math.min(...xs);
+    const pMaxX = Math.max(...xs);
+    const pMinY = Math.min(...ys);
+    const pMaxY = Math.max(...ys);
+    bikeBounds = {
+      minX: clamp(pMinX - stageW * 0.06, pad, stageW * 0.45),
+      maxX: clamp(pMaxX + stageW * 0.06, stageW * 0.55, stageW - pad),
+      minY: clamp(pMinY - stageH * 0.06, pad, stageH * 0.45),
+      maxY: clamp(pMaxY + stageH * 0.06, stageH * 0.55, stageH - pad),
+    };
   }
 
-  const leftMinY = 12;
-  const leftMaxY = Math.max(leftMinY + cardH, stageH - 12);
-  const rightMinY = 62; // keep clear of top-right Reset & Fullscreen buttons
-  const rightMaxY = Math.max(rightMinY + cardH, stageH - 12);
+  const cx = (bikeBounds.minX + bikeBounds.maxX) / 2;
+  const cy = (bikeBounds.minY + bikeBounds.maxY) / 2;
+  const haloGap = clamp(Math.round(Math.min(stageW, stageH) * 0.065), 18, 46);
 
-  const placedLeft = solveVerticalColumn(leftItems, cardH, gap, leftMinY, leftMaxY).map((item) => ({
-    ...item,
-    side: 'left',
-    cardX: padX,
-    cardY: item.y,
-    cardW,
-    cardH,
-    lineX1: item.screenX,
-    lineY1: item.screenY,
-    lineX2: padX + cardW,
-    lineY2: item.y + cardH / 2,
-  }));
+  // If stage is compact or bike fills most of width, limit simultaneous callouts to avoid crowding
+  const maxTotal = isCompact ? 4 : isWide ? 8 : 6;
+  const chosen = valid.length > maxTotal
+    ? [...valid]
+        .sort((a, b) => Math.hypot(b.screenX - cx, b.screenY - cy) - Math.hypot(a.screenX - cx, a.screenY - cy))
+        .slice(0, maxTotal)
+    : valid;
 
-  const rightX = Math.max(padX, stageW - cardW - padX);
-  const placedRight = solveVerticalColumn(rightItems, cardH, gap, rightMinY, rightMaxY).map((item) => ({
-    ...item,
-    side: 'right',
-    cardX: rightX,
-    cardY: item.y,
-    cardW,
-    cardH,
-    lineX1: item.screenX,
-    lineY1: item.screenY,
-    lineX2: rightX,
-    lineY2: item.y + cardH / 2,
-  }));
+  // Top-right Reset / Fullscreen buttons safe keep-out zone
+  const topRightControlObs = {
+    minX: Math.max(0, stageW - 156),
+    minY: 0,
+    maxX: stageW,
+    maxY: 62,
+  };
 
-  return [...placedLeft, ...placedRight];
+  // Bike keep-out center (expanded slightly less when zoomed very far in so cards still fit)
+  const bikeW = bikeBounds.maxX - bikeBounds.minX;
+  const bikeH = bikeBounds.maxY - bikeBounds.minY;
+  const canKeepOutsideBike = bikeW < stageW - cardW * 1.4 && bikeH < stageH - cardH * 1.2;
+
+  // Compute radial anchor around bike bounds for each point
+  const boxes = chosen.map((entry, idx) => {
+    let dx = entry.screenX - cx;
+    let dy = entry.screenY - cy;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 12) {
+      dx = idx % 2 === 0 ? -1 : 1;
+      dy = idx % 3 === 0 ? -0.5 : 0.4;
+    } else {
+      dx /= dist;
+      dy /= dist;
+    }
+
+    // Ideal center pushed radially outside the bike bounds or nearby point
+    const halfBikeX = bikeW * 0.5 + haloGap + cardW * 0.5;
+    const halfBikeY = bikeH * 0.5 + haloGap + cardH * 0.5;
+
+    // Intersect ray from (cx, cy) along (dx, dy) with padded bike hull
+    const tx = Math.abs(dx) > 0.05 ? halfBikeX / Math.abs(dx) : Infinity;
+    const ty = Math.abs(dy) > 0.05 ? halfBikeY / Math.abs(dy) : Infinity;
+    const rayLen = Math.min(tx, ty);
+
+    // Blend ray hull point with point's actual axis so lines remain short and direct
+    const radialCx = cx + dx * rayLen;
+    const radialCy = cy + dy * rayLen;
+
+    const targetCx = canKeepOutsideBike
+      ? radialCx * 0.65 + (entry.screenX + dx * (haloGap + cardW * 0.55)) * 0.35
+      : entry.screenX + dx * (haloGap + cardW * 0.5);
+    const targetCy = canKeepOutsideBike
+      ? radialCy * 0.5 + (entry.screenY + dy * (haloGap + cardH * 0.45)) * 0.5
+      : entry.screenY + dy * (haloGap + cardH * 0.45);
+
+    return {
+      entry,
+      x: clamp(targetCx - cardW / 2, pad, stageW - cardW - pad),
+      y: clamp(targetCy - cardH / 2, pad, stageH - cardH - pad),
+      w: cardW,
+      h: cardH,
+    };
+  });
+
+  // Iterative collision resolution: card-vs-card, top-right controls, and inner bike keep-out
+  for (let iter = 0; iter < 8; iter++) {
+    // 1. Keep clear of top-right controls
+    for (const b of boxes) {
+      pushBoxOutsideObstacle(b, topRightControlObs, 6);
+    }
+
+    // 2. Card-vs-card overlap repulsion
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i];
+        const b = boxes[j];
+        const overlapX = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) + gap;
+        const overlapY = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) + gap;
+        if (overlapX > 0 && overlapY > 0) {
+          if (overlapY <= overlapX) {
+            const sign = (a.y + a.h / 2) <= (b.y + b.h / 2) ? -1 : 1;
+            const shift = overlapY / 2;
+            a.y += sign * shift;
+            b.y -= sign * shift;
+          } else {
+            const sign = (a.x + a.w / 2) <= (b.x + b.w / 2) ? -1 : 1;
+            const shift = overlapX / 2;
+            a.x += sign * shift;
+            b.x -= sign * shift;
+          }
+        }
+      }
+    }
+
+    // 3. Push softly outside central bike silhouette if stage has plenty of room
+    if (canKeepOutsideBike) {
+      for (const b of boxes) {
+        pushBoxOutsideObstacle(b, bikeBounds, Math.max(10, haloGap * 0.4));
+      }
+    }
+
+    // 4. Clamp inside viewport bounds
+    for (const b of boxes) {
+      b.x = clamp(b.x, pad, stageW - b.w - pad);
+      b.y = clamp(b.y, pad, stageH - b.h - pad);
+    }
+  }
+
+  return boxes.map((b) => {
+    const px = b.entry.screenX;
+    const py = b.entry.screenY;
+    const cardX = Math.round(b.x);
+    const cardY = Math.round(b.y);
+    // Attach leader line to closest point on card perimeter
+    const lineX2 = clamp(px, cardX, cardX + b.w);
+    const lineY2 = clamp(py, cardY, cardY + b.h);
+
+    return {
+      ...b.entry,
+      cardX,
+      cardY,
+      cardW: b.w,
+      cardH: b.h,
+      lineX1: px,
+      lineY1: py,
+      lineX2,
+      lineY2,
+    };
+  });
 }

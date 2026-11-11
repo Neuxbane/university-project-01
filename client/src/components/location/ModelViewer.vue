@@ -325,6 +325,7 @@ const loadFailed = ref(false);
 const isFullscreen = ref(false);
 const autoShowCallouts = ref(true);
 const stageSize = ref({ width: 600, height: 400 });
+const modelScreenBounds = ref(null);
 const projectedHotspots = ref([]);
 const draftPoint = ref(null);
 const draftProjected = ref(null);
@@ -352,7 +353,7 @@ const autoCallouts = computed(() => {
     }))
     .filter((entry) => Boolean(entry.resolved?.bolt));
 
-  return layoutVisibleCallouts(visible, stageSize.value.width, stageSize.value.height);
+  return layoutVisibleCallouts(visible, stageSize.value.width, stageSize.value.height, modelScreenBounds.value);
 });
 
 function getCheckStatus(ann) {
@@ -399,8 +400,28 @@ let resizeObserver = null;
 let defaultCamPos = new THREE.Vector3(3, 2, 3);
 let defaultTarget = new THREE.Vector3(0, 0, 0);
 let modelMaxDim = 2;
+let modelBoxCorners = [];
 let cameraTween = null;
 const raycaster = new THREE.Raycaster();
+
+function updateModelBoxCorners() {
+  if (!loadedModelRoot) {
+    modelBoxCorners = [];
+    return;
+  }
+  const box = new THREE.Box3().setFromObject(loadedModelRoot);
+  const { min, max } = box;
+  modelBoxCorners = [
+    new THREE.Vector3(min.x, min.y, min.z),
+    new THREE.Vector3(min.x, min.y, max.z),
+    new THREE.Vector3(min.x, max.y, min.z),
+    new THREE.Vector3(min.x, max.y, max.z),
+    new THREE.Vector3(max.x, min.y, min.z),
+    new THREE.Vector3(max.x, min.y, max.z),
+    new THREE.Vector3(max.x, max.y, min.z),
+    new THREE.Vector3(max.x, max.y, max.z),
+  ];
+}
 
 function prefersReducedMotion() {
   return (
@@ -577,6 +598,26 @@ function projectHotspotsFrame() {
 
   projectedHotspots.value = nextProjected;
 
+  // Project 8 bounding box corners so callout cards dynamically hug the motorcycle silhouette
+  if (modelBoxCorners.length === 8) {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const c of modelBoxCorners) {
+      const ndc = c.clone().project(camera);
+      const sx = (ndc.x * 0.5 + 0.5) * width;
+      const sy = (-ndc.y * 0.5 + 0.5) * height;
+      if (sx < minX) minX = sx;
+      if (sx > maxX) maxX = sx;
+      if (sy < minY) minY = sy;
+      if (sy > maxY) maxY = sy;
+    }
+    modelScreenBounds.value = { minX, maxX, minY, maxY };
+  } else {
+    modelScreenBounds.value = null;
+  }
+
   // Project ghost marker if placing a 3D annotation
   if (ghostSphere && ghostSphere.visible && draftPoint.value !== null) {
     ghostSphere.getWorldPosition(worldPos);
@@ -654,6 +695,7 @@ function loadGLBModel() {
       modelGroup.add(loadedModelRoot);
 
       // Auto-fit camera to bounding box
+      updateModelBoxCorners();
       const box = new THREE.Box3().setFromObject(loadedModelRoot);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
@@ -728,6 +770,8 @@ function cleanupThree() {
   }
   modelGroup = null;
   loadedModelRoot = null;
+  modelBoxCorners = [];
+  modelScreenBounds.value = null;
   hotspotSpheres = [];
   ghostSphere = null;
 }
@@ -889,6 +933,7 @@ watch(
     if (!loadedModelRoot || !camera || !controls) return;
     loadedModelRoot.scale.setScalar(Number(nextScale) || 1);
     loadedModelRoot.rotation.y = Number(nextRotY) || 0;
+    updateModelBoxCorners();
 
     const box = new THREE.Box3().setFromObject(loadedModelRoot);
     const center = box.getCenter(new THREE.Vector3());
