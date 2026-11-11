@@ -61,7 +61,7 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
 
     const pickData = await buildPickListData({ motorcycleTypeId, packageId });
 
-    const [latestModel, annotations, allPositions] = await Promise.all([
+    const [latestModel, annotations, allPositions, motorPackages] = await Promise.all([
       prisma.motorcycleModel.findFirst({
         where: { motorcycleTypeId },
         orderBy: { createdAt: 'desc' },
@@ -75,6 +75,16 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
       }),
       prisma.boltPosition.findMany({
         orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      }),
+      prisma.package.findMany({
+        where: { motorcycleTypeId, status: 'ACTIVE' },
+        select: {
+          id: true,
+          name: true,
+          packageType: true,
+          _count: { select: { items: true } },
+        },
+        orderBy: { createdAt: 'desc' },
       }),
     ]);
 
@@ -102,6 +112,7 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
     res.json({
       motorcycle: pickData.motorcycle,
       package: pickData.package,
+      packages: motorPackages,
       summary: pickData.summary,
       model: latestModel || null,
       positions: Array.from(posMap.values()),

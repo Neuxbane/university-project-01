@@ -50,23 +50,44 @@
         <template #topbar>
           <div class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-4 sm:p-5 shadow-sm space-y-3">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div class="flex items-start sm:items-center gap-3 min-w-0">
+              <div class="flex items-center gap-3 min-w-0">
                 <router-link
                   to="/pick-list"
                   class="min-h-[44px] px-3 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-xs sm:text-sm font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1.5 shrink-0 transition-colors"
                 >
                   <ArrowLeft class="w-4 h-4" aria-hidden="true" />
-                  <span>Kembali</span>
+                  <span>Roster</span>
                 </router-link>
 
+                <div
+                  v-if="locationData?.motorcycle?.images?.length"
+                  class="w-11 h-11 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-300 dark:border-zinc-700 shrink-0 hidden sm:block"
+                >
+                  <img
+                    :src="locationData.motorcycle.images[0].url"
+                    :alt="locationData.motorcycle.displayName"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+
                 <div class="min-w-0">
-                  <h1 class="text-base sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
-                    {{ locationData?.motorcycle?.displayName || 'Peta Lokasi Baut' }}
-                  </h1>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h1 class="text-base sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
+                      {{ locationData?.motorcycle?.displayName || 'Detail Motor' }}
+                    </h1>
+                    <span
+                      v-if="locationData"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs font-medium"
+                      :class="completeness.text"
+                    >
+                      <span class="w-2 h-2 rounded-full" :class="completeness.dot" aria-hidden="true"></span>
+                      <span>{{ completeness.label }}</span>
+                    </span>
+                  </div>
                   <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate">
                     {{ locationData?.package ? locationData.package.name : 'Lengkap Satu Motor' }}
                     <span v-if="locationData">
-                      &bull; {{ locationData.summary.totalQuantity }} pcs &bull; {{ locationData.annotations.length }} titik ditandai
+                      &bull; {{ locationData.summary.totalQuantity }} pcs &bull; {{ locationData.summary.distinctBoltSpecsCount }} ukuran &bull; {{ locationData.annotations.length }} titik
                     </span>
                   </p>
                 </div>
@@ -111,6 +132,27 @@
               </div>
             </div>
 
+            <!-- Package Selector Chips (if motor has packages) -->
+            <div
+              v-if="locationData && (locationData.packages?.length || 0) > 0"
+              class="flex items-center gap-2 overflow-x-auto pt-2 border-t border-zinc-200 dark:border-zinc-800 pb-0.5"
+            >
+              <span class="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 shrink-0">Paket:</span>
+              <FilterChip
+                label="Lengkap Satu Motor"
+                :active="!selectedPackageId"
+                @click="selectPackage(null)"
+              />
+              <FilterChip
+                v-for="pkg in locationData.packages"
+                :key="pkg.id"
+                :label="pkg.name"
+                :count="pkg._count?.items"
+                :active="selectedPackageId === pkg.id"
+                @click="selectPackage(pkg.id)"
+              />
+            </div>
+
             <!-- Mobile Tab Switcher: Baut vs Lokasi (only one visible at a time on mobile) -->
             <div v-if="locationData" class="lg:hidden pt-2 border-t border-zinc-200 dark:border-zinc-800">
               <SegmentedControl
@@ -144,7 +186,7 @@
         <div
           v-else-if="isLoading"
           role="status"
-          aria-label="Memuat peta lokasi baut"
+          aria-label="Memuat detail dan lokasi baut motor"
           class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-5"
         >
           <div class="grid grid-cols-2 gap-3">
@@ -158,19 +200,29 @@
           v-else-if="locationData"
           class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-5 items-start"
         >
-          <!-- LEFT COLUMN: BOLT CARDS -->
+          <!-- LEFT COLUMN: BOLT CARDS / POSITION SLOTS -->
           <section
             aria-label="Daftar baut motor"
             class="space-y-3"
             :class="mobileTab === 'baut' ? 'block' : 'hidden lg:block'"
           >
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <SegmentedControl
+                v-model="leftMode"
+                :options="[
+                  { value: 'rack', label: 'Per Rak', count: locationData.bolts.length },
+                  { value: 'slots', label: 'Per Titik', count: locationData.positionBreakdown.length },
+                ]"
+              />
+            </div>
+
             <SearchInput
               v-model="boltSearch"
               placeholder="Cari kode baut, ukuran, atau posisi..."
               aria-label="Cari baut"
             />
 
-            <div v-if="sizeTierChips.length > 2" class="flex items-center gap-2 overflow-x-auto pb-1">
+            <div v-if="leftMode === 'rack' && sizeTierChips.length > 2" class="flex items-center gap-2 overflow-x-auto pb-1">
               <FilterChip
                 v-for="chip in sizeTierChips"
                 :key="chip.value"
@@ -181,24 +233,48 @@
               />
             </div>
 
-            <EmptyState
-              v-if="filteredBolts.length === 0"
-              :icon="Nut"
-              title="Baut Tidak Ditemukan"
-              description="Coba ubah kata kunci pencarian atau pilih semua ukuran."
-              action-label="Reset Filter"
-              @action="resetBoltFilter"
-            />
-
-            <div v-else class="grid grid-cols-2 gap-3">
-              <ItemCard
-                v-for="bolt in filteredBolts"
-                :key="bolt.boltSpecId"
-                :item="bolt"
-                :selected="selectedBolt?.boltSpecId === bolt.boltSpecId"
-                @select="onSelectBolt(bolt)"
+            <!-- Sub-view A: Bolt Cards (Per Rak) -->
+            <template v-if="leftMode === 'rack'">
+              <EmptyState
+                v-if="filteredBolts.length === 0"
+                :icon="Nut"
+                title="Baut Tidak Ditemukan"
+                description="Coba ubah kata kunci pencarian atau pilih semua ukuran."
+                action-label="Reset Filter"
+                @action="resetBoltFilter"
               />
-            </div>
+
+              <div v-else class="grid grid-cols-2 gap-3">
+                <ItemCard
+                  v-for="bolt in filteredBolts"
+                  :key="bolt.boltSpecId"
+                  :item="bolt"
+                  :selected="selectedBolt?.boltSpecId === bolt.boltSpecId"
+                  @select="onSelectBolt(bolt)"
+                />
+              </div>
+            </template>
+
+            <!-- Sub-view B: Position Slots (Per Titik) -->
+            <template v-else>
+              <EmptyState
+                v-if="filteredBreakdown.length === 0"
+                :icon="Wrench"
+                title="Titik Tidak Ditemukan"
+                description="Belum ada titik pemasangan yang cocok."
+                action-label="Reset Pencarian"
+                @action="boltSearch = ''"
+              />
+
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <SlotCard
+                  v-for="(row, idx) in filteredBreakdown"
+                  :key="idx"
+                  :slot-data="row"
+                  @select="onSelectSlot(row)"
+                />
+              </div>
+            </template>
           </section>
 
           <!-- RIGHT COLUMN: 3D MODEL VIEWER (lazy-loaded) or 2D LocationCanvas fallback -->
@@ -269,12 +345,13 @@
 <script setup>
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowRight, Crosshair, Nut, Printer } from 'lucide-vue-next';
+import { ArrowLeft, ArrowRight, Crosshair, Nut, Printer, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
-import { getDiameterTier } from '../utils/boltTokens';
+import { formatSideLabel, getDiameterTier, getCompletenessMeta } from '../utils/boltTokens';
 import AppShell from '../components/ui/AppShell.vue';
 import ItemCard from '../components/ui/ItemCard.vue';
+import SlotCard from '../components/ui/SlotCard.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
 import FilterChip from '../components/ui/FilterChip.vue';
 import SegmentedControl from '../components/ui/SegmentedControl.vue';
@@ -294,14 +371,20 @@ const locationData = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
 const mobileTab = ref('baut');
+const leftMode = ref('rack');
 const boltSearch = ref('');
 const selectedSizeTier = ref('ALL');
+const selectedPackageId = ref(route.query.packageId ? parseInt(route.query.packageId, 10) : null);
 const selectedBolt = ref(null);
 const activeAnnotation = ref(null);
 const annotationMode = ref(false);
 const isSavingAnnotation = ref(false);
 const isDeletingAnnotation = ref(false);
 const isCreatingSession = ref(false);
+
+const completeness = computed(() => {
+  return getCompletenessMeta(locationData.value?.positions?.length || 0);
+});
 
 const sizeTierChips = computed(() => {
   const items = locationData.value?.bolts || [];
@@ -337,24 +420,37 @@ const filteredBolts = computed(() => {
   });
 });
 
+const filteredBreakdown = computed(() => {
+  const rows = locationData.value?.positionBreakdown || [];
+  const q = boltSearch.value.trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter((row) =>
+    (row.positionName || '').toLowerCase().includes(q) ||
+    (row.category || '').toLowerCase().includes(q) ||
+    (row.boltSpec?.code || '').toLowerCase().includes(q) ||
+    formatSideLabel(row.side).toLowerCase().includes(q)
+  );
+});
+
 const loadLocationMap = async () => {
   errorMsg.value = '';
   isLoading.value = true;
   try {
-    const pkgQuery = route.query.packageId ? `?packageId=${encodeURIComponent(route.query.packageId)}` : '';
+    const pkgQuery = selectedPackageId.value ? `?packageId=${encodeURIComponent(selectedPackageId.value)}` : '';
     const res = await auth.apiFetch(`/api/motorcycles/${route.params.motorId}/location-map${pkgQuery}`);
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gagal memuat peta lokasi baut.');
+    if (!res.ok) throw new Error(data.error || 'Gagal memuat detail motor.');
 
     locationData.value = {
       ...data,
+      packages: Array.isArray(data.packages) ? data.packages : [],
       positions: Array.isArray(data.positions) ? data.positions : [],
       allPositions: Array.isArray(data.allPositions) ? data.allPositions : [],
       annotations: Array.isArray(data.annotations) ? data.annotations : [],
       bolts: Array.isArray(data.bolts) ? data.bolts : [],
+      positionBreakdown: Array.isArray(data.positionBreakdown) ? data.positionBreakdown : [],
     };
 
-    // Pre-select first annotation + matching bolt if available
     if (locationData.value.annotations.length > 0) {
       onSelectAnnotation(locationData.value.annotations[0]);
     } else {
@@ -370,8 +466,12 @@ const loadLocationMap = async () => {
   }
 };
 
-const onSelectBolt = (bolt) => {
-  selectedBolt.value = bolt;
+const selectPackage = async (pkgId) => {
+  selectedPackageId.value = pkgId;
+  await loadLocationMap();
+};
+
+const findAnnotationForPositions = (posIds, summaryText) => {
   const annotations = locationData.value?.annotations || [];
   const modelId = locationData.value?.model?.id;
   const pool = modelId
@@ -379,17 +479,44 @@ const onSelectBolt = (bolt) => {
     : annotations;
   const searchList = pool.length > 0 ? pool : annotations;
 
-  const posIds = Array.isArray(bolt.positionIds) ? bolt.positionIds : [];
-  const match = searchList.find((a) => posIds.includes(a.boltPositionId))
-    || searchList.find((a) => (bolt.positionsSummary || '').toLowerCase().includes((a.boltPosition?.name || '').toLowerCase()));
+  return searchList.find((a) => posIds.includes(a.boltPositionId))
+    || searchList.find((a) => summaryText.toLowerCase().includes((a.boltPosition?.name || '').toLowerCase()))
+    || null;
+};
 
-  activeAnnotation.value = match || null;
+const onSelectBolt = (bolt) => {
+  selectedBolt.value = bolt;
+  const posIds = Array.isArray(bolt.positionIds) ? bolt.positionIds : [];
+  const match = findAnnotationForPositions(posIds, bolt.positionsSummary || '');
+  activeAnnotation.value = match;
 
   if (window.innerWidth < 1024) {
     mobileTab.value = 'lokasi';
-    if (!match && annotations.length > 0) {
+    if (!match && (locationData.value?.annotations?.length || 0) > 0) {
       toast.info(`Baut ${bolt.code} belum ditandai di peta lokasi.`);
     }
+  }
+};
+
+const onSelectSlot = (slotRow) => {
+  const matchingBolt = (locationData.value?.bolts || []).find((b) => b.boltSpecId === slotRow.boltSpec?.id);
+  if (matchingBolt) {
+    selectedBolt.value = matchingBolt;
+  } else if (slotRow.boltSpec) {
+    selectedBolt.value = {
+      ...slotRow.boltSpec,
+      boltSpecId: slotRow.boltSpec.id,
+      totalQuantity: slotRow.quantity,
+      positionsSummary: slotRow.positionName,
+    };
+  }
+
+  const posIds = slotRow.positionId ? [slotRow.positionId] : [];
+  const match = findAnnotationForPositions(posIds, slotRow.positionName || '');
+  activeAnnotation.value = match;
+
+  if (window.innerWidth < 1024) {
+    mobileTab.value = 'lokasi';
   }
 };
 
