@@ -7,13 +7,22 @@
       >
         {{ label }}
       </label>
-      <button
-        type="button"
-        @click="toggleCustomMode"
-        class="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 underline underline-offset-2 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
-      >
-        {{ isCustom ? 'Pilih dari daftar' : '+ Label Baru' }}
-      </button>
+      <div class="flex items-center gap-2.5 shrink-0">
+        <router-link
+          v-if="auth.isAdmin"
+          to="/bolt-specs?tab=positions"
+          class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white underline underline-offset-2"
+        >
+          Kelola Master Posisi
+        </router-link>
+        <button
+          type="button"
+          @click="toggleCustomMode"
+          class="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 underline underline-offset-2 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
+        >
+          {{ isCustom ? 'Pilih dari daftar' : '+ Label Baru' }}
+        </button>
+      </div>
     </div>
 
     <select
@@ -69,6 +78,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useAuthStore } from '../../stores/auth';
+
+const auth = useAuthStore();
 
 const props = defineProps({
   inputId: { type: String, default: 'area-label-input' },

@@ -516,9 +516,10 @@ async function main() {
 
   console.log('✅ Seeded sample photos for bolt specs and motorcycles.');
 
+  await prisma.positionAnnotation.deleteMany();
   const { attachSampleGlbModels } = require('../scripts/attachSampleGlbModels');
   const glbSummary = await attachSampleGlbModels(prisma, { overwrite: true });
-  console.log(`✅ Seeded ${glbSummary.attachedModels} 3D .glb models and ${glbSummary.attachedAnnotations} 3D position annotations.`);
+  console.log(`✅ Seeded ${glbSummary.attachedModels} 3D .glb models (0 pre-seeded annotations).`);
 
   const { attachSampleCloseUps } = require('../scripts/attachSampleCloseUps');
   const cuSummary = await attachSampleCloseUps(prisma, { overwrite: true });

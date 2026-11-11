@@ -150,11 +150,9 @@
                 v-model="newReq.side"
                 class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
               >
-                <option value="NONE">Netral</option>
-                <option value="LEFT">Kiri</option>
-                <option value="RIGHT">Kanan</option>
-                <option value="FRONT">Depan</option>
-                <option value="REAR">Belakang</option>
+                <option v-for="(label, sideKey) in SIDE_LABELS" :key="sideKey" :value="sideKey">
+                  {{ label }}
+                </option>
               </select>
             </div>
 

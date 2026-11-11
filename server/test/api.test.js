@@ -376,7 +376,7 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(deleteRoleSuccess.status, 200);
   });
 
-  test('10. Location map and position annotation CRUD (Phase A)', async () => {
+  test('10. Location map and position annotation CRUD (admin-marked, zero pre-seeded anchors)', async () => {
     const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
     const nmax = motorcycles.find((m) => m.displayName.includes('NMAX 155'));
     assert.ok(nmax);
@@ -388,14 +388,25 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.ok(Array.isArray(mapRes.data.annotations));
     assert.ok(Array.isArray(mapRes.data.bolts));
     assert.ok(mapRes.data.bolts.length > 0);
-    const posId = mapRes.data.positions[0]?.id || mapRes.data.allPositions[0]?.id;
-    assert.ok(posId);
+
+    // Create a fresh position dynamically via POST /api/positions
+    const newPosRes = await apiRequest('/api/positions', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        name: `Area Anotasi Uji ${Date.now()}`,
+        category: 'Area Kustom',
+        notes: 'Untuk verifikasi anotasi admin',
+      },
+    });
+    assert.equal(newPosRes.status, 201);
+    const posId = newPosRes.data.id;
 
     // Staff cannot create annotation
     const staffDenied = await apiRequest('/api/position-annotations', {
       method: 'POST',
       token: staffToken,
-      body: { boltPositionId: posId, motorcycleTypeId: nmax.id, x: 42.5, y: 63.0, label: 'Test' },
+      body: { boltPositionId: posId, motorcycleTypeId: nmax.id, x: 0.42, y: 0.29, z: -0.19, label: 'Test' },
     });
     assert.equal(staffDenied.status, 403);
 
@@ -407,33 +418,61 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(badFk.status, 400);
 
-    // Admin creates annotation
+    // Admin creates 3D annotation via POST /api/position-annotations
     const created = await apiRequest('/api/position-annotations', {
       method: 'POST',
       token: adminToken,
-      body: { boltPositionId: posId, motorcycleTypeId: nmax.id, x: 42.5, y: 63.0, label: 'Titik Test' },
+      body: {
+        boltPositionId: posId,
+        motorcycleTypeId: nmax.id,
+        modelId: mapRes.data.model?.id || null,
+        x: 0.42,
+        y: 0.29,
+        z: -0.19,
+        normalX: 0,
+        normalY: 0,
+        normalZ: -1,
+        label: 'Titik Test Admin',
+      },
     });
     assert.equal(created.status, 201);
-    assert.equal(created.data.x, 42.5);
-    assert.equal(created.data.y, 63.0);
+    assert.equal(created.data.x, 0.42);
+    assert.equal(created.data.y, 0.29);
+    assert.equal(created.data.z, -0.19);
+
+    // Assert GET /api/motorcycles/:id/location-map returns the newly saved annotation
+    const afterCreateMap = await apiRequest(`/api/motorcycles/${nmax.id}/location-map`, { token: staffToken });
+    assert.equal(afterCreateMap.status, 200);
+    assert.ok(afterCreateMap.data.annotations.some((a) => a.id === created.data.id));
 
     // Admin updates annotation
     const updated = await apiRequest(`/api/position-annotations/${created.data.id}`, {
       method: 'PUT',
       token: adminToken,
-      body: { x: 50.0, y: 55.0, label: 'Titik Test Ubah' },
+      body: { x: 0.5, y: 0.55, label: 'Titik Test Ubah' },
     });
     assert.equal(updated.status, 200);
-    assert.equal(updated.data.x, 50.0);
+    assert.equal(updated.data.x, 0.5);
     assert.equal(updated.data.label, 'Titik Test Ubah');
 
-    // Admin deletes annotation
+    // Admin deletes annotation and asserts it is gone from location-map
     const deleted = await apiRequest(`/api/position-annotations/${created.data.id}`, {
       method: 'DELETE',
       token: adminToken,
     });
     assert.equal(deleted.status, 200);
     assert.equal(deleted.data.success, true);
+
+    const afterDeleteMap = await apiRequest(`/api/motorcycles/${nmax.id}/location-map`, { token: staffToken });
+    assert.equal(afterDeleteMap.status, 200);
+    assert.equal(afterDeleteMap.data.annotations.some((a) => a.id === created.data.id), false);
+
+    // Clean up test position
+    const delPosRes = await apiRequest(`/api/positions/${posId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delPosRes.status, 200);
   });
 
   test('11. 3D .glb model upload, transform update, and deletion CRUD (Phase D)', async () => {

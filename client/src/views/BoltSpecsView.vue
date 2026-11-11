@@ -343,7 +343,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { Check, Nut, Pencil, Plus, Trash2, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
@@ -354,8 +355,18 @@ import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 
+const route = useRoute();
 const auth = useAuthStore();
-const activeTab = ref('specs');
+const activeTab = ref(route.query.tab === 'positions' ? 'positions' : 'specs');
+
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (tab === 'positions' || tab === 'specs') {
+      activeTab.value = tab;
+    }
+  }
+);
 const specs = ref([]);
 const positions = ref([]);
 const specSearch = ref('');

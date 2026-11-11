@@ -2,7 +2,7 @@
 /**
  * Offline Procedural 3D Motorcycle .glb Generator (glTF 2.0 Binary)
  * Generates lightweight, workshop-ready .glb models for Indonesian motorcycles
- * with distinct PBR materials and exact bolt-position surface anchors.
+ * with distinct PBR materials (geometry only; 3D pins are created in the editor).
  */
 
 const fs = require('fs');
@@ -623,137 +623,7 @@ function buildScooterModel(spec) {
   });
 
   const glbBuffer = compileGLB(parts, materials);
-
-  // Compute exact world surface anchor coordinates matching this motorcycle geometry
-  const anchors = [
-    {
-      positionName: 'Cover Crankcase Kiri / CVT',
-      label: 'Bak CVT Kiri',
-      x: -0.42,
-      y: 0.29,
-      z: -0.192,
-      normalX: 0,
-      normalY: 0,
-      normalZ: -1,
-    },
-    {
-      positionName: 'Cover Crankcase Kanan',
-      label: 'Crankcase Kanan',
-      x: -0.24,
-      y: 0.27,
-      z: 0.115,
-      normalX: 0,
-      normalY: 0,
-      normalZ: 1,
-    },
-    {
-      positionName: 'Cover Radiator & Kipas',
-      label: 'Cover Kipas / Radiator',
-      x: -0.21,
-      y: 0.29,
-      z: 0.186,
-      normalX: 0,
-      normalY: 0,
-      normalZ: 1,
-    },
-    {
-      positionName: 'Kaliper Cakram Depan',
-      label: 'Kaliper Rem Depan',
-      x: Number((fx - 0.088).toFixed(4)),
-      y: Number((frontTireR + 0.035).toFixed(4)),
-      z: -0.091,
-      normalX: 0,
-      normalY: 0,
-      normalZ: -1,
-    },
-    {
-      positionName: 'Piringan Cakram Depan',
-      label: 'Disc Brake Depan',
-      x: Number((fx + 0.06).toFixed(4)),
-      y: Number((frontTireR + 0.05).toFixed(4)),
-      z: -0.063,
-      normalX: 0,
-      normalY: 0,
-      normalZ: -1,
-    },
-    {
-      positionName: 'Master Rem & Klem Stang',
-      label: 'Master Rem Kanan',
-      x: Number((fx - 0.185).toFixed(4)),
-      y: 0.916,
-      z: 0.17,
-      normalX: 0.3,
-      normalY: 0.9,
-      normalZ: 0.2,
-    },
-    {
-      positionName: 'Windshield & Visor',
-      label: 'Visor Depan',
-      x: Number((fx - 0.095).toFixed(4)),
-      y: tallVisor ? 0.98 : 0.91,
-      z: 0,
-      normalX: 0.92,
-      normalY: 0.38,
-      normalZ: 0,
-    },
-    {
-      positionName: 'Behel Jok Belakang',
-      label: 'Behel Belakang',
-      x: Number((rx - 0.08).toFixed(4)),
-      y: 0.815,
-      z: 0.08,
-      normalX: -0.4,
-      normalY: 0.9,
-      normalZ: 0.2,
-    },
-    {
-      positionName: 'Cover Knalpot & Silencer',
-      label: 'Tameng Knalpot',
-      x: Number((rx + 0.06).toFixed(4)),
-      y: 0.31,
-      z: 0.232,
-      normalX: 0,
-      normalY: 0,
-      normalZ: 1,
-    },
-    {
-      positionName: 'Footstep Belakang',
-      label: 'Footstep Kiri',
-      x: -0.34,
-      y: 0.37,
-      z: -0.238,
-      normalX: 0,
-      normalY: 0,
-      normalZ: -1,
-    },
-  ];
-
-  if (rearDisc) {
-    anchors.push(
-      {
-        positionName: 'Kaliper Cakram Belakang',
-        label: 'Kaliper Rem Belakang',
-        x: Number((rx + 0.068).toFixed(4)),
-        y: Number((rearTireR + 0.058).toFixed(4)),
-        z: 0.096,
-        normalX: 0,
-        normalY: 0,
-        normalZ: 1,
-      },
-      {
-        positionName: 'Piringan Cakram Belakang',
-        label: 'Disc Brake Belakang',
-        x: Number((rx - 0.05).toFixed(4)),
-        y: Number((rearTireR - 0.04).toFixed(4)),
-        z: 0.073,
-        normalX: 0,
-        normalY: 0,
-        normalZ: 1,
-      }
-    );
-  }
-
-  return { glbBuffer, anchors };
+  return { glbBuffer };
 }
 
 const MODEL_SPECS = [
@@ -806,7 +676,7 @@ function generateAllModels(outputDir) {
   const manifest = [];
 
   for (const spec of MODEL_SPECS) {
-    const { glbBuffer, anchors } = buildScooterModel(spec);
+    const { glbBuffer } = buildScooterModel(spec);
     const outPath = path.join(outputDir, spec.filename);
     fs.writeFileSync(outPath, glbBuffer);
     manifest.push({
@@ -814,7 +684,6 @@ function generateAllModels(outputDir) {
       modelUrl: `/uploads/models/${spec.filename}`,
       displayNameMatch: spec.displayNameMatch,
       byteLength: glbBuffer.byteLength,
-      anchors,
     });
   }
 
@@ -825,7 +694,7 @@ if (require.main === module) {
   const outputDir = path.join(__dirname, '../uploads/models');
   const manifest = generateAllModels(outputDir);
   for (const item of manifest) {
-    console.log(`✅ Generated ${item.filename} (${(item.byteLength / 1024).toFixed(1)} KB, ${item.anchors.length} anchors)`);
+    console.log(`✅ Generated ${item.filename} (${(item.byteLength / 1024).toFixed(1)} KB)`);
   }
 }
 
