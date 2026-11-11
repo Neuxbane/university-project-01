@@ -15,6 +15,7 @@
     :active-annotation="activeAnnotation"
     :selected-bolt="selectedBolt"
     :annotation-mode="annotationMode"
+    :initial-position-id="effectiveInitialPositionId"
     :can-annotate="canAnnotate"
     :is-saving-annotation="isSavingAnnotation"
     :is-deleting-annotation="isDeletingAnnotation"
@@ -317,10 +318,11 @@
       :positions="positions"
       :all-positions="allPositions"
       :all-specs="allSpecs"
+      :position-breakdown="positionBreakdown"
       :annotations="annotations3D"
       :active-annotation-id="activeAnnotation?.id || null"
       :draft-point="draftPoint"
-      :initial-position-id="pendingPositionId"
+      :initial-position-id="effectiveInitialPositionId"
       :is-saving="isSavingAnnotation"
       :is-deleting="isDeletingAnnotation"
       @select-annotation="onHotspotClick"
@@ -373,6 +375,7 @@ const props = defineProps({
   activeAnnotation: { type: Object, default: null },
   selectedBolt: { type: Object, default: null },
   annotationMode: { type: Boolean, default: false },
+  initialPositionId: { type: [String, Number], default: null },
   canAnnotate: { type: Boolean, default: false },
   isSavingAnnotation: { type: Boolean, default: false },
   isDeletingAnnotation: { type: Boolean, default: false },
@@ -410,6 +413,7 @@ const projectedHotspots = ref([]);
 const draftPoint = ref(null);
 const draftProjected = ref(null);
 const pendingPositionId = ref(null);
+const effectiveInitialPositionId = computed(() => pendingPositionId.value || props.initialPositionId || null);
 
 const annotatedPositionIds = computed(
   () => new Set(annotations3D.value.map((a) => a.boltPositionId))

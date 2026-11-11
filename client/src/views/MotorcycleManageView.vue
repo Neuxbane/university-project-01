@@ -420,6 +420,7 @@
               :active-annotation="activeAnnotation"
               :selected-bolt="focusedBolt"
               :annotation-mode="annotationMode"
+              :initial-position-id="pendingAnnotationPositionId"
               :can-annotate="auth.isAdmin"
               :is-saving-annotation="isSavingAnnotation"
               :is-deleting-annotation="isDeletingAnnotation"
@@ -429,7 +430,7 @@
               @update-annotation="handleUpdateAnnotation"
               @delete-annotation="handleDeleteAnnotation"
               @enable-annotation="annotationMode = true"
-              @disable-annotation="annotationMode = false"
+              @disable-annotation="annotationMode = false; pendingAnnotationPositionId = null"
             />
           </section>
         </div>
@@ -738,6 +739,7 @@ const confirmDeleteReq = ref(null);
 
 // Map / 3D annotation state
 const annotationMode = ref(false);
+const pendingAnnotationPositionId = ref(null);
 const activeAnnotation = ref(null);
 const focusedBolt = ref(null);
 const isSavingAnnotation = ref(false);
@@ -974,10 +976,13 @@ const onSelectAnnotation = (ann) => {
 const focusPositionOnMap = (boltPositionId) => {
   const match = annotations.value.find((a) => a.boltPositionId === boltPositionId);
   if (match) {
+    pendingAnnotationPositionId.value = null;
     onSelectAnnotation(match);
   } else {
+    pendingAnnotationPositionId.value = boltPositionId;
     annotationMode.value = true;
-    toast.info('Posisi ini belum ditandai. Ketuk permukaan motor di peta sebelah kanan.');
+    const posName = locationPositions.value.find((p) => p.id === boltPositionId)?.name || 'Area ini';
+    toast.info(`Area "${posName}" dipilih — ketuk titik lokasi pada motor di kanan.`);
   }
 };
 
@@ -1008,6 +1013,7 @@ const handleCreateAnnotation = async (payload) => {
     });
     const created = await res.json();
     if (!res.ok) throw new Error(created.error || 'Gagal menandai lokasi.');
+    pendingAnnotationPositionId.value = null;
     await loadAll({ silent: true });
     onSelectAnnotation(created);
     toast.success(created.createdRequirement ? 'Area, titik lokasi & baut disimpan' : 'Titik lokasi disimpan');

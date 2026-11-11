@@ -48,58 +48,58 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-          <div v-if="allSpecs.length > 0" class="sm:col-span-7">
-            <BoltSpecPicker
-              v-model="draftBoltSpecId"
-              :specs="allSpecs"
-              input-id="anno3d-spec-picker"
-              label="Sekaligus Tambah Baut di Titik Ini (Opsional)"
-              placeholder="-- Pilih Baut jika sekalian tambah --"
-            />
-          </div>
-
-          <div v-if="allSpecs.length > 0" class="sm:col-span-3">
-            <label for="anno3d-qty-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Jumlah
-            </label>
-            <div class="flex items-center rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 overflow-hidden min-h-[44px]" :class="!draftBoltSpecId ? 'opacity-50' : ''">
-              <button
-                type="button"
-                :disabled="!draftBoltSpecId || draftQty <= 1"
-                @click="draftQty = Math.max(1, draftQty - 1)"
-                class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
-                aria-label="Kurangi jumlah"
-              >
-                -
-              </button>
-              <input
-                id="anno3d-qty-input"
-                v-model.number="draftQty"
-                :disabled="!draftBoltSpecId"
-                type="number"
-                min="1"
-                max="100"
-                class="w-full text-center bg-transparent text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none"
+          <template v-if="allSpecs.length > 0 && !selectedAreaHasBolts">
+            <div :class="draftBoltSpecId ? 'sm:col-span-6' : 'sm:col-span-9'">
+              <BoltSpecPicker
+                v-model="draftBoltSpecId"
+                :specs="allSpecs"
+                input-id="anno3d-spec-picker"
+                label="Sekaligus Tambah Baut Baru (Opsional)"
+                placeholder="-- Pilih Baut jika area ini belum punya baut --"
               />
-              <button
-                type="button"
-                :disabled="!draftBoltSpecId"
-                @click="draftQty = Math.min(100, draftQty + 1)"
-                class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
-                aria-label="Tambah jumlah"
-              >
-                +
-              </button>
             </div>
-          </div>
 
-          <div :class="allSpecs.length > 0 ? 'sm:col-span-2' : 'sm:col-span-12 flex justify-end'">
+            <div v-if="draftBoltSpecId" class="sm:col-span-3">
+              <label for="anno3d-qty-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+                Jumlah Pcs
+              </label>
+              <div class="flex items-center rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 overflow-hidden min-h-[44px]">
+                <button
+                  type="button"
+                  :disabled="draftQty <= 1"
+                  @click="draftQty = Math.max(1, draftQty - 1)"
+                  class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                  aria-label="Kurangi jumlah"
+                >
+                  -
+                </button>
+                <input
+                  id="anno3d-qty-input"
+                  v-model.number="draftQty"
+                  type="number"
+                  min="1"
+                  max="100"
+                  class="w-full text-center bg-transparent text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  @click="draftQty = Math.min(100, draftQty + 1)"
+                  class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+                  aria-label="Tambah jumlah"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <div :class="allSpecs.length > 0 && !selectedAreaHasBolts ? 'sm:col-span-3' : 'sm:col-span-12 flex justify-end'">
             <button
               type="submit"
               :disabled="isSaving || (!draftPositionId && !draftCustomName.trim())"
-              class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+              class="w-full sm:w-auto min-w-[120px] min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
             >
-              {{ isSaving ? '...' : (draftBoltSpecId ? 'Simpan Titik & Baut' : 'Simpan Titik') }}
+              {{ isSaving ? '...' : (draftBoltSpecId && !selectedAreaHasBolts ? 'Simpan Titik & Baut' : 'Simpan Titik') }}
             </button>
           </div>
         </div>
@@ -236,7 +236,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import AreaLabelInput from '../ui/AreaLabelInput.vue';
@@ -246,6 +246,7 @@ const props = defineProps({
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
   allSpecs: { type: Array, default: () => [] },
+  positionBreakdown: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
   activeAnnotationId: { type: Number, default: null },
   draftPoint: { type: Object, default: null },
@@ -273,18 +274,45 @@ const editingId = ref(null);
 const editForm = ref({ boltPositionId: '', customName: '', customCategory: '', label: '' });
 const confirmDeleteTarget = ref(null);
 
+const selectedAreaHasBolts = computed(() => {
+  if (!draftPositionId.value) return false;
+  return (props.positionBreakdown || []).some(
+    (row) => Number(row.positionId) === Number(draftPositionId.value)
+  );
+});
+
 watch(
-  [() => props.draftPoint, () => props.initialPositionId],
-  ([val, initPosId]) => {
-    if (val && initPosId) {
+  () => props.initialPositionId,
+  (initPosId) => {
+    if (initPosId) {
       draftPositionId.value = initPosId;
+      draftCustomName.value = '';
+      draftBoltSpecId.value = '';
     }
   },
   { immediate: true }
 );
 
+watch(
+  () => props.draftPoint,
+  (val) => {
+    if (val && props.initialPositionId) {
+      draftPositionId.value = props.initialPositionId;
+      draftCustomName.value = '';
+    }
+  }
+);
+
+watch(selectedAreaHasBolts, (hasBolts) => {
+  if (hasBolts) {
+    draftBoltSpecId.value = '';
+    draftQty.value = 1;
+  }
+});
+
 const submitCreate = () => {
   if (!props.draftPoint || (!draftPositionId.value && !draftCustomName.value.trim())) return;
+  const attachBolt = Boolean(draftBoltSpecId.value && !selectedAreaHasBolts.value);
   emit('create-annotation', {
     boltPositionId: draftPositionId.value || null,
     customAreaName: draftCustomName.value.trim() || null,
@@ -296,7 +324,7 @@ const submitCreate = () => {
     normalY: props.draftPoint.normalY,
     normalZ: props.draftPoint.normalZ,
     label: draftLabel.value.trim() || null,
-    ...(draftBoltSpecId.value ? { boltSpecId: draftBoltSpecId.value, quantity: draftQty.value || 1 } : {}),
+    ...(attachBolt ? { boltSpecId: draftBoltSpecId.value, quantity: draftQty.value || 1 } : {}),
   });
   draftPositionId.value = '';
   draftCustomName.value = '';
