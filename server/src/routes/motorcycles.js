@@ -64,7 +64,16 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const packageId = req.query.packageId ? parseInt(req.query.packageId, 10) : undefined;
 
-    const pickData = await buildPickListData({ motorcycleTypeId, packageId });
+    const isManager = req.user?.role === 'ADMIN'
+      || req.user?.roleRel?.name === 'ADMIN'
+      || (req.user?.permissionCodes || []).includes('*')
+      || (req.user?.permissionCodes || []).includes('MOTORCYCLES_MANAGE');
+
+    const pickData = await buildPickListData({
+      motorcycleTypeId,
+      packageId,
+      allowInactive: isManager,
+    });
 
     const [latestModel, annotations, allPositions, motorPackages, closeUpPhotos] = await Promise.all([
       prisma.motorcycleModel.findFirst({

@@ -19,11 +19,12 @@
         :alt="motorcycle.displayName"
         loading="lazy"
         class="w-full h-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.03]"
+        :class="motorcycle.isActive === false ? 'opacity-50 grayscale' : ''"
       />
       <div
         v-else
         class="w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-3 text-center"
-        :class="brandAccent.monogramBg"
+        :class="[brandAccent.monogramBg, motorcycle.isActive === false ? 'opacity-55 grayscale' : '']"
       >
         <span class="font-mono font-black text-2xl sm:text-3xl tracking-tight text-white/90 select-none">
           {{ initials }}
@@ -44,8 +45,16 @@
         {{ motorcycle.brand }}
       </span>
 
-      <!-- Top-right Completeness Pill -->
+      <!-- Top-right Inactive or Completeness Pill -->
       <span
+        v-if="motorcycle.isActive === false"
+        class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-rose-600/95 border border-rose-300/40 text-white text-[10px] font-bold inline-flex items-center gap-1 backdrop-blur-sm shadow"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-white shrink-0" aria-hidden="true"></span>
+        <span>Nonaktif</span>
+      </span>
+      <span
+        v-else
         class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-zinc-950/90 border border-white/15 text-white text-[10px] font-medium inline-flex items-center gap-1 backdrop-blur-sm"
       >
         <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="completeness.dot" aria-hidden="true"></span>

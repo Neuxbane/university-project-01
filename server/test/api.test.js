@@ -786,4 +786,46 @@ describe('Hex Titanium Bolt System API Tests', () => {
     const allPos = await apiRequest('/api/positions', { token: staffToken });
     assert.equal(allPos.data.some((p) => p.id === posId), false);
   });
+
+  test('16. Deactivated motorcycle can still be opened by Admin in location-map and reactivated', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: adminToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    assert.ok(beat);
+
+    // Ensure Beat starts active even if a previous run interrupted midway
+    if (!beat.isActive) {
+      await apiRequest(`/api/motorcycles/${beat.id}/deactivate`, { method: 'PATCH', token: adminToken });
+    }
+
+    try {
+      // 1. Admin deactivates Beat Deluxe
+      const deact = await apiRequest(`/api/motorcycles/${beat.id}/deactivate`, {
+        method: 'PATCH',
+        token: adminToken,
+      });
+      assert.equal(deact.status, 200);
+      assert.equal(deact.data.isActive, false);
+
+      // 2. Non-admin staff still gets 404 on inactive motor location-map
+      const staffMap = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: staffToken });
+      assert.equal(staffMap.status, 404);
+
+      // 3. Admin CAN load location-map for inactive motor so manage view & reactivate work cleanly
+      const adminMap = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: adminToken });
+      assert.equal(adminMap.status, 200);
+      assert.equal(adminMap.data.motorcycle.isActive, false);
+
+      // 4. Filter ?status=inactive finds it, and Admin reactivates it cleanly
+      const inactiveList = await apiRequest('/api/motorcycles?status=inactive', { token: adminToken });
+      assert.equal(inactiveList.status, 200);
+      assert.ok(inactiveList.data.some((m) => m.id === beat.id));
+    } finally {
+      const reactivate = await apiRequest(`/api/motorcycles/${beat.id}/deactivate`, {
+        method: 'PATCH',
+        token: adminToken,
+      });
+      assert.equal(reactivate.status, 200);
+      assert.equal(reactivate.data.isActive, true);
+    }
+  });
 });

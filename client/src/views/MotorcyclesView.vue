@@ -125,27 +125,48 @@
     </section>
 
     <!-- Filters & Search -->
-    <div class="flex flex-col md:flex-row gap-3">
-      <div class="flex-1">
-        <label for="motor-search-input" class="sr-only">Cari merek, model, atau varian motor</label>
-        <input
-          id="motor-search-input"
-          v-model="search"
-          type="text"
-          placeholder="Cari merek, model, atau varian motor..."
-          class="w-full min-h-[44px] px-3.5 py-2.5 bg-white dark:bg-[#121215] border border-zinc-500 rounded-xl text-base sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 shadow-sm"
-        />
+    <div class="space-y-2.5">
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="flex-1">
+          <label for="motor-search-input" class="sr-only">Cari merek, model, atau varian motor</label>
+          <input
+            id="motor-search-input"
+            v-model="search"
+            type="text"
+            placeholder="Cari merek, model, atau varian motor..."
+            class="w-full min-h-[44px] px-3.5 py-2.5 bg-white dark:bg-[#121215] border border-zinc-500 rounded-xl text-base sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 shadow-sm"
+          />
+        </div>
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-1 bg-zinc-100 dark:bg-[#18181c] p-1 rounded-xl border border-zinc-300 dark:border-zinc-700 overflow-x-auto max-w-full">
+          <button
+            v-for="b in brandFilterOptions"
+            :key="b"
+            @click="selectedBrand = b"
+            type="button"
+            class="min-h-[44px] px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap"
+            :class="[selectedBrand === b ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 font-semibold shadow-sm' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100']"
+          >
+            {{ b }}
+          </button>
+        </div>
       </div>
-      <div class="flex flex-wrap sm:flex-nowrap items-center gap-1 bg-zinc-100 dark:bg-[#18181c] p-1 rounded-xl border border-zinc-300 dark:border-zinc-700 overflow-x-auto max-w-full">
+
+      <!-- Status Filter Chips (Aktif / Nonaktif) -->
+      <div class="flex flex-wrap items-center gap-1.5">
         <button
-          v-for="b in brandFilterOptions"
-          :key="b"
-          @click="selectedBrand = b"
+          v-for="opt in statusFilterOptions"
+          :key="opt.value"
           type="button"
-          class="min-h-[44px] px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap"
-          :class="[selectedBrand === b ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 font-semibold shadow-sm' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100']"
+          @click="selectedStatus = opt.value"
+          class="min-h-[38px] px-3 py-1.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+          :class="selectedStatus === opt.value
+            ? opt.value === 'inactive'
+              ? 'bg-rose-600 text-white border-rose-600'
+              : 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+            : 'bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'"
         >
-          {{ b }}
+          <span>{{ opt.label }}</span>
+          <span class="font-mono text-[11px] opacity-80">({{ opt.count }})</span>
         </button>
       </div>
     </div>
@@ -178,7 +199,7 @@
       title="Motor tidak ditemukan"
       description="Tidak ada motor yang cocok dengan filter atau pencarian."
       action-label="Tampilkan Semua"
-      @action="search = ''; selectedBrand = 'Semua'"
+      @action="search = ''; selectedBrand = 'Semua'; selectedStatus = 'all'"
     />
 
     <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -209,6 +230,7 @@ const toast = useToast();
 const motorcycles = ref([]);
 const search = ref('');
 const selectedBrand = ref('Semua');
+const selectedStatus = ref('all');
 const isLoading = ref(false);
 const errorMsg = ref('');
 
@@ -230,12 +252,26 @@ const availableBrands = computed(() => {
 
 const brandFilterOptions = computed(() => ['Semua', ...availableBrands.value]);
 
+const statusFilterOptions = computed(() => {
+  const activeCount = motorcycles.value.filter((m) => m.isActive !== false).length;
+  const inactiveCount = motorcycles.value.length - activeCount;
+  return [
+    { value: 'all', label: 'Semua Status', count: motorcycles.value.length },
+    { value: 'active', label: 'Aktif', count: activeCount },
+    { value: 'inactive', label: 'Nonaktif', count: inactiveCount },
+  ];
+});
+
 const filteredMotors = computed(() => {
   return motorcycles.value.filter((m) => {
+    const matchStatus =
+      selectedStatus.value === 'all'
+      || (selectedStatus.value === 'active' && m.isActive !== false)
+      || (selectedStatus.value === 'inactive' && m.isActive === false);
     const matchBrand = selectedBrand.value === 'Semua' || m.brand.toLowerCase() === selectedBrand.value.toLowerCase();
     const q = search.value.toLowerCase();
     const matchSearch = !q || m.displayName.toLowerCase().includes(q) || m.brand.toLowerCase().includes(q) || m.model.toLowerCase().includes(q);
-    return matchBrand && matchSearch;
+    return matchStatus && matchBrand && matchSearch;
   });
 });
 

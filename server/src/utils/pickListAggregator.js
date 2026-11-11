@@ -4,7 +4,7 @@ const prisma = require('../db');
  * Generates consolidated bolt totals, position breakdown, and completeness summary
  * for a given motorcycle (and optional package).
  */
-async function buildPickListData({ motorcycleTypeId, packageId }) {
+async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = false }) {
   const mId = parseInt(motorcycleTypeId, 10);
   const motorcycle = await prisma.motorcycleType.findUnique({
     where: { id: mId },
@@ -15,7 +15,7 @@ async function buildPickListData({ motorcycleTypeId, packageId }) {
     },
   });
 
-  if (!motorcycle || !motorcycle.isActive) {
+  if (!motorcycle || (!allowInactive && !motorcycle.isActive)) {
     const err = new Error('Tipe motor tidak ditemukan atau dinonaktifkan.');
     err.status = 404;
     throw err;
@@ -179,6 +179,7 @@ async function buildPickListData({ motorcycleTypeId, packageId }) {
       variant: motorcycle.variant,
       yearStart: motorcycle.yearStart,
       yearEnd: motorcycle.yearEnd,
+      isActive: motorcycle.isActive,
       images: motorcycle.images || [],
     },
     package: selectedPackage
