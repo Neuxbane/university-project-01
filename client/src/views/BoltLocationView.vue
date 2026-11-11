@@ -330,6 +330,7 @@
               :model="locationData.model"
               :positions="locationData.positions"
               :all-positions="locationData.allPositions || []"
+              :all-specs="allSpecs"
               :annotations="locationData.annotations"
               :close-up-photos="locationData.closeUpPhotos || []"
               :bolts="locationData.bolts"
@@ -415,6 +416,7 @@ const auth = useAuthStore();
 const toast = useToast();
 
 const locationData = ref(null);
+const allSpecs = ref([]);
 const isLoading = ref(false);
 const errorMsg = ref('');
 const mobileTab = ref('baut');
@@ -492,14 +494,27 @@ const filteredBreakdown = computed(() => {
   );
 });
 
-const loadLocationMap = async () => {
+const loadLocationMap = async ({ silent = false } = {}) => {
   errorMsg.value = '';
-  isLoading.value = true;
+  if (!silent) {
+    isLoading.value = true;
+  }
   try {
     const pkgQuery = selectedPackageId.value ? `?packageId=${encodeURIComponent(selectedPackageId.value)}` : '';
-    const res = await auth.apiFetch(`/api/motorcycles/${route.params.motorId}/location-map${pkgQuery}`);
+    const requests = [
+      auth.apiFetch(`/api/motorcycles/${route.params.motorId}/location-map${pkgQuery}`),
+    ];
+    if (auth.isAdmin && allSpecs.value.length === 0) {
+      requests.push(auth.apiFetch('/api/bolt-specs'));
+    }
+    const [res, resSpecs] = await Promise.all(requests);
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gagal memuat detail motor.');
+
+    if (resSpecs && resSpecs.ok) {
+      const specsList = await resSpecs.json();
+      allSpecs.value = Array.isArray(specsList) ? specsList : [];
+    }
 
     locationData.value = {
       ...data,
@@ -511,9 +526,11 @@ const loadLocationMap = async () => {
       positionBreakdown: Array.isArray(data.positionBreakdown) ? data.positionBreakdown : [],
     };
 
-    // Keep activeAnnotation null on load so all visible points auto-show bolt callouts without clicking
-    activeAnnotation.value = null;
-    selectedBolt.value = null;
+    if (!silent) {
+      // Keep activeAnnotation null on initial load so all visible points auto-show bolt callouts
+      activeAnnotation.value = null;
+      selectedBolt.value = null;
+    }
   } catch (err) {
     errorMsg.value = err.message === 'Failed to fetch'
       ? 'Tidak dapat terhubung ke server gerai. Periksa sambungan Wi-Fi lalu ketuk Coba Lagi.'
@@ -610,6 +627,8 @@ const handleCreateAnnotation = async ({
   normalY = 0,
   normalZ = 1,
   label,
+  boltSpecId,
+  quantity,
 }) => {
   if (!locationData.value || isSavingAnnotation.value) return;
   isSavingAnnotation.value = true;
@@ -630,17 +649,15 @@ const handleCreateAnnotation = async ({
         normalY,
         normalZ,
         label,
+        ...(boltSpecId ? { boltSpecId, quantity } : {}),
       }),
     });
     const created = await res.json();
     if (!res.ok) throw new Error(created.error || 'Gagal menyimpan penanda lokasi.');
 
-    locationData.value.annotations.push(created);
-    if (created.boltPosition && !locationData.value.allPositions.some((p) => p.id === created.boltPosition.id)) {
-      locationData.value.allPositions.push(created.boltPosition);
-    }
+    await loadLocationMap({ silent: true });
     onSelectAnnotation(created);
-    toast.success('Titik lokasi baut berhasil disimpan');
+    toast.success(created.createdRequirement ? 'Area, titik lokasi & baut disimpan' : 'Titik lokasi baut berhasil disimpan');
   } catch (err) {
     toast.error(err.message || 'Gagal menyimpan titik lokasi.');
   } finally {

@@ -100,157 +100,283 @@
     </div>
 
     <template v-else-if="motor">
-      <!-- TAB 1: MATRIKS BAUT + INTERACTIVE 3D/2D LOCATION ANNOTATOR -->
-      <div v-if="activeTab === 'matrix'" class="space-y-5">
-        <!-- Inline Add Requirement Form (Admin only, NO modal) -->
-        <section
-          v-if="auth.isAdmin"
-          class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-4 shadow-sm"
-        >
-          <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-3">
-            Tambah Kebutuhan Baut ke Matriks
-          </p>
-          <form @submit.prevent="handleAddRequirement" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-            <div class="sm:col-span-4">
+      <!-- TAB 1: MATRIKS BAUT + INTERACTIVE 3D/2D LOCATION ANNOTATOR (Unified Spatial + Grouped Area Workflow) -->
+      <div v-if="activeTab === 'matrix'" class="space-y-4">
+        <!-- Split Workspace directly above the fold: Grouped Area Cards Left + 3D/2D Spatial Editor Right -->
+        <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1.15fr] gap-5 items-start">
+          <!-- Left: Grouped Area Cards with Inline + Tambah Baut -->
+          <section class="space-y-3" aria-label="Daftar area dan baut motor">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <SearchInput v-model="matrixSearch" placeholder="Cari area atau kode baut..." class="flex-1 min-w-[180px]" />
+              <button
+                v-if="auth.isAdmin"
+                type="button"
+                @click="showQuickAddCard = !showQuickAddCard"
+                :aria-expanded="showQuickAddCard"
+                class="min-h-[44px] px-3.5 py-2 rounded-xl border text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                :class="showQuickAddCard
+                  ? 'bg-zinc-200 dark:bg-zinc-800 border-zinc-400 dark:border-zinc-600 text-zinc-900 dark:text-zinc-100'
+                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white border-zinc-900 dark:border-zinc-100 text-white dark:text-zinc-900'"
+              >
+                <Plus class="w-4 h-4" aria-hidden="true" />
+                <span>{{ showQuickAddCard ? 'Tutup Form' : 'Tambah Area / Baut' }}</span>
+              </button>
+            </div>
+
+            <!-- Compact On-Demand Fallback Form (when adding without clicking 3D/2D model first) -->
+            <form
+              v-if="auth.isAdmin && showQuickAddCard"
+              @submit.prevent="handleAddRequirement"
+              class="p-3.5 rounded-2xl bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 shadow-sm space-y-2.5"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                  Tambah Area &amp; Baut Baru
+                </p>
+                <span class="text-[11px] text-zinc-500">Atau ketuk motor di kanan saat Mode Anotasi</span>
+              </div>
+
               <AreaLabelInput
                 input-id="req-pos"
-                label="Posisi / Area Motor"
+                label="Area / Posisi Motor"
                 v-model:position-id="newReq.boltPositionId"
                 v-model:custom-name="newReq.customAreaName"
                 v-model:custom-category="newReq.customAreaCategory"
                 :motor-positions="locationPositions"
                 :all-positions="allPositions"
                 :required="true"
+                :show-manage-link="true"
               />
-            </div>
 
-            <div class="sm:col-span-5">
-              <label for="req-spec" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-                Spesifikasi Baut
-              </label>
-              <select
-                id="req-spec"
-                v-model="newReq.boltSpecId"
-                required
-                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-              >
-                <option value="">-- Pilih Ukuran Baut --</option>
-                <option v-for="s in allSpecs" :key="s.id" :value="s.id">
-                  {{ s.code }} &bull; M{{ Number(s.diameterMm) }}×{{ Number(s.lengthMm) }}
-                </option>
-              </select>
-            </div>
-
-            <div class="sm:col-span-2">
-              <label for="req-qty" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-                Jml
-              </label>
-              <input
-                id="req-qty"
-                v-model.number="newReq.quantity"
-                type="number"
-                min="1"
-                max="100"
-                required
-                class="w-full min-h-[44px] px-2.5 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-
-            <div class="sm:col-span-1">
-              <button
-                type="submit"
-                :disabled="isSubmittingReq"
-                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
-              >
-                {{ isSubmittingReq ? '...' : 'Simpan' }}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <!-- Split Workspace: Requirement Cards Left + 3D/2D Location Annotator Right -->
-        <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1.15fr] gap-5 items-start">
-          <!-- Left: Requirement Cards (NO Table Modal!) -->
-          <section class="space-y-3" aria-label="Daftar matriks baut motor">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <SearchInput v-model="matrixSearch" placeholder="Cari posisi atau kode baut..." class="flex-1 min-w-[200px]" />
-              <span class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-                {{ filteredRequirements.length }} item
-              </span>
-            </div>
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+                <div class="sm:col-span-7">
+                  <BoltSpecPicker
+                    v-model="newReq.boltSpecId"
+                    :specs="allSpecs"
+                    input-id="req-spec"
+                    label="Spesifikasi Baut"
+                    :allow-clear="false"
+                  />
+                </div>
+                <div class="sm:col-span-3">
+                  <label for="req-qty" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+                    Jumlah
+                  </label>
+                  <div class="flex items-center rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 overflow-hidden min-h-[44px]">
+                    <button
+                      type="button"
+                      :disabled="newReq.quantity <= 1"
+                      @click="newReq.quantity = Math.max(1, newReq.quantity - 1)"
+                      class="w-8 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                      aria-label="Kurangi jumlah"
+                    >
+                      -
+                    </button>
+                    <input
+                      id="req-qty"
+                      v-model.number="newReq.quantity"
+                      type="number"
+                      min="1"
+                      max="100"
+                      required
+                      class="w-full text-center bg-transparent text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      @click="newReq.quantity = Math.min(100, newReq.quantity + 1)"
+                      class="w-8 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+                      aria-label="Tambah jumlah"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <button
+                    type="submit"
+                    :disabled="isSubmittingReq || (!newReq.boltPositionId && !newReq.customAreaName.trim()) || !newReq.boltSpecId"
+                    class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                  >
+                    {{ isSubmittingReq ? '...' : 'Simpan' }}
+                  </button>
+                </div>
+              </div>
+            </form>
 
             <EmptyState
-              v-if="filteredRequirements.length === 0"
+              v-if="groupedAreas.length === 0"
               :icon="Wrench"
-              title="Matriks baut masih kosong"
-              description="Tambahkan posisi dan ukuran baut melalui formulir di atas."
+              title="Belum ada area &amp; baut"
+              description="Aktifkan Mode Anotasi Posisi lalu ketuk bagian pada motor untuk menambah area, titik lokasi, dan bautnya sekaligus."
             />
 
-            <div v-else class="space-y-2.5">
+            <!-- Grouped Area Cards -->
+            <div v-else class="space-y-3">
               <div
-                v-for="req in filteredRequirements"
-                :key="req.id"
-                class="p-3 rounded-2xl bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-800 shadow-sm flex items-center justify-between gap-3"
+                v-for="area in groupedAreas"
+                :key="area.positionId"
+                class="p-3.5 rounded-2xl bg-white dark:bg-[#121215] border transition-colors shadow-sm space-y-2.5"
+                :class="activeAnnotation?.boltPositionId === area.positionId
+                  ? 'border-amber-500 ring-1 ring-amber-500/40'
+                  : 'border-zinc-300 dark:border-zinc-800'"
               >
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                  <div class="w-12 h-12 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-300 dark:border-zinc-700 shrink-0 flex items-center justify-center">
-                    <img
-                      v-if="req.boltSpec?.images?.length"
-                      :src="req.boltSpec.images[0].url"
-                      :alt="req.boltSpec.code"
-                      class="w-full h-full object-cover"
-                    />
-                    <Nut v-else class="w-5 h-5 text-zinc-300" aria-hidden="true" />
-                  </div>
-
+                <!-- Area Card Header -->
+                <div class="flex flex-wrap items-center justify-between gap-2">
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-1.5">
-                      <span class="font-mono text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                        {{ req.boltSpec?.code }}
-                      </span>
-                      <span class="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-[11px] font-bold text-zinc-800 dark:text-zinc-200">
-                        M{{ Number(req.boltSpec?.diameterMm) }}×{{ Number(req.boltSpec?.lengthMm) }}
-                      </span>
-                      <span class="px-2 py-0.5 rounded-md bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-mono text-[11px] font-bold">
-                        {{ req.quantity }} pcs
+                      <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                        {{ area.positionName }}
+                      </h3>
+                      <span
+                        v-if="area.totalQty > 0"
+                        class="px-2 py-0.5 rounded-md bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-mono text-[11px] font-bold shrink-0"
+                      >
+                        {{ area.totalQty }} pcs
                       </span>
                     </div>
-                    <p class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate mt-0.5">
-                      {{ req.boltPosition?.name }}
+                  </div>
 
-                    </p>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      @click="focusPositionOnMap(area.positionId)"
+                      class="min-h-[36px] px-2.5 py-1 rounded-xl border text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors"
+                      :class="area.hasAnnotation
+                        ? 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
+                        : 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100'"
+                    >
+                      <MapPin class="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>{{ area.hasAnnotation ? 'Lihat Titik' : 'Tandai di Peta' }}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      @click="openCloseupForPosition(area.positionId)"
+                      title="Kelola Foto Close-Up Area Ini"
+                      class="min-h-[36px] px-2.5 py-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <Camera class="w-3.5 h-3.5" aria-hidden="true" />
+                      <span class="hidden sm:inline">Close-Up</span>
+                    </button>
                   </div>
                 </div>
 
-                <div class="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    @click="focusPositionOnMap(req.boltPositionId)"
-                    title="Lihat / tandai di Peta 3D/2D"
-                    class="min-h-[44px] px-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1 cursor-pointer"
+                <!-- Bolts Inside This Area -->
+                <div v-if="area.requirements.length > 0" class="space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                  <div
+                    v-for="req in area.requirements"
+                    :key="req.id"
+                    class="flex items-center justify-between gap-2.5 p-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-200 dark:border-zinc-800"
                   >
-                    <MapPin class="w-3.5 h-3.5" aria-hidden="true" />
-                    <span class="hidden sm:inline">Peta</span>
-                  </button>
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-950 border border-zinc-300 dark:border-zinc-700 shrink-0 flex items-center justify-center">
+                        <img
+                          v-if="req.boltSpec?.images?.length"
+                          :src="req.boltSpec.images[0].url"
+                          :alt="req.boltSpec.code"
+                          class="w-full h-full object-cover"
+                        />
+                        <Nut v-else class="w-4 h-4 text-zinc-300" aria-hidden="true" />
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                            M{{ Number(req.boltSpec?.diameterMm) }}&times;{{ Number(req.boltSpec?.lengthMm) }}
+                          </span>
+                          <span class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-mono text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
+                            {{ req.quantity }} pcs
+                          </span>
+                        </div>
+                        <p class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
+                          {{ req.boltSpec?.code }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      v-if="auth.isAdmin"
+                      type="button"
+                      @click="confirmDeleteReq = req"
+                      :aria-label="`Hapus ${req.boltSpec?.code} dari ${area.positionName}`"
+                      class="min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15 cursor-pointer shrink-0"
+                    >
+                      <Trash2 class="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+                <p v-else class="text-[11px] text-zinc-500 dark:text-zinc-400 italic pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                  Belum ada ukuran baut di area ini.
+                </p>
+
+                <!-- Inline + Tambah Baut inside THIS Area Card -->
+                <div v-if="auth.isAdmin" class="pt-1">
+                  <form
+                    v-if="inlineAddPositionId === area.positionId"
+                    @submit.prevent="submitInlineBoltForArea(area.positionId)"
+                    class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end p-2.5 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700"
+                  >
+                    <div class="sm:col-span-6">
+                      <BoltSpecPicker
+                        v-model="inlineAddSpecId"
+                        :specs="allSpecs"
+                        :input-id="`inline-spec-${area.positionId}`"
+                        :allow-clear="false"
+                      />
+                    </div>
+                    <div class="sm:col-span-3">
+                      <div class="flex items-center rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 overflow-hidden min-h-[44px]">
+                        <button
+                          type="button"
+                          :disabled="inlineAddQty <= 1"
+                          @click="inlineAddQty = Math.max(1, inlineAddQty - 1)"
+                          class="w-7 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                          aria-label="Kurangi"
+                        >
+                          -
+                        </button>
+                        <input
+                          v-model.number="inlineAddQty"
+                          type="number"
+                          min="1"
+                          max="100"
+                          class="w-full text-center bg-transparent text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          @click="inlineAddQty = Math.min(100, inlineAddQty + 1)"
+                          class="w-7 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+                          aria-label="Tambah"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div class="sm:col-span-3 flex items-center gap-1">
+                      <button
+                        type="submit"
+                        :disabled="isSubmittingReq || !inlineAddSpecId"
+                        class="flex-1 min-h-[44px] px-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                      >
+                        Simpan
+                      </button>
+                      <button
+                        type="button"
+                        @click="inlineAddPositionId = null"
+                        class="min-h-[44px] px-2.5 rounded-xl text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  </form>
 
                   <button
+                    v-else
                     type="button"
-                    @click="openCloseupForPosition(req.boltPositionId)"
-                    title="Kelola Foto Close-Up Area Ini"
-                    class="min-h-[44px] px-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1 cursor-pointer"
+                    @click="openInlineBoltForm(area.positionId)"
+                    class="w-full min-h-[38px] px-3 py-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 dark:hover:border-zinc-500 text-xs font-semibold text-zinc-700 dark:text-zinc-300 inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <Camera class="w-3.5 h-3.5" aria-hidden="true" />
-                    <span class="hidden sm:inline">Close-Up</span>
-                  </button>
-
-                  <button
-                    v-if="auth.isAdmin"
-                    type="button"
-                    @click="confirmDeleteReq = req"
-                    :aria-label="`Hapus ${req.boltSpec?.code} dari ${req.boltPosition?.name}`"
-                    class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15 cursor-pointer"
-                  >
-                    <Trash2 class="w-4 h-4" aria-hidden="true" />
+                    <Plus class="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Tambah Baut ke Area Ini</span>
                   </button>
                 </div>
               </div>
@@ -264,7 +390,7 @@
               class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-3 flex items-center justify-between gap-2"
             >
               <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                {{ annotationMode ? 'Ketuk permukaan motor untuk menandai area posisi baut.' : 'Tandai titik area di model 3D/2D agar mekanik tahu posisinya.' }}
+                {{ annotationMode ? 'Ketuk permukaan motor untuk menandai area + menambah baut sekaligus.' : 'Ketuk Mode Anotasi lalu tap motor untuk menandai lokasi & baut.' }}
               </span>
               <button
                 type="button"
@@ -286,6 +412,7 @@
               :model="model"
               :positions="locationPositions"
               :all-positions="allPositions"
+              :all-specs="allSpecs"
               :annotations="annotations"
               :close-up-photos="closeUpPhotos"
               :bolts="consolidatedBolts"
@@ -551,17 +678,18 @@ import {
   Image as ImageIcon,
   MapPin,
   Nut,
+  Plus,
   Trash2,
   Wrench,
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
-import { SIDE_LABELS } from '../utils/boltTokens';
 import AppShell from '../components/ui/AppShell.vue';
 import SegmentedControl from '../components/ui/SegmentedControl.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
 import FilterChip from '../components/ui/FilterChip.vue';
 import AreaLabelInput from '../components/ui/AreaLabelInput.vue';
+import BoltSpecPicker from '../components/ui/BoltSpecPicker.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
@@ -592,6 +720,11 @@ const activeTab = ref('matrix');
 const matrixSearch = ref('');
 
 // Matrix add/delete
+const showQuickAddCard = ref(false);
+const inlineAddPositionId = ref(null);
+const inlineAddSpecId = ref('');
+const inlineAddQty = ref(1);
+
 const newReq = ref({
   boltPositionId: '',
   customAreaName: '',
@@ -631,17 +764,102 @@ const isUploadingMotorPhotos = ref(false);
 const confirmDeleteMotorImage = ref(null);
 const confirmToggleActive = ref(false);
 
-const sideLabel = (side) => SIDE_LABELS[side] || side || '-';
+const groupedAreas = computed(() => {
+  const byPos = new Map();
 
-const filteredRequirements = computed(() => {
+  for (const pos of locationPositions.value) {
+    byPos.set(pos.id, {
+      positionId: pos.id,
+      positionName: pos.name,
+      category: pos.category || '',
+      sortOrder: pos.sortOrder ?? 0,
+      requirements: [],
+      hasAnnotation: false,
+      totalQty: 0,
+    });
+  }
+
+  for (const req of requirements.value) {
+    const pid = req.boltPositionId;
+    if (!byPos.has(pid)) {
+      byPos.set(pid, {
+        positionId: pid,
+        positionName: req.boltPosition?.name || 'Area',
+        category: req.boltPosition?.category || '',
+        sortOrder: req.boltPosition?.sortOrder ?? 0,
+        requirements: [],
+        hasAnnotation: false,
+        totalQty: 0,
+      });
+    }
+    const g = byPos.get(pid);
+    g.requirements.push(req);
+    g.totalQty += Number(req.quantity || 0);
+  }
+
+  for (const ann of annotations.value) {
+    const pid = ann.boltPositionId;
+    if (!byPos.has(pid)) {
+      byPos.set(pid, {
+        positionId: pid,
+        positionName: ann.boltPosition?.name || ann.label || 'Area',
+        category: ann.boltPosition?.category || '',
+        sortOrder: ann.boltPosition?.sortOrder ?? 0,
+        requirements: [],
+        hasAnnotation: true,
+        totalQty: 0,
+      });
+    }
+    byPos.get(pid).hasAnnotation = true;
+  }
+
+  const all = Array.from(byPos.values()).sort(
+    (a, b) => (a.sortOrder - b.sortOrder) || a.positionName.localeCompare(b.positionName, 'id')
+  );
+
   const q = matrixSearch.value.trim().toLowerCase();
-  if (!q) return requirements.value;
-  return requirements.value.filter((r) =>
-    (r.boltSpec?.code || '').toLowerCase().includes(q)
-    || (r.boltPosition?.name || '').toLowerCase().includes(q)
-    || (r.boltPosition?.category || '').toLowerCase().includes(q)
+  if (!q) return all;
+
+  return all.filter((area) =>
+    area.positionName.toLowerCase().includes(q)
+    || area.category.toLowerCase().includes(q)
+    || area.requirements.some((r) => (r.boltSpec?.code || '').toLowerCase().includes(q))
   );
 });
+
+const openInlineBoltForm = (positionId) => {
+  inlineAddPositionId.value = positionId;
+  inlineAddSpecId.value = '';
+  inlineAddQty.value = 1;
+};
+
+const submitInlineBoltForArea = async (positionId) => {
+  if (isSubmittingReq.value || !motor.value || !inlineAddSpecId.value) return;
+  isSubmittingReq.value = true;
+  try {
+    const res = await auth.apiFetch(`/api/motorcycles/${motor.value.id}/requirements`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        boltPositionId: positionId,
+        boltSpecId: inlineAddSpecId.value,
+        quantity: inlineAddQty.value || 1,
+        side: 'NONE',
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal menambahkan baut.');
+    inlineAddPositionId.value = null;
+    inlineAddSpecId.value = '';
+    inlineAddQty.value = 1;
+    toast.success('Baut ditambahkan ke area');
+    await loadAll({ silent: true });
+  } catch (err) {
+    toast.error(err.message || 'Gagal menyimpan baut.');
+  } finally {
+    isSubmittingReq.value = false;
+  }
+};
 
 const closeupPositions = computed(() => {
   const map = new Map();
@@ -659,9 +877,11 @@ const filteredCloseups = computed(() => {
   return closeUpPhotos.value.filter((c) => c.boltPositionId === selectedCloseupPositionId.value);
 });
 
-const loadAll = async () => {
+const loadAll = async ({ silent = false } = {}) => {
   errorMsg.value = '';
-  isLoading.value = true;
+  if (!silent) {
+    isLoading.value = true;
+  }
   const motorId = route.params.motorId;
   try {
     const [resMotor, resMap, resReqs, resSpecs] = await Promise.all([
@@ -720,8 +940,9 @@ const handleAddRequirement = async () => {
       side: 'NONE',
       quantity: 1,
     };
-    toast.success('Baut ditambahkan ke matriks');
-    await loadAll();
+    showQuickAddCard.value = false;
+    toast.success('Area & baut ditambahkan ke matriks');
+    await loadAll({ silent: true });
   } catch (err) {
     toast.error(err.message || 'Gagal menyimpan baut.');
   } finally {
@@ -737,7 +958,7 @@ const executeDeleteReq = async () => {
     const res = await auth.apiFetch(`/api/requirements/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Gagal menghapus baut.');
     toast.success('Item matriks dihapus');
-    await loadAll();
+    await loadAll({ silent: true });
   } catch (err) {
     toast.error(err.message || 'Gagal menghapus item.');
   }
@@ -787,12 +1008,9 @@ const handleCreateAnnotation = async (payload) => {
     });
     const created = await res.json();
     if (!res.ok) throw new Error(created.error || 'Gagal menandai lokasi.');
-    annotations.value.push(created);
-    if (created.boltPosition && !allPositions.value.some((p) => p.id === created.boltPosition.id)) {
-      allPositions.value.push(created.boltPosition);
-    }
+    await loadAll({ silent: true });
     onSelectAnnotation(created);
-    toast.success('Titik lokasi disimpan');
+    toast.success(created.createdRequirement ? 'Area, titik lokasi & baut disimpan' : 'Titik lokasi disimpan');
   } catch (err) {
     toast.error(err.message || 'Gagal menyimpan titik lokasi.');
   } finally {

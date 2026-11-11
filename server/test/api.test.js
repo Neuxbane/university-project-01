@@ -418,7 +418,9 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(badFk.status, 400);
 
-    // Admin creates 3D annotation via POST /api/position-annotations
+    // Admin creates 3D annotation + bolt requirement atomically in one unified POST
+    const specId = mapRes.data.bolts[0]?.boltSpecId;
+    assert.ok(specId);
     const created = await apiRequest('/api/position-annotations', {
       method: 'POST',
       token: adminToken,
@@ -433,12 +435,23 @@ describe('Hex Titanium Bolt System API Tests', () => {
         normalY: 0,
         normalZ: -1,
         label: 'Titik Test Admin',
+        boltSpecId: specId,
+        quantity: 3,
       },
     });
     assert.equal(created.status, 201);
     assert.equal(created.data.x, 0.42);
     assert.equal(created.data.y, 0.29);
     assert.equal(created.data.z, -0.19);
+    assert.ok(created.data.createdRequirement);
+    assert.equal(created.data.createdRequirement.quantity, 3);
+
+    // Clean up unified created requirement after verification
+    const reqDel = await apiRequest(`/api/requirements/${created.data.createdRequirement.id}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(reqDel.status, 200);
 
     // Assert GET /api/motorcycles/:id/location-map returns the newly saved annotation
     const afterCreateMap = await apiRequest(`/api/motorcycles/${nmax.id}/location-map`, { token: staffToken });

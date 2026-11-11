@@ -18,41 +18,90 @@
         </button>
       </div>
 
-      <form @submit.prevent="submitCreate" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-        <div class="sm:col-span-6">
-          <AreaLabelInput
-            input-id="anno3d-pos-select"
-            label="Area / Posisi Baut"
-            v-model:position-id="draftPositionId"
-            v-model:custom-name="draftCustomName"
-            v-model:custom-category="draftCustomCategory"
-            :motor-positions="positions"
-            :all-positions="allPositions"
-            :required="true"
-          />
+      <form @submit.prevent="submitCreate" class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+          <div class="sm:col-span-7">
+            <AreaLabelInput
+              input-id="anno3d-pos-select"
+              label="Area / Posisi Motor"
+              v-model:position-id="draftPositionId"
+              v-model:custom-name="draftCustomName"
+              v-model:custom-category="draftCustomCategory"
+              :motor-positions="positions"
+              :all-positions="allPositions"
+              :required="true"
+            />
+          </div>
+
+          <div class="sm:col-span-5">
+            <label for="anno3d-label-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+              Label Pin Singkat (Opsional)
+            </label>
+            <input
+              id="anno3d-label-input"
+              v-model="draftLabel"
+              type="text"
+              placeholder="Misal: Cover CVT Kiri"
+              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
+            />
+          </div>
         </div>
 
-        <div class="sm:col-span-4">
-          <label for="anno3d-label-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-            Label Khusus Titik (Opsional)
-          </label>
-          <input
-            id="anno3d-label-input"
-            v-model="draftLabel"
-            type="text"
-            placeholder="Misal: Cover CVT Kiri"
-            class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 text-sm text-zinc-900 dark:text-zinc-100"
-          />
-        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+          <div v-if="allSpecs.length > 0" class="sm:col-span-7">
+            <BoltSpecPicker
+              v-model="draftBoltSpecId"
+              :specs="allSpecs"
+              input-id="anno3d-spec-picker"
+              label="Sekaligus Tambah Baut di Titik Ini (Opsional)"
+              placeholder="-- Pilih Baut jika sekalian tambah --"
+            />
+          </div>
 
-        <div class="sm:col-span-2 flex items-end">
-          <button
-            type="submit"
-            :disabled="isSaving || (!draftPositionId && !draftCustomName.trim())"
-            class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
-          >
-            {{ isSaving ? '...' : 'Simpan' }}
-          </button>
+          <div v-if="allSpecs.length > 0" class="sm:col-span-3">
+            <label for="anno3d-qty-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+              Jumlah
+            </label>
+            <div class="flex items-center rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 overflow-hidden min-h-[44px]" :class="!draftBoltSpecId ? 'opacity-50' : ''">
+              <button
+                type="button"
+                :disabled="!draftBoltSpecId || draftQty <= 1"
+                @click="draftQty = Math.max(1, draftQty - 1)"
+                class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                aria-label="Kurangi jumlah"
+              >
+                -
+              </button>
+              <input
+                id="anno3d-qty-input"
+                v-model.number="draftQty"
+                :disabled="!draftBoltSpecId"
+                type="number"
+                min="1"
+                max="100"
+                class="w-full text-center bg-transparent text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none"
+              />
+              <button
+                type="button"
+                :disabled="!draftBoltSpecId"
+                @click="draftQty = Math.min(100, draftQty + 1)"
+                class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                aria-label="Tambah jumlah"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div :class="allSpecs.length > 0 ? 'sm:col-span-2' : 'sm:col-span-12 flex justify-end'">
+            <button
+              type="submit"
+              :disabled="isSaving || (!draftPositionId && !draftCustomName.trim())"
+              class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+            >
+              {{ isSaving ? '...' : (draftBoltSpecId ? 'Simpan Titik & Baut' : 'Simpan Titik') }}
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -191,10 +240,12 @@ import { ref, watch } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import AreaLabelInput from '../ui/AreaLabelInput.vue';
+import BoltSpecPicker from '../ui/BoltSpecPicker.vue';
 
 const props = defineProps({
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
+  allSpecs: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
   activeAnnotationId: { type: Number, default: null },
   draftPoint: { type: Object, default: null },
@@ -216,6 +267,8 @@ const draftPositionId = ref('');
 const draftCustomName = ref('');
 const draftCustomCategory = ref('');
 const draftLabel = ref('');
+const draftBoltSpecId = ref('');
+const draftQty = ref(1);
 const editingId = ref(null);
 const editForm = ref({ boltPositionId: '', customName: '', customCategory: '', label: '' });
 const confirmDeleteTarget = ref(null);
@@ -243,11 +296,14 @@ const submitCreate = () => {
     normalY: props.draftPoint.normalY,
     normalZ: props.draftPoint.normalZ,
     label: draftLabel.value.trim() || null,
+    ...(draftBoltSpecId.value ? { boltSpecId: draftBoltSpecId.value, quantity: draftQty.value || 1 } : {}),
   });
   draftPositionId.value = '';
   draftCustomName.value = '';
   draftCustomCategory.value = '';
   draftLabel.value = '';
+  draftBoltSpecId.value = '';
+  draftQty.value = 1;
 };
 
 const startEdit = (ann) => {

@@ -22,6 +22,8 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       normalY = 0,
       normalZ = 1,
       label,
+      boltSpecId,
+      quantity,
     } = req.body;
 
     if ((!boltPositionId && !customAreaName) || !motorcycleTypeId || x === undefined || y === undefined) {
@@ -30,15 +32,27 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 
     const motorId = parseInt(motorcycleTypeId, 10);
     const parsedModelId = modelId ? parseInt(modelId, 10) : null;
+    const parsedSpecId = boltSpecId !== undefined && boltSpecId !== null && boltSpecId !== ''
+      ? parseInt(boltSpecId, 10)
+      : null;
+    const parsedQty = quantity !== undefined && quantity !== null && quantity !== ''
+      ? parseInt(quantity, 10)
+      : 1;
 
     if (!Number.isInteger(motorId)) {
       return res.status(400).json({ error: 'ID tipe motor harus berupa angka.' });
     }
+    if (parsedSpecId !== null && (!Number.isInteger(parsedSpecId) || !Number.isInteger(parsedQty) || parsedQty <= 0)) {
+      return res.status(400).json({ error: 'Spesifikasi baut dan jumlah (> 0) harus valid.' });
+    }
 
-    const [motorExists, modelExists] = await Promise.all([
+    const [motorExists, modelExists, specExists] = await Promise.all([
       prisma.motorcycleType.findUnique({ where: { id: motorId }, select: { id: true } }),
       parsedModelId
         ? prisma.motorcycleModel.findUnique({ where: { id: parsedModelId }, select: { id: true } })
+        : Promise.resolve(true),
+      parsedSpecId
+        ? prisma.boltSpec.findUnique({ where: { id: parsedSpecId }, select: { id: true } })
         : Promise.resolve(true),
     ]);
 
@@ -47,6 +61,9 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
     }
     if (parsedModelId && !modelExists) {
       return res.status(400).json({ error: 'Model 3D yang dipilih tidak ditemukan.' });
+    }
+    if (parsedSpecId && !specExists) {
+      return res.status(400).json({ error: 'Spesifikasi baut yang dipilih tidak ditemukan.' });
     }
 
     let positionExists;
@@ -79,6 +96,40 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       },
     });
 
+    // Optionally attach bolt requirement in the same unified step
+    let createdRequirement = null;
+    if (parsedSpecId !== null) {
+      const existingReq = await prisma.motorBoltRequirement.findFirst({
+        where: {
+          motorcycleTypeId: motorId,
+          boltPositionId: positionExists.id,
+          boltSpecId: parsedSpecId,
+          side: 'NONE',
+        },
+        include: {
+          boltPosition: true,
+          boltSpec: { include: { images: { orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }] } } },
+        },
+      });
+      if (existingReq) {
+        createdRequirement = existingReq;
+      } else {
+        createdRequirement = await prisma.motorBoltRequirement.create({
+          data: {
+            motorcycleTypeId: motorId,
+            boltPositionId: positionExists.id,
+            boltSpecId: parsedSpecId,
+            quantity: parsedQty,
+            side: 'NONE',
+          },
+          include: {
+            boltPosition: true,
+            boltSpec: { include: { images: { orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }] } } },
+          },
+        });
+      }
+    }
+
     await logAudit({
       userId: req.user.id,
       action: 'CREATE',
@@ -87,7 +138,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       detail: `Menandai lokasi ${created.boltPosition?.name || created.boltPositionId} pada motor ID ${created.motorcycleTypeId}`,
     });
 
-    res.status(201).json(created);
+    res.status(201).json({ ...created, ...(createdRequirement ? { createdRequirement } : {}) });
   } catch (error) {
     console.error('Error creating position annotation:', error);
     res.status(500).json({ error: 'Gagal menyimpan titik lokasi baut.' });

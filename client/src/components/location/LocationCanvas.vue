@@ -200,48 +200,106 @@
           </button>
         </div>
 
-        <form @submit.prevent="submitDraft" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-          <div class="sm:col-span-6">
-            <AreaLabelInput
-              input-id="annotation-position-select"
-              label="Area / Posisi Baut"
-              v-model:position-id="draftPositionId"
-              v-model:custom-name="draftCustomName"
-              v-model:custom-category="draftCustomCategory"
-              :motor-positions="positions"
-              :all-positions="allPositions"
-              :required="true"
-            />
+        <form @submit.prevent="submitDraft" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <div class="sm:col-span-7">
+              <AreaLabelInput
+                input-id="annotation-position-select"
+                label="Area / Posisi Motor"
+                v-model:position-id="draftPositionId"
+                v-model:custom-name="draftCustomName"
+                v-model:custom-category="draftCustomCategory"
+                :motor-positions="positions"
+                :all-positions="allPositions"
+                :required="true"
+              />
+            </div>
+
+            <div class="sm:col-span-5">
+              <label for="annotation-label-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+                Label Singkat (Opsional)
+              </label>
+              <input
+                id="annotation-label-input"
+                v-model="draftLabel"
+                type="text"
+                placeholder="Misal: Bak CVT Kiri"
+                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
+              />
+            </div>
           </div>
 
-          <div class="sm:col-span-4">
-            <label for="annotation-label-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Label Singkat (Opsional)
-            </label>
-            <input
-              id="annotation-label-input"
-              v-model="draftLabel"
-              type="text"
-              placeholder="Misal: Bak CVT Kiri"
-              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 text-sm text-zinc-900 dark:text-zinc-100"
-            />
-          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+            <div v-if="allSpecs.length > 0" class="sm:col-span-7">
+              <BoltSpecPicker
+                v-model="draftBoltSpecId"
+                :specs="allSpecs"
+                input-id="anno2d-spec-picker"
+                label="Sekaligus Tambah Baut di Titik Ini (Opsional)"
+                placeholder="-- Pilih Baut jika sekalian tambah --"
+              />
+            </div>
 
-          <div class="sm:col-span-2 flex items-end">
-            <button
-              type="submit"
-              :disabled="isSavingAnnotation || (!draftPositionId && !draftCustomName.trim())"
-              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
-            >
-              {{ isSavingAnnotation ? '...' : 'Simpan' }}
-            </button>
+            <div v-if="allSpecs.length > 0" class="sm:col-span-3">
+              <label for="anno2d-qty-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+                Jumlah
+              </label>
+              <div class="flex items-center rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 overflow-hidden min-h-[44px]" :class="!draftBoltSpecId ? 'opacity-50' : ''">
+                <button
+                  type="button"
+                  :disabled="!draftBoltSpecId || draftQty <= 1"
+                  @click="draftQty = Math.max(1, draftQty - 1)"
+                  class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                  aria-label="Kurangi jumlah"
+                >
+                  -
+                </button>
+                <input
+                  id="anno2d-qty-input"
+                  v-model.number="draftQty"
+                  :disabled="!draftBoltSpecId"
+                  type="number"
+                  min="1"
+                  max="100"
+                  class="w-full text-center bg-transparent text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  :disabled="!draftBoltSpecId"
+                  @click="draftQty = Math.min(100, draftQty + 1)"
+                  class="w-9 h-[42px] inline-flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer"
+                  aria-label="Tambah jumlah"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div :class="allSpecs.length > 0 ? 'sm:col-span-2' : 'sm:col-span-12 flex justify-end'">
+              <button
+                type="submit"
+                :disabled="isSavingAnnotation || (!draftPositionId && !draftCustomName.trim())"
+                class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+              >
+                {{ isSavingAnnotation ? '...' : (draftBoltSpecId ? 'Simpan Titik & Baut' : 'Simpan Titik') }}
+              </button>
+            </div>
           </div>
         </form>
       </div>
 
-      <p v-else class="text-xs text-zinc-600 dark:text-zinc-400">
-        Ketuk titik mana saja pada foto motor di atas untuk menempatkan penanda lokasi baru.
-      </p>
+      <div v-else class="flex flex-wrap items-center justify-between gap-2">
+        <p class="text-xs text-zinc-600 dark:text-zinc-400">
+          Ketuk titik mana saja pada foto motor di atas untuk menempatkan penanda lokasi baru.
+        </p>
+        <button
+          type="button"
+          @click="$emit('disable-annotation')"
+          class="min-h-[36px] px-3 py-1.5 rounded-lg border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-[#121215] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer shrink-0"
+        >
+          Selesai Tandai
+        </button>
+      </div>
 
       <!-- Existing Annotations List (with delete) -->
       <div v-if="annotations2D.length > 0" class="space-y-2">
@@ -309,11 +367,13 @@ import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import AreaLabelInput from '../ui/AreaLabelInput.vue';
+import BoltSpecPicker from '../ui/BoltSpecPicker.vue';
 
 const props = defineProps({
   motorcycle: { type: Object, default: null },
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
+  allSpecs: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
   closeUpPhotos: { type: Array, default: () => [] },
   bolts: { type: Array, default: () => [] },
@@ -336,6 +396,7 @@ const emit = defineEmits([
   'create-annotation',
   'delete-annotation',
   'enable-annotation',
+  'disable-annotation',
 ]);
 
 function getCheckStatus(ann) {
@@ -350,6 +411,8 @@ const draftPositionId = ref('');
 const draftCustomName = ref('');
 const draftCustomCategory = ref('');
 const draftLabel = ref('');
+const draftBoltSpecId = ref('');
+const draftQty = ref(1);
 const confirmDeleteTarget = ref(null);
 const autoShowCallouts = ref(true);
 const stageSize = ref({ width: 600, height: 400 });
@@ -498,12 +561,15 @@ const submitDraft = () => {
     x: draftPoint.value.x,
     y: draftPoint.value.y,
     label: draftLabel.value.trim() || null,
+    ...(draftBoltSpecId.value ? { boltSpecId: draftBoltSpecId.value, quantity: draftQty.value || 1 } : {}),
   });
   draftPoint.value = null;
   draftPositionId.value = '';
   draftCustomName.value = '';
   draftCustomCategory.value = '';
   draftLabel.value = '';
+  draftBoltSpecId.value = '';
+  draftQty.value = 1;
 };
 
 const executeDelete = () => {

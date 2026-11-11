@@ -5,6 +5,7 @@
     :motorcycle="motorcycle"
     :positions="positions"
     :all-positions="allPositions"
+    :all-specs="allSpecs"
     :annotations="annotations"
     :close-up-photos="closeUpPhotos"
     :bolts="bolts"
@@ -25,6 +26,7 @@
     @update-annotation="$emit('update-annotation', $event)"
     @delete-annotation="$emit('delete-annotation', $event)"
     @enable-annotation="$emit('enable-annotation')"
+    @disable-annotation="$emit('disable-annotation')"
   />
 
   <!-- Interactive Three.js 3D Viewer -->
@@ -314,6 +316,7 @@
       v-if="annotationMode && canAnnotate"
       :positions="positions"
       :all-positions="allPositions"
+      :all-specs="allSpecs"
       :annotations="annotations3D"
       :active-annotation-id="activeAnnotation?.id || null"
       :draft-point="draftPoint"
@@ -360,6 +363,7 @@ const props = defineProps({
   model: { type: Object, default: null },
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
+  allSpecs: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
   closeUpPhotos: { type: Array, default: () => [] },
   bolts: { type: Array, default: () => [] },
