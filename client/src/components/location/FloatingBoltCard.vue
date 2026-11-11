@@ -1,14 +1,14 @@
 <template>
   <div
-    class="pointer-events-auto w-[176px] sm:w-[212px] bg-white/95 dark:bg-[#121215]/95 backdrop-blur-md rounded-2xl border border-zinc-300 dark:border-zinc-700 shadow-2xl overflow-hidden transition-all duration-150 flex flex-col"
+    class="pointer-events-auto w-[184px] sm:w-[216px] bg-white/95 dark:bg-[#121215]/95 backdrop-blur-md rounded-2xl border border-zinc-300 dark:border-zinc-700 shadow-2xl overflow-hidden transition-all duration-150 flex flex-col"
     role="region"
     :aria-label="`Detail titik ${positionName}`"
   >
     <!-- Rarity / Size Accent Band -->
     <div class="h-1 w-full shrink-0" :class="tier.band" aria-hidden="true"></div>
 
-    <!-- 80% Image Stage -->
-    <div class="relative w-full h-[132px] sm:h-[168px] bg-zinc-950 overflow-hidden flex items-center justify-center shrink-0">
+    <!-- ~80% Image Stage -->
+    <div class="relative w-full h-[132px] sm:h-[164px] bg-zinc-950 overflow-hidden flex items-center justify-center shrink-0">
       <img
         v-if="boltImage"
         :src="boltImage"
@@ -54,29 +54,47 @@
       </div>
     </div>
 
-    <!-- ~20% Compact Footer Label -->
-    <div class="px-2.5 py-2 bg-white dark:bg-[#121215] border-t border-zinc-200 dark:border-zinc-800">
-      <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate leading-tight">
-        {{ positionName }}
-      </p>
-      <p class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight">
-        {{ bolt.code }}
-      </p>
+    <!-- ~20% Compact Footer Label (+ Checklist Action in PickSession) -->
+    <div class="px-2.5 py-2 bg-white dark:bg-[#121215] border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+      <div>
+        <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate leading-tight">
+          {{ positionName }}
+        </p>
+        <p class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight">
+          {{ bolt.code }}
+        </p>
+      </div>
+
+      <button
+        v-if="checkStatus"
+        type="button"
+        @click.stop="$emit('toggle-check')"
+        :disabled="isTogglingCheck"
+        class="w-full min-h-[44px] px-2.5 py-1.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+        :class="checkStatus === 'done'
+          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+          : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900'"
+      >
+        <Check class="w-3.5 h-3.5 stroke-[2.5]" aria-hidden="true" />
+        <span>{{ checkStatus === 'done' ? 'Sudah Diambil' : 'Tandai Diambil' }}</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import { Nut, X } from 'lucide-vue-next';
+import { Check, Nut, X } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';
 
 const props = defineProps({
   bolt: { type: Object, required: true },
   positionName: { type: String, default: 'Titik Pasang' },
+  checkStatus: { type: String, default: null }, // 'done' | 'partial' | 'pending' | null
+  isTogglingCheck: { type: Boolean, default: false },
 });
 
-defineEmits(['close']);
+defineEmits(['close', 'toggle-check']);
 
 const tier = computed(() => getDiameterTier(props.bolt.diameterMm));
 const boltImage = computed(() => props.bolt.images?.[0]?.url || props.bolt.boltSpec?.images?.[0]?.url || null);

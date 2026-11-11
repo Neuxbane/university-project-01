@@ -22,13 +22,15 @@
       class="relative w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center font-mono text-[10px] font-bold transition-colors"
       :class="dotClasses"
     >
-      {{ indexNumber }}
+      <Check v-if="checkStatus === 'done'" class="w-3.5 h-3.5 stroke-[3]" aria-hidden="true" />
+      <template v-else>{{ indexNumber }}</template>
     </span>
   </button>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import { Check } from 'lucide-vue-next';
 
 const props = defineProps({
   x: { type: Number, required: true },
@@ -37,6 +39,7 @@ const props = defineProps({
   label: { type: String, default: 'Titik Baut' },
   active: { type: Boolean, default: false },
   draft: { type: Boolean, default: false },
+  checkStatus: { type: String, default: null },
 });
 
 defineEmits(['select']);
@@ -49,6 +52,12 @@ const dotClasses = computed(() => {
   }
   if (props.active) {
     return 'bg-amber-500 border-white text-zinc-950 ring-2 ring-amber-300';
+  }
+  if (props.checkStatus === 'done') {
+    return 'bg-emerald-600 border-white text-white';
+  }
+  if (props.checkStatus === 'partial') {
+    return 'bg-amber-500 border-white text-zinc-950';
   }
   return 'bg-zinc-900/95 border-white text-white hover:bg-zinc-800';
 });

@@ -8,6 +8,8 @@
     :annotations="annotations"
     :bolts="bolts"
     :position-breakdown="positionBreakdown"
+    :session-items="sessionItems"
+    :is-toggling-check="isTogglingCheck"
     :active-annotation="activeAnnotation"
     :selected-bolt="selectedBolt"
     :annotation-mode="annotationMode"
@@ -16,6 +18,7 @@
     :is-deleting-annotation="isDeletingAnnotation"
     @select-annotation="$emit('select-annotation', $event)"
     @clear-selection="$emit('clear-selection')"
+    @toggle-check="$emit('toggle-check', $event)"
     @create-annotation="$emit('create-annotation', $event)"
     @update-annotation="$emit('update-annotation', $event)"
     @delete-annotation="$emit('delete-annotation', $event)"
@@ -107,13 +110,6 @@
         </button>
       </div>
 
-      <!-- Bottom-Left Gesture Hint -->
-      <div class="absolute bottom-3 left-3 z-20 pointer-events-none hidden sm:block">
-        <span class="px-2.5 py-1 rounded-lg bg-black/70 text-zinc-100 text-[11px] font-mono backdrop-blur-sm">
-          Geser: putar &bull; Gulir/Cubit: zoom
-        </span>
-      </div>
-
       <!-- Auto-Show Leader Lines + Compact Bolt Callouts for all visible non-occluded points -->
       <template v-if="autoCallouts.length > 0">
         <LeaderLine
@@ -143,6 +139,7 @@
             :quantity="c.resolved.quantity"
             :extra-specs-count="c.resolved.extraSpecsCount"
             :position-name="c.resolved.positionName"
+            :check-status="getCheckStatus(c.annotation)"
             @select="onHotspotClick(c.annotation)"
           />
         </div>
@@ -171,16 +168,19 @@
         >
           <span
             class="absolute w-7 h-7 rounded-full pointer-events-none"
-            :class="activeAnnotation?.id === proj.annotation.id ? 'bg-amber-400/50 motion-safe:animate-ping' : 'bg-white/35 motion-safe:animate-pulse'"
+            :class="activeAnnotation?.id === proj.annotation.id
+              ? 'bg-amber-400/50 motion-safe:animate-ping'
+              : getCheckStatus(proj.annotation) === 'done'
+                ? 'bg-emerald-400/35'
+                : 'bg-white/35 motion-safe:animate-pulse'"
             aria-hidden="true"
           ></span>
           <span
             class="relative w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center font-mono text-[10px] font-bold"
-            :class="activeAnnotation?.id === proj.annotation.id
-              ? 'bg-amber-500 border-white text-zinc-950 ring-2 ring-amber-300'
-              : 'bg-zinc-900/95 border-white text-white'"
+            :class="hotspotDotClass(proj.annotation)"
           >
-            {{ proj.index }}
+            <Check v-if="getCheckStatus(proj.annotation) === 'done' && activeAnnotation?.id !== proj.annotation.id" class="w-3.5 h-3.5 stroke-[3]" aria-hidden="true" />
+            <template v-else>{{ proj.index }}</template>
           </span>
         </button>
       </template>
@@ -207,10 +207,28 @@
         <FloatingBoltCard
           :bolt="selectedBolt"
           :position-name="activeAnnotation?.label || activeAnnotation?.boltPosition?.name || 'Titik Pasang'"
+          :check-status="getCheckStatus(activeAnnotation)"
+          :is-toggling-check="isTogglingCheck"
           @close="$emit('clear-selection')"
+          @toggle-check="$emit('toggle-check', activeAnnotation)"
         />
       </div>
 
+    </div>
+
+    <!-- Clean Gesture & Checklist Status Strip (outside canvas so it never collides with cards) -->
+    <div class="px-4 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/90 dark:bg-[#18181c] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
+      <span>Geser: putar 360&deg; &bull; Gulir/Cubit: zoom</span>
+      <div v-if="Array.isArray(sessionItems)" class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-600 inline-block" aria-hidden="true"></span>
+          <span>Belum</span>
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" aria-hidden="true"></span>
+          <span>Sudah</span>
+        </span>
+      </div>
     </div>
 
     <!-- Compact Empty 3D Annotations Bar (below 3D viewport so model stays unobstructed) -->
@@ -255,9 +273,13 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Box, Eye, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-next';
+import { Box, Check, Eye, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-next';
 import { useTheme } from '../../composables/useTheme';
-import { resolveBoltForAnnotation, layoutVisibleCallouts } from '../../utils/annotationCallouts';
+import {
+  resolveBoltForAnnotation,
+  resolveChecklistStatus,
+  layoutVisibleCallouts,
+} from '../../utils/annotationCallouts';
 import LocationCanvas from './LocationCanvas.vue';
 import FloatingBoltCard from './FloatingBoltCard.vue';
 import AutoCalloutCard from './AutoCalloutCard.vue';
@@ -272,6 +294,8 @@ const props = defineProps({
   annotations: { type: Array, default: () => [] },
   bolts: { type: Array, default: () => [] },
   positionBreakdown: { type: Array, default: () => [] },
+  sessionItems: { type: Array, default: null },
+  isTogglingCheck: { type: Boolean, default: false },
   activeAnnotation: { type: Object, default: null },
   selectedBolt: { type: Object, default: null },
   annotationMode: { type: Boolean, default: false },
@@ -283,6 +307,7 @@ const props = defineProps({
 const emit = defineEmits([
   'select-annotation',
   'clear-selection',
+  'toggle-check',
   'create-annotation',
   'update-annotation',
   'delete-annotation',
@@ -329,6 +354,21 @@ const autoCallouts = computed(() => {
 
   return layoutVisibleCallouts(visible, stageSize.value.width, stageSize.value.height);
 });
+
+function getCheckStatus(ann) {
+  if (!Array.isArray(props.sessionItems) || !ann) return null;
+  return resolveChecklistStatus(ann, props.sessionItems, props.bolts, props.positionBreakdown).status;
+}
+
+function hotspotDotClass(ann) {
+  if (props.activeAnnotation?.id === ann.id) {
+    return 'bg-amber-500 border-white text-zinc-950 ring-2 ring-amber-300';
+  }
+  const st = getCheckStatus(ann);
+  if (st === 'done') return 'bg-emerald-600 border-white text-white';
+  if (st === 'partial') return 'bg-amber-500 border-white text-zinc-950';
+  return 'bg-zinc-900/95 border-white text-white';
+}
 
 const activeProjected = computed(() => {
   if (!props.activeAnnotation) return null;
@@ -387,8 +427,16 @@ function rebuildHotspotSpheres() {
   const radius = Math.max(0.015, modelMaxDim * 0.015);
   annotations3D.value.forEach((ann, idx) => {
     const geom = new THREE.SphereGeometry(radius, 12, 12);
+    const st = getCheckStatus(ann);
+    const sphereColor = props.activeAnnotation?.id === ann.id
+      ? 0xf59e0b
+      : st === 'done'
+        ? 0x10b981
+        : st === 'partial'
+          ? 0xf59e0b
+          : 0xffffff;
     const mat = new THREE.MeshBasicMaterial({
-      color: props.activeAnnotation?.id === ann.id ? 0xf59e0b : 0xffffff,
+      color: sphereColor,
       transparent: true,
       opacity: 0.9,
     });
@@ -862,11 +910,23 @@ watch(
 watch(annotations3D, rebuildHotspotSpheres, { deep: true });
 
 watch(
+  [() => props.activeAnnotation, () => props.sessionItems],
+  ([ann]) => {
+    for (const h of hotspotSpheres) {
+      if (ann?.id === h.annotation.id) {
+        h.mesh.material.color.setHex(0xf59e0b);
+      } else {
+        const st = getCheckStatus(h.annotation);
+        h.mesh.material.color.setHex(st === 'done' ? 0x10b981 : st === 'partial' ? 0xf59e0b : 0xffffff);
+      }
+    }
+  },
+  { deep: true }
+);
+
+watch(
   () => props.activeAnnotation,
   (ann) => {
-    for (const h of hotspotSpheres) {
-      h.mesh.material.color.setHex(ann?.id === h.annotation.id ? 0xf59e0b : 0xffffff);
-    }
     if (ann && has3DModel.value && !loadFailed.value) {
       focusCameraOnAnnotation(ann);
     }

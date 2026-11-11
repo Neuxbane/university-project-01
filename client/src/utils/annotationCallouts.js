@@ -1,6 +1,6 @@
 /**
- * Shared helpers to resolve bolt details for 2D/3D annotations and lay out
- * non-overlapping auto-callout mini-cards around visible motorcycle points.
+ * Shared helpers to resolve bolt details & checklist status for 2D/3D annotations
+ * and lay out non-overlapping auto-callout mini-cards around visible points.
  */
 
 export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdown = []) {
@@ -9,7 +9,6 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
   const posId = annotation.boltPositionId;
   const posName = (annotation.boltPosition?.name || '').toLowerCase();
 
-  // Prefer position-specific breakdown rows so quantity reflects this exact location
   const matchingRows = (positionBreakdown || []).filter((row) => {
     if (posId && row.positionId === posId) return true;
     return posName && (row.positionName || '').toLowerCase() === posName;
@@ -40,6 +39,7 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
     if (bolt) {
       return {
         bolt,
+        specIds: Array.from(distinctSpecs),
         quantity: totalPosQty,
         extraSpecsCount: Math.max(0, distinctSpecs.size - 1),
         positionName: annotation.label || annotation.boltPosition?.name || primaryRow.positionName || 'Titik Pasang',
@@ -47,21 +47,67 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
     }
   }
 
-  // Fallback to consolidated bolts matched by positionIds or position name
-  const matchBolt = (bolts || []).find(
+  const matchingBolts = (bolts || []).filter(
     (b) => Array.isArray(b.positionIds) && posId && b.positionIds.includes(posId)
-  ) || (bolts || []).find(
+  );
+  const matchBolt = matchingBolts[0] || (bolts || []).find(
     (b) => posName && (b.positionsSummary || '').toLowerCase().includes(posName)
   );
 
   if (!matchBolt) return null;
 
+  const specIds = matchingBolts.length > 0
+    ? matchingBolts.map((b) => b.boltSpecId).filter(Boolean)
+    : [matchBolt.boltSpecId].filter(Boolean);
+
   return {
     bolt: matchBolt,
+    specIds,
     quantity: matchBolt.totalQuantity ?? matchBolt.quantity ?? 0,
-    extraSpecsCount: 0,
+    extraSpecsCount: Math.max(0, specIds.length - 1),
     positionName: annotation.label || annotation.boltPosition?.name || 'Titik Pasang',
   };
+}
+
+/**
+ * Resolves live checklist completion status ('done' | 'partial' | 'pending' | null)
+ * for a given annotation based on PickSession items.
+ */
+export function resolveChecklistStatus(annotation, sessionItems = null, bolts = [], positionBreakdown = []) {
+  if (!Array.isArray(sessionItems) || sessionItems.length === 0 || !annotation) {
+    return { status: null, matchingItems: [], checkedCount: 0, totalCount: 0 };
+  }
+
+  const resolved = resolveBoltForAnnotation(annotation, bolts, positionBreakdown);
+  let matchingItems = [];
+
+  if (resolved?.specIds?.length > 0) {
+    const specSet = new Set(resolved.specIds);
+    matchingItems = sessionItems.filter((it) => specSet.has(it.boltSpecId));
+  }
+
+  if (matchingItems.length === 0) {
+    const posName = (annotation.boltPosition?.name || '').toLowerCase();
+    if (posName) {
+      matchingItems = sessionItems.filter((it) =>
+        (it.positionSummary || '').toLowerCase().includes(posName)
+      );
+    }
+  }
+
+  if (matchingItems.length === 0) {
+    return { status: null, matchingItems: [], checkedCount: 0, totalCount: 0 };
+  }
+
+  const checkedCount = matchingItems.filter((it) => it.checked).length;
+  const totalCount = matchingItems.length;
+  const status = checkedCount === totalCount
+    ? 'done'
+    : checkedCount > 0
+      ? 'partial'
+      : 'pending';
+
+  return { status, matchingItems, checkedCount, totalCount };
 }
 
 function solveVerticalColumn(items, cardH, gap, minY, maxY) {
@@ -69,7 +115,6 @@ function solveVerticalColumn(items, cardH, gap, minY, maxY) {
   const available = Math.max(cardH, maxY - minY);
   const maxFit = Math.max(1, Math.floor((available + gap) / (cardH + gap)));
 
-  // If more points than fit cleanly vertically on this side, pick evenly spaced points by Y
   let chosen = [...items].sort((a, b) => a.screenY - b.screenY);
   if (chosen.length > maxFit) {
     const picked = [];
@@ -88,7 +133,6 @@ function solveVerticalColumn(items, cardH, gap, minY, maxY) {
     };
   });
 
-  // Forward pass: push overlapping cards down
   for (let i = 1; i < placed.length; i++) {
     const minTop = placed[i - 1].y + cardH + gap;
     if (placed[i].y < minTop) {
@@ -96,7 +140,6 @@ function solveVerticalColumn(items, cardH, gap, minY, maxY) {
     }
   }
 
-  // Backward pass: clamp bottom and push upward if needed
   const lastIdx = placed.length - 1;
   if (placed[lastIdx].y + cardH > maxY) {
     placed[lastIdx].y = Math.max(minY, maxY - cardH);
@@ -113,17 +156,15 @@ function solveVerticalColumn(items, cardH, gap, minY, maxY) {
 
 /**
  * Computes non-overlapping left/right perimeter callout slots + SVG leader line coordinates.
- * @param {Array} visibleEntries - [{ annotation, index, screenX, screenY, resolved }]
- * @param {number} stageW
- * @param {number} stageH
  */
 export function layoutVisibleCallouts(visibleEntries, stageW, stageH) {
   if (!visibleEntries?.length || !stageW || !stageH) return [];
 
-  const isCompact = stageW < 520;
-  const cardW = isCompact ? 92 : 114;
-  const cardH = isCompact ? 80 : 102;
-  const padX = isCompact ? 8 : 12;
+  const isCompact = stageW < 500;
+  const isWide = stageW >= 900;
+  const cardW = isCompact ? 92 : isWide ? 132 : 112;
+  const cardH = isCompact ? 80 : isWide ? 114 : 100;
+  const padX = isCompact ? 8 : isWide ? 18 : 12;
   const gap = isCompact ? 6 : 8;
 
   const midX = stageW * 0.5;
@@ -136,10 +177,10 @@ export function layoutVisibleCallouts(visibleEntries, stageW, stageH) {
     else rightItems.push(entry);
   }
 
-  const leftMinY = 10;
-  const leftMaxY = Math.max(leftMinY + cardH, stageH - (stageW >= 640 ? 40 : 10));
+  const leftMinY = 12;
+  const leftMaxY = Math.max(leftMinY + cardH, stageH - 12);
   const rightMinY = 62; // keep clear of top-right Reset & Fullscreen buttons
-  const rightMaxY = Math.max(rightMinY + cardH, stageH - 10);
+  const rightMaxY = Math.max(rightMinY + cardH, stageH - 12);
 
   const placedLeft = solveVerticalColumn(leftItems, cardH, gap, leftMinY, leftMaxY).map((item) => ({
     ...item,

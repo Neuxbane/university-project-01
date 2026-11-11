@@ -147,130 +147,185 @@
         </div>
       </div>
 
-      <!-- Filters -->
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 no-print">
+      <!-- Mobile Tab Switcher: Checklist vs Model 3D -->
+      <div class="lg:hidden no-print">
         <SegmentedControl
-          v-model="filterMode"
+          v-model="mobileViewTab"
           :options="[
-            { value: 'all', label: 'Semua', count: session.items.length },
-            { value: 'remaining', label: 'Belum', count: remainingItems },
-            { value: 'done', label: 'Sudah', count: session.checkedItems },
+            { value: 'checklist', label: 'Daftar Baut', count: remainingItems },
+            { value: 'model', label: 'Model 3D', count: locationData?.annotations?.length || 0 },
           ]"
         />
-        <div class="w-full lg:w-72">
-          <SearchInput v-model="searchQuery" placeholder="Cari kode atau ukuran baut..." aria-label="Cari baut dalam checklist" />
-        </div>
       </div>
 
-      <!-- Quest Item Grid -->
-      <div v-if="filteredItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+      <!-- Desktop Split / Mobile Tabbed Workspace -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1.15fr] gap-5 items-start">
+        <!-- LEFT COLUMN: Checklist Items -->
         <div
-          v-for="item in filteredItems"
-          :key="item.id"
-          class="group relative rounded-2xl border overflow-hidden transition-all duration-150 ease-out print-avoid-break"
-          :class="item.checked
-            ? 'bg-emerald-50/60 dark:bg-emerald-500/5 border-emerald-300 dark:border-emerald-500/30'
-            : 'bg-white dark:bg-[#121215] border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 dark:hover:border-zinc-600 shadow-sm'"
+          class="space-y-4"
+          :class="mobileViewTab === 'checklist' ? 'block' : 'hidden lg:block'"
         >
-          <button
-            type="button"
-            role="checkbox"
-            :aria-checked="item.checked"
-            :disabled="togglingIds.has(item.id)"
-            @click="toggleItem(item)"
-            class="w-full text-left cursor-pointer disabled:opacity-70 active:scale-[0.99] transition-transform"
-          >
-            <!-- Visual Area -->
-            <div class="relative aspect-[16/9] w-full overflow-hidden bg-zinc-950 flex items-center justify-center">
-              <img
-                v-if="item.boltSpec?.images && item.boltSpec.images.length > 0"
-                :src="item.boltSpec.images[0].url"
-                :alt="item.boltSpec.code"
-                loading="lazy"
-                class="w-full h-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.03]"
-              />
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br flex flex-col items-center justify-center"
-                :class="tierOf(item).cardTint"
-              >
-                <Nut class="w-9 h-9 text-zinc-300 mb-1" aria-hidden="true" />
-                <span class="font-mono font-bold text-sm text-zinc-200">
-                  M{{ Number(item.boltSpec.diameterMm) }} × {{ Number(item.boltSpec.lengthMm) }}
-                </span>
-              </div>
-
-              <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" aria-hidden="true"></div>
-
-              <!-- Diameter Tier -->
-              <span
-                class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[11px] font-mono font-bold border backdrop-blur-sm"
-                :class="tierOf(item).badge"
-              >
-                {{ tierOf(item).label }}
-              </span>
-
-              <!-- Quantity Badge -->
-              <div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-xl bg-zinc-950/90 border border-white/20 text-white backdrop-blur-sm flex items-baseline gap-1 shadow-md">
-                <span class="text-2xl font-mono font-bold leading-none">{{ item.quantity }}</span>
-                <span class="text-[11px] font-mono text-zinc-300">pcs</span>
-              </div>
-
-              <!-- Check State -->
-              <span
-                class="absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-200"
-                :class="item.checked
-                  ? 'bg-emerald-600 border-emerald-500 text-white scale-100'
-                  : 'bg-zinc-950/70 border-white/60 text-transparent backdrop-blur-sm'"
-                aria-hidden="true"
-              >
-                <Check class="w-5 h-5 stroke-[3]" />
-              </span>
+          <!-- Filters -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+            <SegmentedControl
+              v-model="filterMode"
+              :options="[
+                { value: 'all', label: 'Semua', count: session.items.length },
+                { value: 'remaining', label: 'Belum', count: remainingItems },
+                { value: 'done', label: 'Sudah', count: session.checkedItems },
+              ]"
+            />
+            <div class="w-full sm:w-56">
+              <SearchInput v-model="searchQuery" placeholder="Cari kode atau ukuran..." aria-label="Cari baut dalam checklist" />
             </div>
+          </div>
 
-            <!-- Short Label -->
-            <div class="p-3 space-y-1">
-              <div class="flex items-center justify-between gap-2">
-                <span
-                  class="font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate"
-                  :class="{ 'line-through text-zinc-500 dark:text-zinc-500': item.checked }"
+          <!-- Quest Item Grid -->
+          <div v-if="filteredItems.length > 0" class="grid grid-cols-2 gap-3">
+            <div
+              v-for="item in filteredItems"
+              :key="item.id"
+              class="group relative rounded-2xl border overflow-hidden transition-all duration-150 ease-out print-avoid-break"
+              :class="item.checked
+                ? 'bg-emerald-50/60 dark:bg-emerald-500/5 border-emerald-400 dark:border-emerald-500/40'
+                : 'bg-white dark:bg-[#121215] border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 dark:hover:border-zinc-600 shadow-sm'"
+            >
+              <button
+                type="button"
+                role="checkbox"
+                :aria-checked="item.checked"
+                :disabled="togglingIds.has(item.id)"
+                @click="toggleItem(item)"
+                class="w-full text-left cursor-pointer disabled:opacity-70 active:scale-[0.99] transition-transform"
+              >
+                <!-- ~80% Visual Area -->
+                <div class="relative aspect-square w-full overflow-hidden bg-zinc-950 flex items-center justify-center">
+                  <img
+                    v-if="item.boltSpec?.images && item.boltSpec.images.length > 0"
+                    :src="item.boltSpec.images[0].url"
+                    :alt="item.boltSpec.code"
+                    loading="lazy"
+                    class="w-full h-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.03]"
+                    :class="item.checked ? 'opacity-65 grayscale-[25%]' : ''"
+                  />
+                  <div
+                    v-else
+                    class="w-full h-full bg-gradient-to-br flex flex-col items-center justify-center"
+                    :class="tierOf(item).cardTint"
+                  >
+                    <Nut class="w-9 h-9 text-zinc-300 mb-1" aria-hidden="true" />
+                    <span class="font-mono font-bold text-sm text-zinc-200">
+                      M{{ Number(item.boltSpec.diameterMm) }} × {{ Number(item.boltSpec.lengthMm) }}
+                    </span>
+                  </div>
+
+                  <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" aria-hidden="true"></div>
+
+                  <!-- Diameter Tier -->
+                  <span
+                    class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[11px] font-mono font-bold border backdrop-blur-sm"
+                    :class="tierOf(item).badge"
+                  >
+                    {{ tierOf(item).label }}
+                  </span>
+
+                  <!-- Quantity Badge -->
+                  <div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-xl bg-zinc-950/90 border border-white/20 text-white backdrop-blur-sm flex items-baseline gap-1 shadow-md">
+                    <span class="text-xl sm:text-2xl font-mono font-bold leading-none">{{ item.quantity }}</span>
+                    <span class="text-[11px] font-mono text-zinc-300">pcs</span>
+                  </div>
+
+                  <!-- Check State -->
+                  <span
+                    class="absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-200"
+                    :class="item.checked
+                      ? 'bg-emerald-600 border-emerald-500 text-white scale-100'
+                      : 'bg-zinc-950/75 border-white/70 text-transparent backdrop-blur-sm'"
+                    aria-hidden="true"
+                  >
+                    <Check class="w-5 h-5 stroke-[3]" />
+                  </span>
+                </div>
+
+                <!-- ~20% Compact Short Label -->
+                <div class="px-2.5 py-2 space-y-0.5">
+                  <p
+                    class="font-mono text-xs font-bold truncate leading-tight"
+                    :class="item.checked
+                      ? 'line-through text-zinc-500 dark:text-zinc-500'
+                      : 'text-zinc-900 dark:text-zinc-100'"
+                  >
+                    M{{ Number(item.boltSpec.diameterMm) }}×{{ Number(item.boltSpec.lengthMm) }} &bull; {{ item.boltSpec.code }}
+                  </p>
+                  <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate leading-tight">
+                    {{ item.positionSummary || 'Seluruh motor' }}
+                  </p>
+                </div>
+              </button>
+
+              <!-- Quick Action Overlay Buttons (Photo + Focus 3D Location) -->
+              <div class="absolute bottom-[52px] left-2 flex items-center gap-1.5 no-print">
+                <button
+                  v-if="item.boltSpec?.images && item.boltSpec.images.length > 0"
+                  @click.stop="openBoltPhoto(item.boltSpec)"
+                  type="button"
+                  :aria-label="`Lihat foto baut ${item.boltSpec.code}`"
+                  class="min-w-[40px] min-h-[40px] rounded-xl bg-zinc-950/80 border border-white/20 text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-zinc-900 transition-colors cursor-pointer"
                 >
-                  {{ item.boltSpec.code }}
-                </span>
-                <span class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 shrink-0">
-                  M{{ Number(item.boltSpec.diameterMm) }}×{{ Number(item.boltSpec.lengthMm) }}
-                </span>
+                  <ImageIcon class="w-4 h-4" aria-hidden="true" />
+                </button>
+                <button
+                  v-if="findAnnotationForItem(item)"
+                  @click.stop="focusItemOnModel(item)"
+                  type="button"
+                  :aria-label="`Lihat posisi 3D ${item.boltSpec.code}`"
+                  class="min-h-[40px] px-2.5 rounded-xl bg-zinc-950/80 border border-white/20 text-white text-[11px] font-semibold backdrop-blur-sm inline-flex items-center gap-1 hover:bg-zinc-900 transition-colors cursor-pointer"
+                >
+                  <MapPin class="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                  <span class="hidden sm:inline">3D</span>
+                </button>
               </div>
-              <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">
-                {{ item.boltSpec.headType }} &bull; {{ item.boltSpec.finish }}
-              </p>
-              <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">
-                {{ item.positionSummary || 'Seluruh motor' }}
-              </p>
             </div>
-          </button>
+          </div>
 
-          <!-- Photo Detail Button (separate from toggle) -->
-          <button
-            v-if="item.boltSpec?.images && item.boltSpec.images.length > 0"
-            @click.stop="openBoltPhoto(item.boltSpec)"
-            type="button"
-            :aria-label="`Lihat foto baut ${item.boltSpec.code}`"
-            class="absolute bottom-2 left-2 min-w-[44px] min-h-[44px] rounded-xl bg-zinc-950/80 border border-white/20 text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-zinc-900 transition-colors cursor-pointer no-print"
-          >
-            <ImageIcon class="w-4 h-4" aria-hidden="true" />
-          </button>
+          <EmptyState
+            v-else
+            :icon="PackageOpen"
+            :title="searchQuery ? 'Tidak ada baut yang cocok' : 'Semua item pada filter ini selesai'"
+            :description="searchQuery ? 'Coba kata kunci lain atau hapus pencarian.' : 'Ubah filter untuk melihat baut lainnya.'"
+            :action-label="searchQuery ? 'Hapus Pencarian' : 'Tampilkan Semua'"
+            @action="searchQuery ? (searchQuery = '') : (filterMode = 'all')"
+          />
         </div>
-      </div>
 
-      <EmptyState
-        v-else
-        :icon="PackageOpen"
-        :title="searchQuery ? 'Tidak ada baut yang cocok' : 'Tidak ada item di filter ini'"
-        :description="searchQuery ? 'Coba kata kunci lain atau hapus pencarian.' : 'Ubah filter untuk melihat item lainnya.'"
-        :action-label="searchQuery ? 'Hapus Pencarian' : 'Tampilkan Semua'"
-        @action="searchQuery ? (searchQuery = '') : (filterMode = 'all')"
-      />
+        <!-- RIGHT COLUMN: Live Interactive 3D / 2D Location Map with Checklist Status -->
+        <aside
+          v-if="locationData"
+          aria-label="Panduan lokasi 3D checklist baut"
+          class="lg:sticky lg:top-6 no-print"
+          :class="mobileViewTab === 'model' ? 'block' : 'hidden lg:block'"
+        >
+          <component
+            :is="locationData.model?.modelUrl ? AsyncModelViewer : LocationCanvas"
+            :motorcycle="locationData.motorcycle"
+            :model="locationData.model"
+            :positions="locationData.positions"
+            :all-positions="locationData.allPositions || []"
+            :annotations="locationData.annotations"
+            :bolts="locationData.bolts"
+            :position-breakdown="locationData.positionBreakdown"
+            :session-items="session.items"
+            :is-toggling-check="isTogglingPoint"
+            :active-annotation="activeAnnotation"
+            :selected-bolt="focusedBolt"
+            :annotation-mode="false"
+            :can-annotate="false"
+            @select-annotation="onSelectAnnotation"
+            @clear-selection="clearAnnotationSelection"
+            @toggle-check="toggleAnnotationItems"
+          />
+        </aside>
+      </div>
     </div>
 
     <!-- Sticky Action Bar -->
@@ -342,7 +397,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   ArrowLeft,
@@ -351,6 +406,7 @@ import {
   CircleCheck,
   Image as ImageIcon,
   ListChecks,
+  MapPin,
   Nut,
   PackageOpen,
   Printer,
@@ -359,7 +415,9 @@ import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { getDiameterTier } from '../utils/boltTokens';
 import { formatDateTime } from '../utils/date';
+import { resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
+import LocationCanvas from '../components/location/LocationCanvas.vue';
 import AppShell from '../components/ui/AppShell.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import ProgressBar from '../components/ui/ProgressBar.vue';
@@ -371,14 +429,21 @@ import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import StatPill from '../components/ui/StatPill.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 
+const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
+
 const route = useRoute();
 const auth = useAuthStore();
 const toast = useToast();
 
 const session = ref(null);
+const locationData = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
 const togglingIds = ref(new Set());
+const isTogglingPoint = ref(false);
+const mobileViewTab = ref('checklist');
+const activeAnnotation = ref(null);
+const focusedBolt = ref(null);
 const filterMode = ref('all');
 const searchQuery = ref('');
 const confirmCompleteOpen = ref(false);
@@ -449,6 +514,26 @@ const openBoltPhoto = (boltSpec) => {
   };
 };
 
+const loadLocationData = async (motorcycleTypeId, packageId) => {
+  if (!motorcycleTypeId) return;
+  try {
+    const pkgQuery = packageId ? `?packageId=${encodeURIComponent(packageId)}` : '';
+    const res = await auth.apiFetch(`/api/motorcycles/${motorcycleTypeId}/location-map${pkgQuery}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    locationData.value = {
+      ...data,
+      positions: Array.isArray(data.positions) ? data.positions : [],
+      allPositions: Array.isArray(data.allPositions) ? data.allPositions : [],
+      annotations: Array.isArray(data.annotations) ? data.annotations : [],
+      bolts: Array.isArray(data.bolts) ? data.bolts : [],
+      positionBreakdown: Array.isArray(data.positionBreakdown) ? data.positionBreakdown : [],
+    };
+  } catch {
+    // Non-fatal: checklist remains usable even if 3D map fails to load
+  }
+};
+
 const loadSession = async () => {
   errorMsg.value = '';
   isLoading.value = true;
@@ -456,12 +541,86 @@ const loadSession = async () => {
     const res = await auth.apiFetch(`/api/pick-lists/sessions/${route.params.sessionId}`);
     if (!res.ok) throw new Error('Data sesi checklist tidak ditemukan.');
     session.value = await res.json();
+    await loadLocationData(session.value.motorcycleTypeId, session.value.packageId);
   } catch (err) {
     errorMsg.value = err.message === 'Failed to fetch'
       ? 'Tidak dapat terhubung ke server gerai. Periksa sambungan Wi-Fi lalu ketuk Muat Ulang.'
       : err.message;
   } finally {
     isLoading.value = false;
+  }
+};
+
+const findAnnotationForItem = (item) => {
+  const annotations = locationData.value?.annotations || [];
+  if (!annotations.length || !item) return null;
+  const modelId = locationData.value?.model?.id;
+  const pool = modelId
+    ? annotations.filter((a) => a.modelId === modelId || (a.modelId == null && Number(a.z) !== 0))
+    : annotations;
+  const list = pool.length > 0 ? pool : annotations;
+
+  const bolts = locationData.value?.bolts || [];
+  const matchBolt = bolts.find((b) => b.boltSpecId === item.boltSpecId);
+  const posIds = Array.isArray(matchBolt?.positionIds) ? matchBolt.positionIds : [];
+
+  return list.find((a) => posIds.includes(a.boltPositionId))
+    || list.find((a) => (item.positionSummary || '').toLowerCase().includes((a.boltPosition?.name || '').toLowerCase()))
+    || null;
+};
+
+const focusItemOnModel = (item) => {
+  const ann = findAnnotationForItem(item);
+  if (!ann) return;
+  onSelectAnnotation(ann);
+  if (window.innerWidth < 1024) {
+    mobileViewTab.value = 'model';
+  }
+};
+
+const onSelectAnnotation = (ann) => {
+  activeAnnotation.value = ann;
+  const resolved = resolveBoltForAnnotation(ann, locationData.value?.bolts, locationData.value?.positionBreakdown);
+  if (resolved?.bolt) {
+    focusedBolt.value = resolved.bolt;
+    return;
+  }
+  const bolts = locationData.value?.bolts || [];
+  focusedBolt.value = bolts.find((b) => Array.isArray(b.positionIds) && b.positionIds.includes(ann.boltPositionId))
+    || bolts[0]
+    || null;
+};
+
+const clearAnnotationSelection = () => {
+  activeAnnotation.value = null;
+  focusedBolt.value = null;
+};
+
+const toggleAnnotationItems = async (ann) => {
+  if (!session.value || !ann || isTogglingPoint.value) return;
+  const statusInfo = resolveChecklistStatus(
+    ann,
+    session.value.items,
+    locationData.value?.bolts,
+    locationData.value?.positionBreakdown
+  );
+  if (!statusInfo.matchingItems.length) {
+    toast.info('Tidak ada item checklist yang terkait dengan titik ini.');
+    return;
+  }
+
+  const nextChecked = statusInfo.status !== 'done';
+  isTogglingPoint.value = true;
+  try {
+    for (const item of statusInfo.matchingItems) {
+      if (item.checked !== nextChecked) {
+        await toggleItem(item);
+      }
+    }
+    const label = ann.label || ann.boltPosition?.name || 'Titik baut';
+    toast.success(nextChecked ? `Ditandai sudah diambil: ${label}` : `Centang dibatalkan: ${label}`);
+  } finally {
+    isTogglingPoint.value = false;
   }
 };
 

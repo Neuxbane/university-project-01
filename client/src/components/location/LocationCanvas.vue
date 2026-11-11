@@ -86,6 +86,7 @@
             :quantity="c.resolved.quantity"
             :extra-specs-count="c.resolved.extraSpecsCount"
             :position-name="c.resolved.positionName"
+            :check-status="getCheckStatus(c.annotation)"
             @select="onSelectAnnotation(c.annotation)"
           />
         </div>
@@ -109,6 +110,7 @@
         :index-number="idx + 1"
         :label="ann.label || ann.boltPosition?.name || 'Titik Baut'"
         :active="activeAnnotation?.id === ann.id"
+        :check-status="getCheckStatus(ann)"
         @select="onSelectAnnotation(ann)"
       />
 
@@ -133,7 +135,10 @@
         <FloatingBoltCard
           :bolt="selectedBolt"
           :position-name="activeAnnotation.label || activeAnnotation.boltPosition?.name || 'Titik Pasang'"
+          :check-status="getCheckStatus(activeAnnotation)"
+          :is-toggling-check="isTogglingCheck"
           @close="$emit('clear-selection')"
+          @toggle-check="$emit('toggle-check', activeAnnotation)"
         />
       </div>
     </div>
@@ -307,7 +312,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { Bike, Eye, MapPin, Trash2 } from 'lucide-vue-next';
-import { resolveBoltForAnnotation, layoutVisibleCallouts } from '../../utils/annotationCallouts';
+import { resolveBoltForAnnotation, resolveChecklistStatus, layoutVisibleCallouts } from '../../utils/annotationCallouts';
 import HotspotMarker from './HotspotMarker.vue';
 import FloatingBoltCard from './FloatingBoltCard.vue';
 import AutoCalloutCard from './AutoCalloutCard.vue';
@@ -321,6 +326,8 @@ const props = defineProps({
   annotations: { type: Array, default: () => [] },
   bolts: { type: Array, default: () => [] },
   positionBreakdown: { type: Array, default: () => [] },
+  sessionItems: { type: Array, default: null },
+  isTogglingCheck: { type: Boolean, default: false },
   activeAnnotation: { type: Object, default: null },
   selectedBolt: { type: Object, default: null },
   annotationMode: { type: Boolean, default: false },
@@ -332,10 +339,16 @@ const props = defineProps({
 const emit = defineEmits([
   'select-annotation',
   'clear-selection',
+  'toggle-check',
   'create-annotation',
   'delete-annotation',
   'enable-annotation',
 ]);
+
+function getCheckStatus(ann) {
+  if (!Array.isArray(props.sessionItems) || !ann) return null;
+  return resolveChecklistStatus(ann, props.sessionItems, props.bolts, props.positionBreakdown).status;
+}
 
 const stageRef = ref(null);
 const cardWrapRef = ref(null);
