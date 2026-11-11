@@ -70,24 +70,24 @@
                   />
                 </div>
 
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-2">
-                    <h1 class="text-base sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
+                    <h1 class="text-base sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                       {{ locationData?.motorcycle?.displayName || 'Detail Motor' }}
                     </h1>
                     <span
                       v-if="locationData"
-                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs font-medium"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs font-medium shrink-0"
                       :class="completeness.text"
                     >
                       <span class="w-2 h-2 rounded-full" :class="completeness.dot" aria-hidden="true"></span>
                       <span>{{ completeness.label }}</span>
                     </span>
                   </div>
-                  <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate">
+                  <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-mono mt-0.5">
                     {{ locationData?.package ? locationData.package.name : 'Lengkap Satu Motor' }}
                     <span v-if="locationData">
-                      &bull; {{ locationData.summary.totalQuantity }} pcs &bull; {{ locationData.summary.distinctBoltSpecsCount }} ukuran &bull; {{ locationData.annotations.length }} titik
+                      &bull; {{ locationData.summary.totalQuantity }} pcs &bull; {{ locationData.summary.distinctBoltSpecsCount }} ukuran
                     </span>
                   </p>
                 </div>
@@ -130,27 +130,6 @@
                   <ArrowRight class="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
-            </div>
-
-            <!-- Package Selector Chips (if motor has packages) -->
-            <div
-              v-if="locationData && (locationData.packages?.length || 0) > 0"
-              class="flex items-center gap-2 overflow-x-auto pt-2 border-t border-zinc-200 dark:border-zinc-800 pb-0.5"
-            >
-              <span class="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 shrink-0">Paket:</span>
-              <FilterChip
-                label="Lengkap Satu Motor"
-                :active="!selectedPackageId"
-                @click="selectPackage(null)"
-              />
-              <FilterChip
-                v-for="pkg in locationData.packages"
-                :key="pkg.id"
-                :label="pkg.name"
-                :count="pkg._count?.items"
-                :active="selectedPackageId === pkg.id"
-                @click="selectPackage(pkg.id)"
-              />
             </div>
 
             <!-- Mobile Tab Switcher: Baut vs Lokasi (only one visible at a time on mobile) -->
@@ -200,80 +179,117 @@
           v-else-if="locationData"
           class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-5 items-start"
         >
-          <!-- LEFT COLUMN: BOLT CARDS / POSITION SLOTS -->
+          <!-- LEFT COLUMN: BOLT CARDS / POSITION SLOTS / PACKAGES -->
           <section
-            aria-label="Daftar baut motor"
+            aria-label="Daftar baut dan paket motor"
             class="space-y-3"
             :class="mobileTab === 'baut' ? 'block' : 'hidden lg:block'"
           >
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <SegmentedControl
-                v-model="leftMode"
-                :options="[
-                  { value: 'rack', label: 'Per Rak', count: locationData.bolts.length },
-                  { value: 'slots', label: 'Per Titik', count: locationData.positionBreakdown.length },
-                ]"
-              />
-            </div>
-
-            <SearchInput
-              v-model="boltSearch"
-              placeholder="Cari kode baut, ukuran, atau posisi..."
-              aria-label="Cari baut"
+            <SegmentedControl
+              v-model="leftMode"
+              :options="leftTabOptions"
             />
 
-            <div v-if="leftMode === 'rack' && sizeTierChips.length > 2" class="flex items-center gap-2 overflow-x-auto pb-1">
-              <FilterChip
-                v-for="chip in sizeTierChips"
-                :key="chip.value"
-                :label="chip.label"
-                :count="chip.count"
-                :active="selectedSizeTier === chip.value"
-                @click="selectedSizeTier = chip.value"
-              />
-            </div>
-
-            <!-- Sub-view A: Bolt Cards (Per Rak) -->
-            <template v-if="leftMode === 'rack'">
-              <EmptyState
-                v-if="filteredBolts.length === 0"
-                :icon="Nut"
-                title="Baut Tidak Ditemukan"
-                description="Coba ubah kata kunci pencarian atau pilih semua ukuran."
-                action-label="Reset Filter"
-                @action="resetBoltFilter"
-              />
-
-              <div v-else class="grid grid-cols-2 gap-3">
-                <ItemCard
-                  v-for="bolt in filteredBolts"
-                  :key="bolt.boltSpecId"
-                  :item="bolt"
-                  :selected="selectedBolt?.boltSpecId === bolt.boltSpecId"
-                  @select="onSelectBolt(bolt)"
+            <!-- Sub-view C: Package Preset Cards -->
+            <template v-if="leftMode === 'packages'">
+              <div class="grid grid-cols-1 gap-2.5">
+                <PresetCard
+                  :pkg="null"
+                  title="Lengkap Satu Motor"
+                  :subtitle="`${locationData.positions.length} titik pasang`"
+                  :active="!selectedPackageId"
+                  @select="selectPackage(null, 'Lengkap Satu Motor')"
+                />
+                <PresetCard
+                  v-for="pkg in locationData.packages"
+                  :key="pkg.id"
+                  :pkg="pkg"
+                  :active="selectedPackageId === pkg.id"
+                  @select="selectPackage(pkg.id, pkg.name)"
                 />
               </div>
             </template>
 
-            <!-- Sub-view B: Position Slots (Per Titik) -->
+            <!-- Sub-views A & B: Bolt Cards & Position Slots -->
             <template v-else>
-              <EmptyState
-                v-if="filteredBreakdown.length === 0"
-                :icon="Wrench"
-                title="Titik Tidak Ditemukan"
-                description="Belum ada titik pemasangan yang cocok."
-                action-label="Reset Pencarian"
-                @action="boltSearch = ''"
+              <!-- Active Package Indicator Card (1-tap to switch to Paket cards) -->
+              <button
+                v-if="(locationData.packages?.length || 0) > 0"
+                type="button"
+                @click="leftMode = 'packages'"
+                class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <Layers class="w-4 h-4 text-zinc-600 dark:text-zinc-400 shrink-0" aria-hidden="true" />
+                  <span class="text-xs font-medium text-zinc-600 dark:text-zinc-400 shrink-0">Paket:</span>
+                  <span class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                    {{ locationData.package ? locationData.package.name : 'Lengkap Satu Motor' }}
+                  </span>
+                </div>
+                <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 underline shrink-0">
+                  Ganti
+                </span>
+              </button>
+
+              <SearchInput
+                v-model="boltSearch"
+                placeholder="Cari kode baut, ukuran, atau posisi..."
+                aria-label="Cari baut"
               />
 
-              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <SlotCard
-                  v-for="(row, idx) in filteredBreakdown"
-                  :key="idx"
-                  :slot-data="row"
-                  @select="onSelectSlot(row)"
+              <div v-if="leftMode === 'rack' && sizeTierChips.length > 2" class="flex items-center gap-2 overflow-x-auto pb-1">
+                <FilterChip
+                  v-for="chip in sizeTierChips"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :count="chip.count"
+                  :active="selectedSizeTier === chip.value"
+                  @click="selectedSizeTier = chip.value"
                 />
               </div>
+
+              <!-- Sub-view A: Bolt Cards (Per Rak) -->
+              <template v-if="leftMode === 'rack'">
+                <EmptyState
+                  v-if="filteredBolts.length === 0"
+                  :icon="Nut"
+                  title="Baut Tidak Ditemukan"
+                  description="Coba ubah kata kunci pencarian atau pilih semua ukuran."
+                  action-label="Reset Filter"
+                  @action="resetBoltFilter"
+                />
+
+                <div v-else class="grid grid-cols-2 gap-3">
+                  <ItemCard
+                    v-for="bolt in filteredBolts"
+                    :key="bolt.boltSpecId"
+                    :item="bolt"
+                    :selected="selectedBolt?.boltSpecId === bolt.boltSpecId"
+                    @select="onSelectBolt(bolt)"
+                  />
+                </div>
+              </template>
+
+              <!-- Sub-view B: Position Slots (Per Titik) -->
+              <template v-else>
+                <EmptyState
+                  v-if="filteredBreakdown.length === 0"
+                  :icon="Wrench"
+                  title="Titik Tidak Ditemukan"
+                  description="Belum ada titik pemasangan yang cocok."
+                  action-label="Reset Pencarian"
+                  @action="boltSearch = ''"
+                />
+
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <SlotCard
+                    v-for="(row, idx) in filteredBreakdown"
+                    :key="idx"
+                    :slot-data="row"
+                    @select="onSelectSlot(row)"
+                  />
+                </div>
+              </template>
             </template>
           </section>
 
@@ -345,13 +361,14 @@
 <script setup>
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowRight, Crosshair, Nut, Printer, Wrench } from 'lucide-vue-next';
+import { ArrowLeft, ArrowRight, Crosshair, Layers, Nut, Printer, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { formatSideLabel, getDiameterTier, getCompletenessMeta } from '../utils/boltTokens';
 import AppShell from '../components/ui/AppShell.vue';
 import ItemCard from '../components/ui/ItemCard.vue';
 import SlotCard from '../components/ui/SlotCard.vue';
+import PresetCard from '../components/ui/PresetCard.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
 import FilterChip from '../components/ui/FilterChip.vue';
 import SegmentedControl from '../components/ui/SegmentedControl.vue';
@@ -384,6 +401,18 @@ const isCreatingSession = ref(false);
 
 const completeness = computed(() => {
   return getCompletenessMeta(locationData.value?.positions?.length || 0);
+});
+
+const leftTabOptions = computed(() => {
+  const opts = [
+    { value: 'rack', label: 'Per Rak', count: locationData.value?.bolts?.length || 0 },
+    { value: 'slots', label: 'Per Titik', count: locationData.value?.positionBreakdown?.length || 0 },
+  ];
+  const pkgCount = locationData.value?.packages?.length || 0;
+  if (pkgCount > 0) {
+    opts.push({ value: 'packages', label: 'Paket', count: pkgCount + 1 });
+  }
+  return opts;
 });
 
 const sizeTierChips = computed(() => {
@@ -466,9 +495,13 @@ const loadLocationMap = async () => {
   }
 };
 
-const selectPackage = async (pkgId) => {
+const selectPackage = async (pkgId, pkgLabel) => {
   selectedPackageId.value = pkgId;
   await loadLocationMap();
+  leftMode.value = 'rack';
+  if (pkgLabel) {
+    toast.success(`Paket dipilih: ${pkgLabel}`);
+  }
 };
 
 const findAnnotationForPositions = (posIds, summaryText) => {

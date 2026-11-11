@@ -82,6 +82,7 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
           id: true,
           name: true,
           packageType: true,
+          description: true,
           _count: { select: { items: true } },
         },
         orderBy: { createdAt: 'desc' },

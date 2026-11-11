@@ -3,7 +3,7 @@
     type="button"
     @click="$emit('select', pkg)"
     :aria-pressed="active"
-    class="w-full min-h-[56px] p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer active:scale-[0.98] flex items-center justify-between gap-3"
+    class="w-full min-h-[60px] p-3.5 rounded-2xl border text-left transition-all duration-150 cursor-pointer hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-between gap-3 shadow-sm"
     :class="active
       ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100 shadow-sm'
       : 'bg-white dark:bg-[#18181c] text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'"
@@ -67,6 +67,7 @@ const subtitle = computed(() => {
 const badgeText = computed(() => {
   if (props.badgeText) return props.badgeText;
   if (!props.pkg) return '';
-  return `${props.pkg.items?.length || 0} jenis`;
+  const count = props.pkg.items?.length ?? props.pkg._count?.items ?? 0;
+  return `${count} jenis`;
 });
 </script>

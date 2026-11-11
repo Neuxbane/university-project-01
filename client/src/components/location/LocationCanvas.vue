@@ -88,24 +88,24 @@
           @close="$emit('clear-selection')"
         />
       </div>
+    </div>
 
-      <!-- Empty State Overlay when no annotations yet -->
-      <div
-        v-if="annotations.length === 0 && !annotationMode"
-        class="absolute inset-x-4 bottom-4 z-20 bg-zinc-950/90 backdrop-blur-md border border-zinc-700 rounded-2xl p-4 text-center space-y-2"
+    <!-- Compact Empty Annotations Bar (below photo so motor image stays unobstructed) -->
+    <div
+      v-if="annotations.length === 0 && !annotationMode"
+      class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-center justify-between gap-2"
+    >
+      <p class="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        Lokasi belum ditandai. Hubungi admin.
+      </p>
+      <button
+        v-if="canAnnotate"
+        type="button"
+        @click.stop="$emit('enable-annotation')"
+        class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer transition-colors shrink-0"
       >
-        <p class="text-sm font-semibold text-white">
-          Lokasi belum ditandai. Hubungi admin.
-        </p>
-        <button
-          v-if="canAnnotate"
-          type="button"
-          @click.stop="$emit('enable-annotation')"
-          class="min-h-[44px] px-4 py-2 rounded-xl bg-white text-zinc-900 text-xs font-bold cursor-pointer hover:bg-zinc-200 transition-colors"
-        >
-          Tandai Lokasi Sekarang
-        </button>
-      </div>
+        Tandai Lokasi Sekarang
+      </button>
     </div>
 
     <!-- Inline Note when bolt is selected on left list but has no annotation yet -->
