@@ -331,6 +331,8 @@
               :positions="locationData.positions"
               :all-positions="locationData.allPositions || []"
               :annotations="locationData.annotations"
+              :bolts="locationData.bolts"
+              :position-breakdown="locationData.positionBreakdown"
               :active-annotation="activeAnnotation"
               :selected-bolt="selectedBolt"
               :annotation-mode="annotationMode"
@@ -507,12 +509,9 @@ const loadLocationMap = async () => {
       positionBreakdown: Array.isArray(data.positionBreakdown) ? data.positionBreakdown : [],
     };
 
-    if (locationData.value.annotations.length > 0) {
-      onSelectAnnotation(locationData.value.annotations[0]);
-    } else {
-      selectedBolt.value = locationData.value.bolts[0] || null;
-      activeAnnotation.value = null;
-    }
+    // Keep activeAnnotation null on load so all visible points auto-show bolt callouts without clicking
+    activeAnnotation.value = null;
+    selectedBolt.value = null;
   } catch (err) {
     errorMsg.value = err.message === 'Failed to fetch'
       ? 'Tidak dapat terhubung ke server gerai. Periksa sambungan Wi-Fi lalu ketuk Coba Lagi.'
@@ -590,6 +589,7 @@ const onSelectAnnotation = (ann) => {
 
 const clearSelection = () => {
   activeAnnotation.value = null;
+  selectedBolt.value = null;
 };
 
 const handleCreateAnnotation = async ({

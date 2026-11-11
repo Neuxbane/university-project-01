@@ -6,6 +6,8 @@
     :positions="positions"
     :all-positions="allPositions"
     :annotations="annotations"
+    :bolts="bolts"
+    :position-breakdown="positionBreakdown"
     :active-annotation="activeAnnotation"
     :selected-bolt="selectedBolt"
     :annotation-mode="annotationMode"
@@ -36,6 +38,20 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button
+          v-if="annotations3D.length > 0 && !annotationMode"
+          type="button"
+          @click="autoShowCallouts = !autoShowCallouts"
+          :aria-pressed="autoShowCallouts"
+          class="min-h-[36px] px-2.5 py-1 rounded-lg border text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+          :class="autoShowCallouts
+            ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+            : 'bg-zinc-50 dark:bg-[#18181c] text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'"
+        >
+          <Eye class="w-3.5 h-3.5" aria-hidden="true" />
+          <span>Label Otomatis</span>
+        </button>
+
         <span class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
           {{ annotations3D.length }} titik 3D
         </span>
@@ -97,6 +113,40 @@
           Geser: putar &bull; Gulir/Cubit: zoom
         </span>
       </div>
+
+      <!-- Auto-Show Leader Lines + Compact Bolt Callouts for all visible non-occluded points -->
+      <template v-if="autoCallouts.length > 0">
+        <LeaderLine
+          v-for="c in autoCallouts"
+          :key="`auto-line-${c.annotation.id}`"
+          :x1="c.lineX1"
+          :y1="c.lineY1"
+          :x2="c.lineX2"
+          :y2="c.lineY2"
+          :subtle="true"
+        />
+
+        <div
+          v-for="c in autoCallouts"
+          :key="`auto-card-${c.annotation.id}`"
+          class="absolute z-20 pointer-events-none"
+          :style="{
+            left: `${c.cardX}px`,
+            top: `${c.cardY}px`,
+            width: `${c.cardW}px`,
+            height: `${c.cardH}px`,
+          }"
+        >
+          <AutoCalloutCard
+            :index="c.index"
+            :bolt="c.resolved.bolt"
+            :quantity="c.resolved.quantity"
+            :extra-specs-count="c.resolved.extraSpecsCount"
+            :position-name="c.resolved.positionName"
+            @select="onHotspotClick(c.annotation)"
+          />
+        </div>
+      </template>
 
       <!-- Projected SVG Leader Line (tracks active 3D hotspot each frame) -->
       <LeaderLine
@@ -205,10 +255,12 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Box, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-next';
+import { Box, Eye, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-next';
 import { useTheme } from '../../composables/useTheme';
+import { resolveBoltForAnnotation, layoutVisibleCallouts } from '../../utils/annotationCallouts';
 import LocationCanvas from './LocationCanvas.vue';
 import FloatingBoltCard from './FloatingBoltCard.vue';
+import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import AnnotationEditor from './AnnotationEditor.vue';
 
@@ -218,6 +270,8 @@ const props = defineProps({
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
+  bolts: { type: Array, default: () => [] },
+  positionBreakdown: { type: Array, default: () => [] },
   activeAnnotation: { type: Object, default: null },
   selectedBolt: { type: Object, default: null },
   annotationMode: { type: Boolean, default: false },
@@ -244,6 +298,8 @@ const cardWrapRef = ref(null);
 const isModelLoading = ref(false);
 const loadFailed = ref(false);
 const isFullscreen = ref(false);
+const autoShowCallouts = ref(true);
+const stageSize = ref({ width: 600, height: 400 });
 const projectedHotspots = ref([]);
 const draftPoint = ref(null);
 const draftProjected = ref(null);
@@ -257,6 +313,21 @@ const annotations3D = computed(() => {
   return (props.annotations || []).filter(
     (a) => a.modelId === props.model.id || (a.modelId == null && Number(a.z) !== 0)
   );
+});
+
+const autoCallouts = computed(() => {
+  if (!autoShowCallouts.value || props.annotationMode || props.activeAnnotation || isModelLoading.value) {
+    return [];
+  }
+  const visible = projectedHotspots.value
+    .filter((p) => p.visible && !p.occluded)
+    .map((p) => ({
+      ...p,
+      resolved: resolveBoltForAnnotation(p.annotation, props.bolts, props.positionBreakdown),
+    }))
+    .filter((entry) => Boolean(entry.resolved?.bolt));
+
+  return layoutVisibleCallouts(visible, stageSize.value.width, stageSize.value.height);
 });
 
 const activeProjected = computed(() => {
@@ -408,6 +479,7 @@ function resizeViewer() {
   const w = stageRef.value.clientWidth;
   const h = stageRef.value.clientHeight;
   if (!w || !h) return;
+  stageSize.value = { width: w, height: h };
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   renderer.setSize(w, h, false);

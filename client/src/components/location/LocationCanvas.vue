@@ -10,6 +10,20 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button
+          v-if="annotations2D.length > 0 && !annotationMode"
+          type="button"
+          @click="autoShowCallouts = !autoShowCallouts"
+          :aria-pressed="autoShowCallouts"
+          class="min-h-[36px] px-2.5 py-1 rounded-lg border text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+          :class="autoShowCallouts
+            ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+            : 'bg-zinc-50 dark:bg-[#18181c] text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'"
+        >
+          <Eye class="w-3.5 h-3.5" aria-hidden="true" />
+          <span>Label Otomatis</span>
+        </button>
+
         <span class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
           {{ annotations2D.length }} titik
         </span>
@@ -42,6 +56,40 @@
           Belum ada foto motor. Unggah foto motor terlebih dahulu atau tandai titik referensi.
         </p>
       </div>
+
+      <!-- Auto-Show Leader Lines + Compact Bolt Callouts for all 2D visible points -->
+      <template v-if="autoCallouts2D.length > 0">
+        <LeaderLine
+          v-for="c in autoCallouts2D"
+          :key="`auto2d-line-${c.annotation.id}`"
+          :x1="c.lineX1"
+          :y1="c.lineY1"
+          :x2="c.lineX2"
+          :y2="c.lineY2"
+          :subtle="true"
+        />
+
+        <div
+          v-for="c in autoCallouts2D"
+          :key="`auto2d-card-${c.annotation.id}`"
+          class="absolute z-20 pointer-events-none"
+          :style="{
+            left: `${c.cardX}px`,
+            top: `${c.cardY}px`,
+            width: `${c.cardW}px`,
+            height: `${c.cardH}px`,
+          }"
+        >
+          <AutoCalloutCard
+            :index="c.index"
+            :bolt="c.resolved.bolt"
+            :quantity="c.resolved.quantity"
+            :extra-specs-count="c.resolved.extraSpecsCount"
+            :position-name="c.resolved.positionName"
+            @select="onSelectAnnotation(c.annotation)"
+          />
+        </div>
+      </template>
 
       <!-- Leader Line SVG between selected hotspot and FloatingBoltCard -->
       <LeaderLine
@@ -258,9 +306,11 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
-import { Bike, MapPin, Trash2 } from 'lucide-vue-next';
+import { Bike, Eye, MapPin, Trash2 } from 'lucide-vue-next';
+import { resolveBoltForAnnotation, layoutVisibleCallouts } from '../../utils/annotationCallouts';
 import HotspotMarker from './HotspotMarker.vue';
 import FloatingBoltCard from './FloatingBoltCard.vue';
+import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 
@@ -269,6 +319,8 @@ const props = defineProps({
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
+  bolts: { type: Array, default: () => [] },
+  positionBreakdown: { type: Array, default: () => [] },
   activeAnnotation: { type: Object, default: null },
   selectedBolt: { type: Object, default: null },
   annotationMode: { type: Boolean, default: false },
@@ -291,6 +343,8 @@ const draftPoint = ref(null);
 const draftPositionId = ref('');
 const draftLabel = ref('');
 const confirmDeleteTarget = ref(null);
+const autoShowCallouts = ref(true);
+const stageSize = ref({ width: 600, height: 400 });
 const lineCoords = ref(null);
 
 const activePositionPhoto = computed(() => {
@@ -307,6 +361,23 @@ const annotations2D = computed(() => {
   return (props.annotations || []).filter((a) => a.modelId == null && Number(a.z) === 0);
 });
 
+const autoCallouts2D = computed(() => {
+  if (!autoShowCallouts.value || props.annotationMode || props.activeAnnotation) return [];
+  const w = stageSize.value.width;
+  const h = stageSize.value.height;
+  if (!w || !h) return [];
+  const entries = annotations2D.value
+    .map((ann, idx) => ({
+      annotation: ann,
+      index: idx + 1,
+      screenX: (Number(ann.x) / 100) * w,
+      screenY: (Number(ann.y) / 100) * h,
+      resolved: resolveBoltForAnnotation(ann, props.bolts, props.positionBreakdown),
+    }))
+    .filter((entry) => Boolean(entry.resolved?.bolt));
+  return layoutVisibleCallouts(entries, w, h);
+});
+
 const otherPositions = computed(() => {
   const motorIds = new Set(props.positions.map((p) => p.id));
   return props.allPositions.filter((p) => !motorIds.has(p.id));
@@ -321,6 +392,12 @@ const cardPositionClass = computed(() => {
 });
 
 const recomputeLine = () => {
+  if (stageRef.value) {
+    const sRect = stageRef.value.getBoundingClientRect();
+    if (sRect.width && sRect.height) {
+      stageSize.value = { width: sRect.width, height: sRect.height };
+    }
+  }
   if (!props.activeAnnotation || !props.selectedBolt || !stageRef.value || !cardWrapRef.value) {
     lineCoords.value = null;
     return;
@@ -364,6 +441,7 @@ watch(
 
 let resizeObs = null;
 onMounted(() => {
+  recomputeLine();
   window.addEventListener('resize', recomputeLine);
   window.addEventListener('scroll', recomputeLine, true);
   if (typeof ResizeObserver !== 'undefined' && stageRef.value) {
