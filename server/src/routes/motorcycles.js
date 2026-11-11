@@ -209,6 +209,65 @@ async function unlinkModelFileIfUnused(modelUrl) {
   }
 }
 
+function validateOffText(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return { valid: false, error: 'Teks format OFF wajib diisi.' };
+  }
+  const lines = rawText
+    .split(/\r?\n/)
+    .map((line) => line.replace(/#.*$/, '').trim())
+    .filter((line) => line.length > 0);
+
+  if (lines.length < 2) {
+    return { valid: false, error: 'Format OFF tidak lengkap.' };
+  }
+
+  const headerTokens = lines[0].split(/\s+/);
+  const headerTag = headerTokens[0].toUpperCase();
+  if (!/^(ST)?(C?N?)OFF$/.test(headerTag)) {
+    return { valid: false, error: 'Header OFF harus diawali kata OFF (atau COFF/NOFF).' };
+  }
+
+  let cursor = 1;
+  let counts = headerTokens.slice(1);
+  if (counts.length < 2) {
+    counts = lines[cursor].split(/\s+/);
+    cursor++;
+  }
+
+  const numVerts = parseInt(counts[0], 10);
+  const numFaces = parseInt(counts[1], 10);
+  if (!Number.isInteger(numVerts) || numVerts < 3 || !Number.isInteger(numFaces) || numFaces < 1) {
+    return { valid: false, error: 'Jumlah vertex (>= 3) dan face (>= 1) pada format OFF tidak valid.' };
+  }
+  if (cursor + numVerts + numFaces > lines.length) {
+    return { valid: false, error: 'Jumlah baris vertex/face tidak sesuai header OFF.' };
+  }
+
+  for (let i = 0; i < numVerts; i++) {
+    const coords = lines[cursor++].split(/\s+/).slice(0, 3).map(Number);
+    if (coords.length < 3 || coords.some((n) => !Number.isFinite(n))) {
+      return { valid: false, error: `Koordinat vertex ke-${i + 1} pada format OFF tidak valid.` };
+    }
+  }
+
+  for (let f = 0; f < numFaces; f++) {
+    const parts = lines[cursor++].split(/\s+/);
+    const nSides = parseInt(parts[0], 10);
+    if (!Number.isInteger(nSides) || nSides < 3 || parts.length < 1 + nSides) {
+      return { valid: false, error: `Definisi face ke-${f + 1} pada format OFF tidak valid.` };
+    }
+    for (let k = 0; k < nSides; k++) {
+      const vi = parseInt(parts[1 + k], 10);
+      if (!Number.isInteger(vi) || vi < 0 || vi >= numVerts) {
+        return { valid: false, error: `Indeks vertex pada face ke-${f + 1} di luar jangkauan.` };
+      }
+    }
+  }
+
+  return { valid: true, numVerts, numFaces };
+}
+
 function validateUploadedModelFile(file) {
   if (!file || !file.path) return false;
   const ext = path.extname(file.originalname || file.filename || '').toLowerCase();
@@ -227,13 +286,17 @@ function validateUploadedModelFile(file) {
       const parsed = JSON.parse(raw);
       return Boolean(parsed && typeof parsed === 'object' && parsed.asset);
     }
+    if (ext === '.off') {
+      const raw = fs.readFileSync(file.path, 'utf8');
+      return validateOffText(raw).valid;
+    }
     return false;
   } catch {
     return false;
   }
 }
 
-// POST /api/motorcycles/:id/model (Admin only, multipart .glb/.gltf)
+// POST /api/motorcycles/:id/model (Admin only, multipart .glb/.gltf/.off OR JSON { offText })
 router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
   uploadModel.single('model')(req, res, (err) => {
     if (err) {
@@ -242,6 +305,7 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
     next();
   });
 }, async (req, res) => {
+  let savedPastedPath = null;
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const motorcycle = await prisma.motorcycleType.findUnique({ where: { id: motorcycleTypeId } });
@@ -250,16 +314,28 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
       return res.status(404).json({ error: 'Tipe motor tidak ditemukan.' });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'File model 3D (.glb/.gltf) wajib diunggah.' });
+    let modelUrl = null;
+    if (req.file) {
+      if (!validateUploadedModelFile(req.file)) {
+        safeUnlinkFile(req.file.path);
+        return res.status(400).json({ error: 'File model 3D (.glb/.gltf/.off) tidak valid atau rusak.' });
+      }
+      modelUrl = `/uploads/models/${req.file.filename}`;
+    } else if (req.body?.offText !== undefined) {
+      const check = validateOffText(req.body.offText);
+      if (!check.valid) {
+        return res.status(400).json({ error: check.error });
+      }
+      const modelsDir = path.join(__dirname, '../../uploads/models');
+      fs.mkdirSync(modelsDir, { recursive: true });
+      const filename = `${Date.now()}_pasted_motor_${motorcycleTypeId}.off`;
+      savedPastedPath = path.join(modelsDir, filename);
+      fs.writeFileSync(savedPastedPath, String(req.body.offText), 'utf8');
+      modelUrl = `/uploads/models/${filename}`;
+    } else {
+      return res.status(400).json({ error: 'File model 3D (.glb/.gltf/.off) atau teks format OFF wajib diisi.' });
     }
 
-    if (!validateUploadedModelFile(req.file)) {
-      safeUnlinkFile(req.file.path);
-      return res.status(400).json({ error: 'File model 3D (.glb/.gltf) tidak valid atau rusak.' });
-    }
-
-    const modelUrl = `/uploads/models/${req.file.filename}`;
     const rawScale = req.body.scale !== undefined ? Number(req.body.scale) : 1;
     const rawRotY = req.body.rotationY !== undefined ? Number(req.body.rotationY) : 0;
     const scale = Number.isFinite(rawScale) && rawScale >= 0.05 && rawScale <= 20 ? rawScale : 1;
@@ -280,7 +356,7 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
       action: 'CREATE',
       entity: 'MOTORCYCLE_MODEL',
       entityId: created.id,
-      detail: `Mengunggah model 3D untuk motor ${motorcycle.displayName}: ${modelUrl}`,
+      detail: `Memasang model 3D untuk motor ${motorcycle.displayName}: ${modelUrl}`,
     });
 
     res.status(201).json({
@@ -294,6 +370,7 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
     });
   } catch (error) {
     safeUnlinkFile(req.file?.path);
+    safeUnlinkFile(savedPastedPath);
     console.error('Error uploading motorcycle 3D model:', error);
     res.status(500).json({ error: 'Gagal menyimpan model 3D motor.' });
   }

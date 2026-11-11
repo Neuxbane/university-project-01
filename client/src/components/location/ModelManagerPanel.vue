@@ -16,7 +16,7 @@
           </span>
         </div>
         <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-          Unggah file <span class="font-mono">.glb</span> atau <span class="font-mono">.gltf</span> (maks. 20 MB) agar staf dapat memutar motor 360&deg;.
+          Unggah file <span class="font-mono">.glb / .gltf / .off</span> atau langsung copy-paste teks format <span class="font-mono">OFF</span>.
         </p>
       </div>
 
@@ -71,8 +71,33 @@
       </button>
     </div>
 
-    <!-- Upload / Replace .glb Dropzone -->
+    <!-- Input Mode Switcher (File Upload vs Copy-Paste OFF Text) -->
+    <div class="inline-flex rounded-xl bg-zinc-100 dark:bg-[#18181c] p-1 border border-zinc-300 dark:border-zinc-700 gap-1">
+      <button
+        type="button"
+        @click="inputMode = 'file'; errorMsg = ''"
+        class="min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+        :class="inputMode === 'file'
+          ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 shadow-sm'
+          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'"
+      >
+        Unggah File (.glb / .off)
+      </button>
+      <button
+        type="button"
+        @click="inputMode = 'off-paste'; errorMsg = ''"
+        class="min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+        :class="inputMode === 'off-paste'
+          ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 shadow-sm'
+          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'"
+      >
+        Copy-Paste Teks OFF
+      </button>
+    </div>
+
+    <!-- Upload / Replace .glb / .gltf / .off Dropzone -->
     <div
+      v-if="inputMode === 'file'"
       class="rounded-xl border-2 border-dashed p-4 transition-colors"
       :class="isDragging
         ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-100 dark:bg-zinc-800/70'
@@ -84,7 +109,7 @@
       <input
         ref="fileInputRef"
         type="file"
-        accept=".glb,.gltf"
+        accept=".glb,.gltf,.off"
         class="sr-only"
         @change="onFileSelected"
       />
@@ -96,10 +121,10 @@
           </div>
           <div class="min-w-0">
             <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-              {{ selectedFile ? selectedFile.name : (model?.modelUrl ? 'Ganti dengan file .glb / .gltf baru' : 'Pilih atau seret file .glb / .gltf ke sini') }}
+              {{ selectedFile ? selectedFile.name : (model?.modelUrl ? 'Ganti dengan file .glb / .gltf / .off baru' : 'Pilih atau seret file .glb / .gltf / .off ke sini') }}
             </p>
             <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
-              {{ selectedFile ? formatFileSize(selectedFile.size) : 'Format offline GLB/GLTF • Maks. 20 MB' }}
+              {{ selectedFile ? formatFileSize(selectedFile.size) : 'Format offline GLB, GLTF, atau OFF • Maks. 20 MB' }}
             </p>
           </div>
         </div>
@@ -123,6 +148,64 @@
             {{ isUploading ? 'Mengunggah...' : 'Unggah & Pasang' }}
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Copy-Paste OFF Text Mode -->
+    <div v-else class="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50/70 dark:bg-[#18181c]/70 p-3.5 space-y-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <label for="off-paste-input" class="text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+          Tempel Data Format OFF (OFF / COFF / NOFF)
+        </label>
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            @click="fillSampleOff"
+            class="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+          >
+            Isi Contoh OFF
+          </button>
+          <button
+            v-if="offTextInput"
+            type="button"
+            @click="offTextInput = ''"
+            class="px-2.5 py-1 rounded-lg text-[11px] text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+          >
+            Bersihkan
+          </button>
+        </div>
+      </div>
+
+      <textarea
+        id="off-paste-input"
+        v-model="offTextInput"
+        rows="7"
+        spellcheck="false"
+        placeholder="OFF&#10;8 6 0&#10;-0.5 -0.5 0.5&#10;0.5 -0.5 0.5&#10;..."
+        class="w-full p-3 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 font-mono text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+      ></textarea>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="text-[11px] font-mono">
+          <span v-if="!offTextInput.trim()" class="text-zinc-500">
+            Tempel langsung teks OFF dari Blender/MeshLab/generator AI.
+          </span>
+          <span v-else-if="offPreviewCheck.valid" class="text-emerald-700 dark:text-emerald-400 font-semibold">
+            Siap dipasang: {{ offPreviewCheck.vertexCount }} vertex &bull; {{ offPreviewCheck.faceCount }} face ({{ offPreviewCheck.triangleCount }} segitiga)
+          </span>
+          <span v-else class="text-rose-700 dark:text-rose-400">
+            {{ offPreviewCheck.error }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          @click="uploadPastedOff"
+          :disabled="isUploading || !offPreviewCheck.valid"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40 shrink-0"
+        >
+          {{ isUploading ? 'Memasang...' : 'Pasang Model OFF' }}
+        </button>
       </div>
     </div>
 
@@ -221,6 +304,7 @@
 import { ref, computed, watch } from 'vue';
 import { Box, Trash2, Upload, X } from 'lucide-vue-next';
 import { useAuthStore } from '../../stores/auth';
+import { parseOffToGeometry } from '../../utils/offParser';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 
 const props = defineProps({
@@ -232,6 +316,8 @@ const props = defineProps({
 const emit = defineEmits(['uploaded', 'updated', 'deleted', 'close']);
 
 const auth = useAuthStore();
+const inputMode = ref('file');
+const offTextInput = ref('');
 const fileInputRef = ref(null);
 const selectedFile = ref(null);
 const isDragging = ref(false);
@@ -277,8 +363,8 @@ function validateAndStageFile(file) {
   errorMsg.value = '';
   if (!file) return;
   const name = file.name.toLowerCase();
-  if (!name.endsWith('.glb') && !name.endsWith('.gltf')) {
-    errorMsg.value = 'Format tidak didukung. Pilih file .glb atau .gltf.';
+  if (!name.endsWith('.glb') && !name.endsWith('.gltf') && !name.endsWith('.off')) {
+    errorMsg.value = 'Format tidak didukung. Pilih file .glb, .gltf, atau .off.';
     return;
   }
   if (file.size > 20 * 1024 * 1024) {
@@ -287,6 +373,72 @@ function validateAndStageFile(file) {
   }
   selectedFile.value = file;
 }
+
+const offPreviewCheck = computed(() => {
+  const txt = offTextInput.value.trim();
+  if (!txt) return { valid: false, error: '' };
+  try {
+    const parsed = parseOffToGeometry(txt);
+    parsed.geometry.dispose();
+    return {
+      valid: true,
+      vertexCount: parsed.vertexCount,
+      faceCount: parsed.faceCount,
+      triangleCount: parsed.triangleCount,
+    };
+  } catch (err) {
+    return { valid: false, error: err.message || 'Format OFF tidak valid.' };
+  }
+});
+
+const fillSampleOff = () => {
+  offTextInput.value = [
+    'OFF',
+    '8 6 0',
+    '-0.5 -0.3 0.3',
+    '0.5 -0.3 0.3',
+    '0.5 0.3 0.3',
+    '-0.5 0.3 0.3',
+    '-0.5 -0.3 -0.3',
+    '0.5 -0.3 -0.3',
+    '0.5 0.3 -0.3',
+    '-0.5 0.3 -0.3',
+    '4 0 1 2 3',
+    '4 5 4 7 6',
+    '4 1 5 6 2',
+    '4 4 0 3 7',
+    '4 3 2 6 7',
+    '4 4 5 1 0',
+  ].join('\n');
+};
+
+const uploadPastedOff = async () => {
+  if (!offPreviewCheck.value.valid || isUploading.value) return;
+  errorMsg.value = '';
+  isUploading.value = true;
+  try {
+    const res = await auth.apiFetch(`/api/motorcycles/${props.motorcycleId}/model`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offText: offTextInput.value,
+        scale: scaleDraft.value || 1,
+        rotationY: ((rotDegDraft.value || 0) * Math.PI) / 180,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal memasang model OFF.');
+
+    offTextInput.value = '';
+    emit('uploaded', data);
+  } catch (err) {
+    errorMsg.value = err.message === 'Failed to fetch'
+      ? 'Sambungan ke server terputus saat menyimpan model OFF.'
+      : err.message;
+  } finally {
+    isUploading.value = false;
+  }
+};
 
 const onFileSelected = (e) => {
   const file = e.target.files?.[0];

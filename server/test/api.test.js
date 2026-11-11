@@ -828,4 +828,54 @@ describe('Hex Titanium Bolt System API Tests', () => {
       assert.equal(reactivate.data.isActive, true);
     }
   });
+
+  test('17. OFF 3D model compatibility (copy-paste JSON & .off file serving)', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: adminToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    assert.ok(beat);
+
+    // 1. Invalid OFF text should return HTTP 400
+    const badOff = await apiRequest(`/api/motorcycles/${beat.id}/model`, {
+      method: 'POST',
+      token: adminToken,
+      body: { offText: 'NOT_AN_OFF_HEADER\n1 1 0' },
+    });
+    assert.equal(badOff.status, 400);
+
+    // 2. Valid copy-pasted OFF text creates a .off model cleanly
+    const validOffText = [
+      'OFF',
+      '4 4 0',
+      '0 0 0',
+      '1 0 0',
+      '0 1 0',
+      '0 0 1',
+      '3 0 1 2',
+      '3 0 1 3',
+      '3 1 2 3',
+      '3 2 0 3',
+    ].join('\n');
+
+    const createdOff = await apiRequest(`/api/motorcycles/${beat.id}/model`, {
+      method: 'POST',
+      token: adminToken,
+      body: { offText: validOffText, scale: 1.25 },
+    });
+    assert.equal(createdOff.status, 201);
+    assert.ok(createdOff.data.modelUrl.endsWith('.off'));
+    assert.equal(createdOff.data.scale, 1.25);
+
+    // 3. Static serving of pasted .off file works
+    const offRes = await fetch(`${baseUrl}${createdOff.data.modelUrl}`);
+    assert.equal(offRes.status, 200);
+    const bodyText = await offRes.text();
+    assert.ok(bodyText.startsWith('OFF'));
+
+    // 4. Clean up OFF model from Beat Deluxe
+    const delOff = await apiRequest(`/api/motorcycles/${beat.id}/model`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delOff.status, 200);
+  });
 });

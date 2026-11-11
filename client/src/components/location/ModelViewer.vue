@@ -341,6 +341,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Box, Check, Eye, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-next';
+import { parseOffToGeometry } from '../../utils/offParser';
 import { useTheme } from '../../composables/useTheme';
 import {
   resolvePartCalloutForAnnotation,
@@ -1021,6 +1022,50 @@ function animateLoop() {
   }
 }
 
+function applyLoadedScene(sceneObj) {
+  loadedModelRoot = sceneObj;
+  const scale = Number(props.model?.scale) || 1;
+  const rotY = Number(props.model?.rotationY) || 0;
+  loadedModelRoot.scale.setScalar(scale);
+  loadedModelRoot.rotation.y = rotY;
+  modelGroup.add(loadedModelRoot);
+
+  // Auto-fit camera to bounding box
+  updateModelBoxCorners();
+  const box = new THREE.Box3().setFromObject(loadedModelRoot);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  modelMaxDim = Math.max(size.x, size.y, size.z, 0.5);
+
+  const fovRad = (camera.fov * Math.PI) / 180;
+  const fitDist = Math.abs(modelMaxDim / (2 * Math.tan(fovRad / 2))) * 1.22;
+  modelCenter.copy(center);
+  baseFitDist = fitDist;
+  defaultTarget.copy(center);
+  defaultCamPos.set(
+    center.x + fitDist * 0.72,
+    center.y + fitDist * 0.38,
+    center.z + fitDist * 0.78
+  );
+
+  camera.near = Math.max(0.01, modelMaxDim / 200);
+  camera.far = Math.max(100, modelMaxDim * 40);
+  camera.position.copy(defaultCamPos);
+  camera.updateProjectionMatrix();
+
+  controls.target.copy(defaultTarget);
+  controls.minDistance = modelMaxDim * 0.35;
+  controls.maxDistance = modelMaxDim * 5;
+  controls.update();
+
+  rebuildHotspotSpheres();
+  isModelLoading.value = false;
+  lastInteractionAt = performance.now();
+  if (!prefersReducedMotion() && !props.annotationMode && !props.activeAnnotation) {
+    startCinematicMode({ initial: true });
+  }
+}
+
 function loadGLBModel() {
   if (!props.model?.modelUrl || !modelGroup) return;
   isModelLoading.value = true;
@@ -1032,52 +1077,39 @@ function loadGLBModel() {
     loadedModelRoot = null;
   }
 
+  const url = props.model.modelUrl;
+  if (url.toLowerCase().split('?')[0].endsWith('.off')) {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      })
+      .then((text) => {
+        const { geometry, hasColors } = parseOffToGeometry(text);
+        const mat = new THREE.MeshStandardMaterial({
+          color: hasColors ? 0xffffff : 0x94a3b8,
+          vertexColors: hasColors,
+          roughness: 0.44,
+          metalness: 0.35,
+          side: THREE.DoubleSide,
+        });
+        const mesh = new THREE.Mesh(geometry, mat);
+        const root = new THREE.Group();
+        root.add(mesh);
+        applyLoadedScene(root);
+      })
+      .catch((err) => {
+        console.error('Failed to load OFF 3D model:', err);
+        isModelLoading.value = false;
+        loadFailed.value = true;
+      });
+    return;
+  }
+
   const loader = new GLTFLoader();
   loader.load(
-    props.model.modelUrl,
-    (gltf) => {
-      loadedModelRoot = gltf.scene;
-      const scale = Number(props.model.scale) || 1;
-      const rotY = Number(props.model.rotationY) || 0;
-      loadedModelRoot.scale.setScalar(scale);
-      loadedModelRoot.rotation.y = rotY;
-      modelGroup.add(loadedModelRoot);
-
-      // Auto-fit camera to bounding box
-      updateModelBoxCorners();
-      const box = new THREE.Box3().setFromObject(loadedModelRoot);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-      modelMaxDim = Math.max(size.x, size.y, size.z, 0.5);
-
-      const fovRad = (camera.fov * Math.PI) / 180;
-      const fitDist = Math.abs(modelMaxDim / (2 * Math.tan(fovRad / 2))) * 1.22;
-      modelCenter.copy(center);
-      baseFitDist = fitDist;
-      defaultTarget.copy(center);
-      defaultCamPos.set(
-        center.x + fitDist * 0.72,
-        center.y + fitDist * 0.38,
-        center.z + fitDist * 0.78
-      );
-
-      camera.near = Math.max(0.01, modelMaxDim / 200);
-      camera.far = Math.max(100, modelMaxDim * 40);
-      camera.position.copy(defaultCamPos);
-      camera.updateProjectionMatrix();
-
-      controls.target.copy(defaultTarget);
-      controls.minDistance = modelMaxDim * 0.35;
-      controls.maxDistance = modelMaxDim * 5;
-      controls.update();
-
-      rebuildHotspotSpheres();
-      isModelLoading.value = false;
-      lastInteractionAt = performance.now();
-      if (!prefersReducedMotion() && !props.annotationMode && !props.activeAnnotation) {
-        startCinematicMode({ initial: true });
-      }
-    },
+    url,
+    (gltf) => applyLoadedScene(gltf.scene),
     undefined,
     (err) => {
       console.error('Failed to load 3D model:', err);

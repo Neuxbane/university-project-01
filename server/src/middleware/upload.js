@@ -54,10 +54,10 @@ function createModelUploader() {
 
   const fileFilter = (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.glb' || ext === '.gltf') {
+    if (ext === '.glb' || ext === '.gltf' || ext === '.off') {
       cb(null, true);
     } else {
-      cb(new Error('Hanya file model 3D (.glb atau .gltf) yang diperbolehkan.'));
+      cb(new Error('Hanya file model 3D (.glb, .gltf, atau .off) yang diperbolehkan.'));
     }
   };
 
