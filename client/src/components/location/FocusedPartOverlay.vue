@@ -139,12 +139,15 @@
         <div
           v-for="(entry, idx) in boltItems"
           :key="`card-${entry.key}`"
-          class="flex flex-col items-stretch gap-1 shrink-0"
+          class="flex flex-col items-stretch shrink-0"
         >
           <div
             :ref="(el) => setCardRef(entry.key, el)"
             class="w-[118px] sm:w-[132px] h-[104px] sm:h-[112px] rounded-xl transition-shadow"
-            :class="activeEntryKey === entry.key ? 'ring-2 ring-amber-400 shadow-lg' : ''"
+            :class="[
+              activeEntryKey === entry.key ? 'ring-2 ring-amber-400 shadow-lg' : '',
+              isTogglingCheck && entry.checkStatus ? 'opacity-65 pointer-events-none' : '',
+            ]"
           >
             <AutoCalloutCard
               :index="idx + 1"
@@ -157,22 +160,6 @@
               @select="onSelectEntry(entry)"
             />
           </div>
-
-          <!-- Compact inline checklist action pill (only visible in active PickSession checklist) -->
-          <button
-            v-if="entry.checkStatus"
-            type="button"
-            @click.stop="$emit('toggle-spec-check', entry.boltSpecId)"
-            :disabled="isTogglingCheck"
-            :aria-label="entry.checkStatus === 'done' ? `Batalkan ${entry.code}` : `Tandai diambil ${entry.code}`"
-            class="min-h-[36px] px-2.5 py-1 rounded-lg font-bold text-[11px] inline-flex items-center justify-center gap-1 shadow-sm cursor-pointer transition-colors disabled:opacity-50"
-            :class="entry.checkStatus === 'done'
-              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-              : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900'"
-          >
-            <Check class="w-3.5 h-3.5 stroke-[2.5]" aria-hidden="true" />
-            <span>{{ entry.checkStatus === 'done' ? 'Sudah Diambil' : 'Tandai Diambil' }}</span>
-          </button>
         </div>
       </div>
     </div>
@@ -194,7 +181,7 @@ const props = defineProps({
   isTogglingCheck: { type: Boolean, default: false },
 });
 
-defineEmits(['close', 'toggle-spec-check']);
+const emit = defineEmits(['close', 'toggle-spec-check']);
 
 const overlayGridRef = ref(null);
 const partCardRef = ref(null);
@@ -311,6 +298,12 @@ const boltItems = computed(() => {
 const totalQty = computed(() => boltItems.value.reduce((s, item) => s + Number(item.quantity || 0), 0));
 
 function onSelectEntry(entry) {
+  if (entry.checkStatus && entry.boltSpecId) {
+    if (props.isTogglingCheck) return;
+    activeEntryKey.value = entry.key;
+    emit('toggle-spec-check', entry.boltSpecId);
+    return;
+  }
   activeEntryKey.value = activeEntryKey.value === entry.key ? null : entry.key;
 }
 
