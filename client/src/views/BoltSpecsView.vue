@@ -258,9 +258,17 @@
               <div class="space-y-2">
                 <div class="flex items-start justify-between gap-2">
                   <div class="min-w-0">
-                    <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 mb-1">
-                      {{ p.category || 'Area Kustom' }}
-                    </span>
+                    <div class="flex flex-wrap items-center gap-1 mb-1">
+                      <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        {{ p.category || 'Area Kustom' }}
+                      </span>
+                      <span
+                        v-if="p.motorcycleType?.displayName"
+                        class="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 truncate max-w-[180px]"
+                      >
+                        {{ p.motorcycleType.displayName }}
+                      </span>
+                    </div>
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug break-words">
                       {{ p.name }}
                     </h3>

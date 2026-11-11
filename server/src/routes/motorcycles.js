@@ -119,25 +119,46 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
       }),
     ]);
 
-    // Derive distinct positions used on this motorcycle (with bolt count & boltSpecIds)
+    // Derive distinct positions belonging to or used on this motorcycle
     const posMap = new Map();
+    const ensurePosEntry = (p, side = 'NONE') => {
+      if (!p) return null;
+      if (!posMap.has(p.id)) {
+        posMap.set(p.id, {
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          photoUrl: p.photoUrl,
+          motorcycleTypeId: p.motorcycleTypeId ?? null,
+          quantity: 0,
+          side,
+          boltSpecIds: [],
+        });
+      }
+      return posMap.get(p.id);
+    };
+
     for (const reqRow of pickData.requirements) {
-      const p = reqRow.boltPosition;
-      if (!p) continue;
-      const existing = posMap.get(p.id) || {
-        id: p.id,
-        name: p.name,
-        category: p.category,
-        photoUrl: p.photoUrl,
-        quantity: 0,
-        side: reqRow.side,
-        boltSpecIds: [],
-      };
+      const existing = ensurePosEntry(reqRow.boltPosition, reqRow.side);
+      if (!existing) continue;
       existing.quantity += reqRow.quantity;
       if (!existing.boltSpecIds.includes(reqRow.boltSpecId)) {
         existing.boltSpecIds.push(reqRow.boltSpecId);
       }
-      posMap.set(p.id, existing);
+    }
+
+    for (const ann of annotations) {
+      ensurePosEntry(ann.boltPosition);
+    }
+
+    for (const cu of closeUpPhotos) {
+      ensurePosEntry(cu.boltPosition);
+    }
+
+    for (const p of allPositions) {
+      if (p.motorcycleTypeId === motorcycleTypeId) {
+        ensurePosEntry(p);
+      }
     }
 
     res.json({
@@ -730,6 +751,70 @@ router.patch('/:id/images/:imageId/primary', requireAuth, requireAdmin, async (r
   } catch (error) {
     console.error('Error setting primary image:', error);
     res.status(500).json({ error: 'Gagal mengatur foto utama motor.' });
+  }
+});
+
+// DELETE /api/motorcycles/:id/positions/:positionId (Admin only)
+// Removes all requirements, annotations, and close-up photos for this area on this motorcycle,
+// and deletes the BoltPosition row too if it is owned by this motorcycle or now completely unused.
+router.delete('/:id/positions/:positionId', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const motorcycleTypeId = parseInt(req.params.id, 10);
+    const boltPositionId = parseInt(req.params.positionId, 10);
+    if (!Number.isInteger(motorcycleTypeId) || !Number.isInteger(boltPositionId)) {
+      return res.status(400).json({ error: 'ID motor atau area posisi tidak valid.' });
+    }
+
+    const position = await prisma.boltPosition.findUnique({ where: { id: boltPositionId } });
+    if (!position) {
+      return res.status(404).json({ error: 'Area / posisi baut tidak ditemukan.' });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const [delReqs, delAnnos, delCus] = await Promise.all([
+        tx.motorBoltRequirement.deleteMany({ where: { motorcycleTypeId, boltPositionId } }),
+        tx.positionAnnotation.deleteMany({ where: { motorcycleTypeId, boltPositionId } }),
+        tx.closeUpPhoto.deleteMany({ where: { motorcycleTypeId, boltPositionId } }),
+      ]);
+
+      let removedPositionRecord = false;
+      if (position.motorcycleTypeId === motorcycleTypeId) {
+        await tx.boltPosition.delete({ where: { id: boltPositionId } });
+        removedPositionRecord = true;
+      } else if (position.motorcycleTypeId !== null) {
+        const remainingRefs = await Promise.all([
+          tx.motorBoltRequirement.count({ where: { boltPositionId } }),
+          tx.positionAnnotation.count({ where: { boltPositionId } }),
+          tx.closeUpPhoto.count({ where: { boltPositionId } }),
+        ]);
+        if (remainingRefs.every((c) => c === 0)) {
+          await tx.boltPosition.delete({ where: { id: boltPositionId } });
+          removedPositionRecord = true;
+        }
+      }
+
+      return {
+        removedPositionRecord,
+        deletedCounts: {
+          requirements: delReqs.count,
+          annotations: delAnnos.count,
+          closeUpPhotos: delCus.count,
+        },
+      };
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'DELETE',
+      entity: 'MOTOR_AREA',
+      entityId: boltPositionId,
+      detail: `Menghapus area "${position.name}" dari motor ID ${motorcycleTypeId} (removedPos=${result.removedPositionRecord})`,
+    });
+
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Error removing motorcycle area:', error);
+    res.status(500).json({ error: 'Gagal menghapus area dari motor.' });
   }
 });
 

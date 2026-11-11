@@ -729,4 +729,61 @@ describe('Hex Titanium Bolt System API Tests', () => {
     await apiRequest(`/api/positions/${beatPos.data.boltPositionId}`, { method: 'DELETE', token: adminToken });
     await apiRequest(`/api/positions/${varioPos.data.boltPositionId}`, { method: 'DELETE', token: adminToken });
   });
+
+  test('15. Removing a motor-scoped custom area deletes bolts, pins, and cleans up orphaned BoltPosition', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const { data: specs } = await apiRequest('/api/bolt-specs', { token: staffToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    assert.ok(beat && specs.length > 0);
+
+    const customName = `ad-area-${Date.now()}`;
+
+    // 1. Create motor-owned custom area + 3D pin + bolt requirement atomically
+    const created = await apiRequest('/api/position-annotations', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        customAreaName: customName,
+        motorcycleTypeId: beat.id,
+        x: 0.25,
+        y: 0.4,
+        z: -0.1,
+        boltSpecId: specs[0].id,
+        quantity: 2,
+      },
+    });
+    assert.equal(created.status, 201);
+    const posId = created.data.boltPositionId;
+    const reqId = created.data.createdRequirement?.id;
+    assert.ok(posId && reqId);
+
+    // 2. Delete ONLY the bolt; motor-owned area stays visible in location-map.positions (no silent ghost)
+    const delBolt = await apiRequest(`/api/requirements/${reqId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delBolt.status, 200);
+
+    const mapAfterBoltDel = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: staffToken });
+    assert.equal(mapAfterBoltDel.status, 200);
+    assert.ok(mapAfterBoltDel.data.positions.some((p) => p.id === posId));
+
+    // 3. Delete the area from the motorcycle via DELETE /api/motorcycles/:id/positions/:positionId
+    const delArea = await apiRequest(`/api/motorcycles/${beat.id}/positions/${posId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delArea.status, 200);
+    assert.equal(delArea.data.success, true);
+    assert.equal(delArea.data.removedPositionRecord, true);
+    assert.equal(delArea.data.deletedCounts.annotations, 1);
+
+    // Verify area, pins, and orphaned BoltPosition record are all gone
+    const afterAreaDelMap = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: staffToken });
+    assert.equal(afterAreaDelMap.data.positions.some((p) => p.id === posId), false);
+    assert.equal(afterAreaDelMap.data.annotations.some((a) => a.boltPositionId === posId), false);
+
+    const allPos = await apiRequest('/api/positions', { token: staffToken });
+    assert.equal(allPos.data.some((p) => p.id === posId), false);
+  });
 });

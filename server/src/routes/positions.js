@@ -22,6 +22,9 @@ router.get('/', requireAuth, async (req, res) => {
       where,
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       include: {
+        motorcycleType: {
+          select: { id: true, displayName: true },
+        },
         _count: {
           select: { requirements: true, annotations: true, closeUpPhotos: true },
         },
@@ -120,6 +123,9 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     const existing = await prisma.boltPosition.findUnique({
       where: { id },
       include: {
+        motorcycleType: {
+          select: { id: true, displayName: true },
+        },
         _count: {
           select: { requirements: true, annotations: true, closeUpPhotos: true },
         },

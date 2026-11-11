@@ -258,6 +258,17 @@
                       <Camera class="w-3.5 h-3.5" aria-hidden="true" />
                       <span class="hidden sm:inline">Close-Up</span>
                     </button>
+
+                    <button
+                      v-if="auth.isAdmin"
+                      type="button"
+                      @click="confirmDeleteArea = area"
+                      :title="`Hapus area ${area.positionName} dari motor ini`"
+                      :aria-label="`Hapus area ${area.positionName} dari motor ini`"
+                      class="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-xl text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15 cursor-pointer"
+                    >
+                      <Trash2 class="w-4 h-4" aria-hidden="true" />
+                    </button>
                   </div>
                 </div>
 
@@ -636,12 +647,23 @@
     <!-- Confirm Delete Requirement -->
     <ConfirmDialog
       :open="Boolean(confirmDeleteReq)"
-      title="Hapus baut dari matriks?"
-      :message="`Baut ${confirmDeleteReq?.boltSpec?.code} (${confirmDeleteReq?.quantity} pcs) akan dihapus dari posisi ${confirmDeleteReq?.boltPosition?.name}.`"
-      confirm-text="Ya, Hapus"
+      title="Hapus baut dari area?"
+      :message="`Baut ${confirmDeleteReq?.boltSpec?.code} (${confirmDeleteReq?.quantity} pcs) akan dihapus dari area ${confirmDeleteReq?.boltPosition?.name}.`"
+      confirm-text="Ya, Hapus Baut"
       :danger="true"
       @confirm="executeDeleteReq"
       @cancel="confirmDeleteReq = null"
+    />
+
+    <!-- Confirm Delete Entire Area from This Motor -->
+    <ConfirmDialog
+      :open="Boolean(confirmDeleteArea)"
+      title="Hapus area ini dari motor?"
+      :message="confirmDeleteArea ? `Area '${confirmDeleteArea.positionName}' beserta ${confirmDeleteArea.requirements.length} item baut, ${confirmDeleteArea.annotationsCount} titik peta 3D/2D, dan foto close-up terkait pada motor ini akan dihapus.` : ''"
+      confirm-text="Ya, Hapus Area"
+      :danger="true"
+      @confirm="executeDeleteArea"
+      @cancel="confirmDeleteArea = null"
     />
 
     <!-- Confirm Delete Motor Image -->
@@ -736,6 +758,7 @@ const newReq = ref({
 });
 const isSubmittingReq = ref(false);
 const confirmDeleteReq = ref(null);
+const confirmDeleteArea = ref(null);
 
 // Map / 3D annotation state
 const annotationMode = ref(false);
@@ -776,6 +799,7 @@ const groupedAreas = computed(() => {
       category: pos.category || '',
       sortOrder: pos.sortOrder ?? 0,
       requirements: [],
+      annotationsCount: 0,
       hasAnnotation: false,
       totalQty: 0,
     });
@@ -790,6 +814,7 @@ const groupedAreas = computed(() => {
         category: req.boltPosition?.category || '',
         sortOrder: req.boltPosition?.sortOrder ?? 0,
         requirements: [],
+        annotationsCount: 0,
         hasAnnotation: false,
         totalQty: 0,
       });
@@ -808,11 +833,14 @@ const groupedAreas = computed(() => {
         category: ann.boltPosition?.category || '',
         sortOrder: ann.boltPosition?.sortOrder ?? 0,
         requirements: [],
+        annotationsCount: 0,
         hasAnnotation: true,
         totalQty: 0,
       });
     }
-    byPos.get(pid).hasAnnotation = true;
+    const g = byPos.get(pid);
+    g.hasAnnotation = true;
+    g.annotationsCount += 1;
   }
 
   const all = Array.from(byPos.values()).sort(
@@ -963,6 +991,30 @@ const executeDeleteReq = async () => {
     await loadAll({ silent: true });
   } catch (err) {
     toast.error(err.message || 'Gagal menghapus item.');
+  }
+};
+
+const executeDeleteArea = async () => {
+  if (!confirmDeleteArea.value || !motor.value) return;
+  const target = confirmDeleteArea.value;
+  confirmDeleteArea.value = null;
+  try {
+    const res = await auth.apiFetch(`/api/motorcycles/${motor.value.id}/positions/${target.positionId}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal menghapus area dari motor.');
+    if (activeAnnotation.value?.boltPositionId === target.positionId) {
+      activeAnnotation.value = null;
+      focusedBolt.value = null;
+    }
+    if (pendingAnnotationPositionId.value === target.positionId) {
+      pendingAnnotationPositionId.value = null;
+    }
+    toast.success(`Area "${target.positionName}" dihapus`);
+    await loadAll({ silent: true });
+  } catch (err) {
+    toast.error(err.message || 'Gagal menghapus area.');
   }
 };
 
