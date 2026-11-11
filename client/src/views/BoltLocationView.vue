@@ -223,6 +223,7 @@
               @select-annotation="onSelectAnnotation"
               @clear-selection="clearSelection"
               @create-annotation="handleCreateAnnotation"
+              @update-annotation="handleUpdateAnnotation"
               @delete-annotation="handleDeleteAnnotation"
               @enable-annotation="annotationMode = true"
             />
@@ -404,7 +405,16 @@ const clearSelection = () => {
   activeAnnotation.value = null;
 };
 
-const handleCreateAnnotation = async ({ boltPositionId, x, y, label }) => {
+const handleCreateAnnotation = async ({
+  boltPositionId,
+  x,
+  y,
+  z = 0,
+  normalX = 0,
+  normalY = 0,
+  normalZ = 1,
+  label,
+}) => {
   if (!locationData.value || isSavingAnnotation.value) return;
   isSavingAnnotation.value = true;
   try {
@@ -417,6 +427,10 @@ const handleCreateAnnotation = async ({ boltPositionId, x, y, label }) => {
         modelId: locationData.value.model?.id || null,
         x,
         y,
+        z,
+        normalX,
+        normalY,
+        normalZ,
         label,
       }),
     });
@@ -428,6 +442,33 @@ const handleCreateAnnotation = async ({ boltPositionId, x, y, label }) => {
     toast.success('Titik lokasi baut berhasil disimpan');
   } catch (err) {
     toast.error(err.message || 'Gagal menyimpan titik lokasi.');
+  } finally {
+    isSavingAnnotation.value = false;
+  }
+};
+
+const handleUpdateAnnotation = async ({ id, boltPositionId, label }) => {
+  if (!locationData.value || isSavingAnnotation.value) return;
+  isSavingAnnotation.value = true;
+  try {
+    const res = await auth.apiFetch(`/api/position-annotations/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ boltPositionId, label }),
+    });
+    const updated = await res.json();
+    if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui penanda lokasi.');
+
+    const idx = locationData.value.annotations.findIndex((a) => a.id === id);
+    if (idx !== -1) {
+      locationData.value.annotations[idx] = updated;
+    }
+    if (activeAnnotation.value?.id === id) {
+      activeAnnotation.value = updated;
+    }
+    toast.success('Titik lokasi diperbarui');
+  } catch (err) {
+    toast.error(err.message || 'Gagal memperbarui titik lokasi.');
   } finally {
     isSavingAnnotation.value = false;
   }

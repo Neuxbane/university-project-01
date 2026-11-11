@@ -15,6 +15,7 @@
     @select-annotation="$emit('select-annotation', $event)"
     @clear-selection="$emit('clear-selection')"
     @create-annotation="$emit('create-annotation', $event)"
+    @update-annotation="$emit('update-annotation', $event)"
     @delete-annotation="$emit('delete-annotation', $event)"
     @enable-annotation="$emit('enable-annotation')"
   />
@@ -30,7 +31,7 @@
       <div class="flex items-center gap-2 min-w-0">
         <Box class="w-4 h-4 text-zinc-600 dark:text-zinc-400 shrink-0" aria-hidden="true" />
         <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
-          Model 3D Motor
+          {{ annotationMode ? 'Mode Anotasi 3D — Ketuk permukaan motor' : 'Model 3D Motor' }}
         </span>
       </div>
 
@@ -47,7 +48,13 @@
       class="relative w-full aspect-[4/3] sm:aspect-[16/11] bg-zinc-100 dark:bg-[#09090b] overflow-hidden select-none"
       :class="isFullscreen ? 'h-full aspect-auto flex-1' : ''"
     >
-      <canvas ref="canvasRef" class="block w-full h-full touch-none outline-none"></canvas>
+      <canvas
+        ref="canvasRef"
+        @pointerdown="onCanvasPointerDown"
+        @pointerup="onCanvasPointerUp"
+        class="block w-full h-full touch-none outline-none"
+        :class="annotationMode && canAnnotate ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'"
+      ></canvas>
 
       <!-- Loading Overlay -->
       <div
@@ -128,9 +135,21 @@
         </button>
       </template>
 
+      <!-- Ghost Draft Marker Overlay (while placing 3D annotation) -->
+      <div
+        v-if="annotationMode && draftProjected && draftProjected.visible"
+        class="absolute -translate-x-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center pointer-events-none z-30"
+        :style="{ left: `${draftProjected.screenX}px`, top: `${draftProjected.screenY}px` }"
+      >
+        <span class="absolute w-8 h-8 rounded-full bg-sky-400/50 motion-safe:animate-ping"></span>
+        <span class="relative w-6 h-6 rounded-full bg-sky-500 border-2 border-white text-white font-mono text-xs font-bold flex items-center justify-center shadow-lg">
+          +
+        </span>
+      </div>
+
       <!-- Floating Bolt Card anchored in opposite quadrant of projected hotspot -->
       <div
-        v-if="activeProjected && activeProjected.visible && !activeProjected.occluded && selectedBolt"
+        v-if="activeProjected && activeProjected.visible && !activeProjected.occluded && selectedBolt && !annotationMode"
         ref="cardWrapRef"
         class="absolute z-30 pointer-events-none"
         :class="cardPositionClass"
@@ -144,22 +163,39 @@
 
       <!-- Empty 3D Annotations Overlay -->
       <div
-        v-if="!isModelLoading && annotations3D.length === 0"
-        class="absolute inset-x-4 bottom-4 z-20 bg-zinc-950/85 backdrop-blur-md border border-zinc-700 rounded-2xl p-3.5 text-center"
+        v-if="!isModelLoading && annotations3D.length === 0 && !annotationMode"
+        class="absolute inset-x-4 bottom-4 z-20 bg-zinc-950/85 backdrop-blur-md border border-zinc-700 rounded-2xl p-3.5 text-center space-y-2"
       >
         <p class="text-xs sm:text-sm font-semibold text-white">
           Belum ada titik 3D yang ditandai pada model ini.
         </p>
+        <button
+          v-if="canAnnotate"
+          type="button"
+          @click.stop="$emit('enable-annotation')"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-white text-zinc-900 text-xs font-bold cursor-pointer hover:bg-zinc-200 transition-colors"
+        >
+          Tandai Lokasi Sekarang
+        </button>
       </div>
     </div>
 
-    <!-- Phase C notice when admin toggles annotation mode on a 3D model -->
-    <div
+    <!-- Phase C: Inline 3D Annotation Editor (Admin only) -->
+    <AnnotationEditor
       v-if="annotationMode && canAnnotate"
-      class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-sky-50 dark:bg-sky-500/10 text-xs text-sky-900 dark:text-sky-200"
-    >
-      Editor anotasi 3D interaktif akan hadir pada Fase C. Anda tetap dapat memutar dan memeriksa model 3D sekarang.
-    </div>
+      :positions="positions"
+      :all-positions="allPositions"
+      :annotations="annotations3D"
+      :active-annotation-id="activeAnnotation?.id || null"
+      :draft-point="draftPoint"
+      :is-saving="isSavingAnnotation"
+      :is-deleting="isDeletingAnnotation"
+      @select-annotation="onHotspotClick"
+      @clear-draft="clearDraft"
+      @create-annotation="onCreateFromEditor"
+      @update-annotation="$emit('update-annotation', $event)"
+      @delete-annotation="$emit('delete-annotation', $event)"
+    />
   </div>
 </template>
 
@@ -173,6 +209,7 @@ import { useTheme } from '../../composables/useTheme';
 import LocationCanvas from './LocationCanvas.vue';
 import FloatingBoltCard from './FloatingBoltCard.vue';
 import LeaderLine from './LeaderLine.vue';
+import AnnotationEditor from './AnnotationEditor.vue';
 
 const props = defineProps({
   motorcycle: { type: Object, default: null },
@@ -192,6 +229,7 @@ const emit = defineEmits([
   'select-annotation',
   'clear-selection',
   'create-annotation',
+  'update-annotation',
   'delete-annotation',
   'enable-annotation',
 ]);
@@ -206,6 +244,8 @@ const isModelLoading = ref(false);
 const loadFailed = ref(false);
 const isFullscreen = ref(false);
 const projectedHotspots = ref([]);
+const draftPoint = ref(null);
+const draftProjected = ref(null);
 const lineCoords = ref(null);
 
 const has3DModel = computed(() => Boolean(props.model?.modelUrl));
@@ -240,6 +280,8 @@ let controls = null;
 let modelGroup = null;
 let loadedModelRoot = null;
 let hotspotSpheres = [];
+let ghostSphere = null;
+let pointerDownPos = null;
 let animFrameId = null;
 let resizeObserver = null;
 let defaultCamPos = new THREE.Vector3(3, 2, 3);
@@ -414,11 +456,25 @@ function projectHotspotsFrame() {
 
   projectedHotspots.value = nextProjected;
 
+  // Project ghost marker if placing a 3D annotation
+  if (ghostSphere && ghostSphere.visible && draftPoint.value !== null) {
+    ghostSphere.getWorldPosition(worldPos);
+    const ndc = worldPos.clone().project(camera);
+    const inFront = ndc.z >= -1 && ndc.z <= 1;
+    draftProjected.value = {
+      screenX: (ndc.x * 0.5 + 0.5) * width,
+      screenY: (-ndc.y * 0.5 + 0.5) * height,
+      visible: inFront,
+    };
+  } else {
+    draftProjected.value = null;
+  }
+
   // Update SVG LeaderLine to FloatingBoltCard if active
   const active = props.activeAnnotation
     ? nextProjected.find((p) => p.annotation.id === props.activeAnnotation.id)
     : null;
-  if (active && active.visible && !active.occluded && props.selectedBolt && cardWrapRef.value) {
+  if (active && active.visible && !active.occluded && props.selectedBolt && !props.annotationMode && cardWrapRef.value) {
     const stageRect = stageRef.value.getBoundingClientRect();
     const cardRect = cardWrapRef.value.getBoundingClientRect();
     const cardLeft = cardRect.left - stageRect.left;
@@ -552,7 +608,83 @@ function cleanupThree() {
   modelGroup = null;
   loadedModelRoot = null;
   hotspotSpheres = [];
+  ghostSphere = null;
 }
+
+function ensureGhostSphere() {
+  if (!modelGroup) return null;
+  if (!ghostSphere) {
+    const radius = Math.max(0.018, modelMaxDim * 0.018);
+    const geom = new THREE.SphereGeometry(radius, 16, 16);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x0ea5e9,
+      transparent: true,
+      opacity: 0.85,
+    });
+    ghostSphere = new THREE.Mesh(geom, mat);
+    ghostSphere.visible = false;
+    modelGroup.add(ghostSphere);
+  }
+  return ghostSphere;
+}
+
+const clearDraft = () => {
+  draftPoint.value = null;
+  draftProjected.value = null;
+  if (ghostSphere) {
+    ghostSphere.visible = false;
+  }
+};
+
+const onCanvasPointerDown = (e) => {
+  if (!props.annotationMode || !props.canAnnotate) return;
+  if (e.button !== undefined && e.button !== 0) return;
+  pointerDownPos = { x: e.clientX, y: e.clientY };
+};
+
+const onCanvasPointerUp = (e) => {
+  if (!props.annotationMode || !props.canAnnotate || !pointerDownPos) return;
+  const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+  pointerDownPos = null;
+  if (dist >= 6 || !loadedModelRoot || !camera || !stageRef.value || !modelGroup) return;
+
+  const rect = stageRef.value.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
+  const ndc = new THREE.Vector2(
+    ((e.clientX - rect.left) / rect.width) * 2 - 1,
+    -((e.clientY - rect.top) / rect.height) * 2 + 1
+  );
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObject(loadedModelRoot, true);
+  if (!hits.length) return;
+
+  const hit = hits[0];
+  const localPoint = modelGroup.worldToLocal(hit.point.clone());
+  const worldNormal = hit.face
+    ? hit.face.normal.clone().transformDirection(hit.object.matrixWorld).normalize()
+    : new THREE.Vector3(0, 1, 0);
+
+  draftPoint.value = {
+    x: Number(localPoint.x.toFixed(4)),
+    y: Number(localPoint.y.toFixed(4)),
+    z: Number(localPoint.z.toFixed(4)),
+    normalX: Number(worldNormal.x.toFixed(4)),
+    normalY: Number(worldNormal.y.toFixed(4)),
+    normalZ: Number(worldNormal.z.toFixed(4)),
+  };
+
+  const ghost = ensureGhostSphere();
+  if (ghost) {
+    ghost.position.copy(localPoint);
+    ghost.visible = true;
+  }
+};
+
+const onCreateFromEditor = (payload) => {
+  emit('create-annotation', payload);
+  clearDraft();
+};
 
 function initThree() {
   if (!has3DModel.value || !canvasRef.value || !stageRef.value) return;
@@ -627,6 +759,13 @@ watch(
       await nextTick();
       initThree();
     }
+  }
+);
+
+watch(
+  () => props.annotationMode,
+  (active) => {
+    if (!active) clearDraft();
   }
 );
 
