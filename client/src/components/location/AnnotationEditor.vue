@@ -121,24 +121,15 @@
           <form v-else @submit.prevent="submitEdit(ann.id)" class="space-y-2.5 pt-1">
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
               <div class="sm:col-span-6">
-                <label :for="`edit-pos-${ann.id}`" class="sr-only">Posisi Baut</label>
-                <select
-                  :id="`edit-pos-${ann.id}`"
-                  v-model="editForm.boltPositionId"
-                  required
-                  class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100"
-                >
-                  <optgroup v-if="positions.length" label="Posisi di Motor Ini">
-                    <option v-for="p in positions" :key="`em-${p.id}`" :value="p.id">
-                      {{ p.name }} ({{ p.quantity }} baut)
-                    </option>
-                  </optgroup>
-                  <optgroup v-if="otherPositions.length" label="Semua Posisi Lainnya">
-                    <option v-for="p in otherPositions" :key="`ea-${p.id}`" :value="p.id">
-                      {{ p.name }} ({{ p.category }})
-                    </option>
-                  </optgroup>
-                </select>
+                <AreaLabelInput
+                  :input-id="`edit-pos-${ann.id}`"
+                  label="Area / Posisi Baut"
+                  v-model:position-id="editForm.boltPositionId"
+                  v-model:custom-name="editForm.customName"
+                  v-model:custom-category="editForm.customCategory"
+                  :motor-positions="positions"
+                  :required="true"
+                />
               </div>
               <div class="sm:col-span-6">
                 <label :for="`edit-lbl-${ann.id}`" class="sr-only">Label</label>
@@ -187,7 +178,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import AreaLabelInput from '../ui/AreaLabelInput.vue';
@@ -215,22 +206,8 @@ const draftCustomName = ref('');
 const draftCustomCategory = ref('');
 const draftLabel = ref('');
 const editingId = ref(null);
-const editForm = ref({ boltPositionId: '', label: '' });
+const editForm = ref({ boltPositionId: '', customName: '', customCategory: '', label: '' });
 const confirmDeleteTarget = ref(null);
-
-const otherPositions = computed(() => {
-  const motorIds = new Set(props.positions.map((p) => p.id));
-  return props.allPositions.filter((p) => !motorIds.has(p.id));
-});
-
-watch(
-  () => props.draftPoint,
-  (val) => {
-    if (val && !draftPositionId.value && props.positions.length > 0) {
-      draftPositionId.value = props.positions[0].id;
-    }
-  }
-);
 
 const submitCreate = () => {
   if (!props.draftPoint || (!draftPositionId.value && !draftCustomName.value.trim())) return;
@@ -246,6 +223,7 @@ const submitCreate = () => {
     normalZ: props.draftPoint.normalZ,
     label: draftLabel.value.trim() || null,
   });
+  draftPositionId.value = '';
   draftCustomName.value = '';
   draftCustomCategory.value = '';
   draftLabel.value = '';
@@ -255,6 +233,8 @@ const startEdit = (ann) => {
   editingId.value = ann.id;
   editForm.value = {
     boltPositionId: ann.boltPositionId,
+    customName: '',
+    customCategory: ann.boltPosition?.category || '',
     label: ann.label || '',
   };
 };
@@ -262,7 +242,9 @@ const startEdit = (ann) => {
 const submitEdit = (id) => {
   emit('update-annotation', {
     id,
-    boltPositionId: editForm.value.boltPositionId,
+    boltPositionId: editForm.value.boltPositionId || null,
+    customAreaName: editForm.value.customName.trim() || null,
+    customAreaCategory: editForm.value.customCategory.trim() || null,
     label: editForm.value.label.trim() || null,
   });
   editingId.value = null;

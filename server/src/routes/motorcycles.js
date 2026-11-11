@@ -79,6 +79,12 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
         orderBy: { id: 'asc' },
       }),
       prisma.boltPosition.findMany({
+        where: {
+          OR: [
+            { motorcycleTypeId },
+            { id: { in: pickData.requirements.map((r) => r.boltPositionId) } },
+          ],
+        },
         orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       }),
       prisma.package.findMany({

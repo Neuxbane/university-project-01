@@ -5,6 +5,7 @@ const csvParser = require('csv-parser');
 const prisma = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
+const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -42,11 +43,6 @@ router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), a
       motorMap.set(key, m);
     }
 
-    const posMap = new Map();
-    for (const p of positions) {
-      posMap.set(p.name.toLowerCase(), p);
-    }
-
     const specMap = new Map();
     for (const s of specs) {
       specMap.set(s.code.toLowerCase(), s);
@@ -80,12 +76,6 @@ router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), a
         return;
       }
 
-      const pos = posMap.get(positionName.toLowerCase());
-      if (!pos) {
-        errors.push({ row: lineNum, message: `Posisi baut '${positionName}' tidak ditemukan dalam master posisi.` });
-        return;
-      }
-
       const spec = specMap.get(boltCode.toLowerCase());
       if (!spec) {
         errors.push({ row: lineNum, message: `Kode spesifikasi baut '${boltCode}' tidak ditemukan dalam master spesifikasi.` });
@@ -99,7 +89,7 @@ router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), a
 
       validRows.push({
         motorcycleTypeId: motor.id,
-        boltPositionId: pos.id,
+        positionName,
         boltSpecId: spec.id,
         quantity,
         side,
@@ -120,11 +110,15 @@ router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), a
     let importedCount = 0;
     await prisma.$transaction(async (tx) => {
       for (const item of validRows) {
+        const position = await resolveOrCreatePosition(tx, {
+          customAreaName: item.positionName,
+          motorcycleTypeId: item.motorcycleTypeId,
+        });
         await tx.motorBoltRequirement.upsert({
           where: {
             motorcycleTypeId_boltPositionId_boltSpecId_side: {
               motorcycleTypeId: item.motorcycleTypeId,
-              boltPositionId: item.boltPositionId,
+              boltPositionId: position.id,
               boltSpecId: item.boltSpecId,
               side: item.side,
             },
@@ -134,7 +128,15 @@ router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), a
             isOptional: item.isOptional,
             notes: item.notes,
           },
-          create: item,
+          create: {
+            motorcycleTypeId: item.motorcycleTypeId,
+            boltPositionId: position.id,
+            boltSpecId: item.boltSpecId,
+            quantity: item.quantity,
+            side: item.side,
+            isOptional: item.isOptional,
+            notes: item.notes,
+          },
         });
         importedCount++;
       }
@@ -206,8 +208,21 @@ router.post('/restore', requireAuth, requireAdmin, async (req, res) => {
       for (const pos of backupData.positions) {
         await tx.boltPosition.upsert({
           where: { id: pos.id },
-          update: { name: pos.name, category: pos.category, sortOrder: pos.sortOrder, notes: pos.notes },
-          create: { id: pos.id, name: pos.name, category: pos.category, sortOrder: pos.sortOrder, notes: pos.notes },
+          update: {
+            name: pos.name,
+            category: pos.category,
+            sortOrder: pos.sortOrder,
+            notes: pos.notes,
+            motorcycleTypeId: pos.motorcycleTypeId ?? null,
+          },
+          create: {
+            id: pos.id,
+            name: pos.name,
+            category: pos.category,
+            sortOrder: pos.sortOrder,
+            notes: pos.notes,
+            motorcycleTypeId: pos.motorcycleTypeId ?? null,
+          },
         });
       }
 

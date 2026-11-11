@@ -158,11 +158,15 @@ async function main() {
 
   const positionsMap = {};
   for (const pos of positionsData) {
-    const record = await prisma.boltPosition.upsert({
-      where: { name: pos.name },
-      update: pos,
-      create: pos,
+    // Positions are now scoped per motorcycle. Seed rows act as a shared
+    // library (motorcycleTypeId = null); per-bike labels are created on demand
+    // from the annotation/requirement forms.
+    const existing = await prisma.boltPosition.findFirst({
+      where: { name: pos.name, motorcycleTypeId: null },
     });
+    const record = existing
+      ? await prisma.boltPosition.update({ where: { id: existing.id }, data: pos })
+      : await prisma.boltPosition.create({ data: { ...pos, motorcycleTypeId: null } });
     positionsMap[pos.name] = record;
   }
   console.log(`✅ Seeded ${positionsData.length} bolt positions.`);

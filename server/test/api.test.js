@@ -670,4 +670,50 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(allowedDel.status, 200);
   });
+
+  test('14. Positions are scoped per motorcycle (same label, different bikes)', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    const vario = motorcycles.find((m) => m.displayName.includes('Vario 125'));
+    assert.ok(beat && vario);
+
+    const sharedLabel = `Cover Kustom ${Date.now()}`;
+
+    const beatPos = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        customAreaName: sharedLabel,
+        customAreaCategory: 'Bodi',
+        imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg',
+      },
+    });
+    assert.equal(beatPos.status, 201);
+
+    const varioPos = await apiRequest(`/api/motorcycles/${vario.id}/closeups`, {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        customAreaName: sharedLabel,
+        customAreaCategory: 'Bodi',
+        imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg',
+      },
+    });
+    assert.equal(varioPos.status, 201);
+
+    // Same label, but each motorcycle owns its own position row.
+    assert.notEqual(beatPos.data.boltPositionId, varioPos.data.boltPositionId);
+
+    // Scoped listing must not leak the other bike's label.
+    const beatList = await apiRequest(`/api/positions?motorcycleTypeId=${beat.id}`, { token: staffToken });
+    assert.equal(beatList.status, 200);
+    assert.ok(beatList.data.some((p) => p.id === beatPos.data.boltPositionId));
+    assert.ok(!beatList.data.some((p) => p.id === varioPos.data.boltPositionId));
+
+    // Cleanup
+    await apiRequest(`/api/closeups/${beatPos.data.id}`, { method: 'DELETE', token: adminToken });
+    await apiRequest(`/api/closeups/${varioPos.data.id}`, { method: 'DELETE', token: adminToken });
+    await apiRequest(`/api/positions/${beatPos.data.boltPositionId}`, { method: 'DELETE', token: adminToken });
+    await apiRequest(`/api/positions/${varioPos.data.boltPositionId}`, { method: 'DELETE', token: adminToken });
+  });
 });

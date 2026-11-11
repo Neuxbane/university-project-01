@@ -62,6 +62,7 @@ router.post('/motorcycles/:id/requirements', requireAuth, requireAdmin, async (r
         boltPositionId,
         customAreaName,
         customAreaCategory,
+        motorcycleTypeId,
       });
     } catch (posErr) {
       return res.status(posErr.status || 400).json({ error: posErr.message });

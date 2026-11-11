@@ -500,6 +500,7 @@ const submitDraft = () => {
     label: draftLabel.value.trim() || null,
   });
   draftPoint.value = null;
+  draftPositionId.value = '';
   draftCustomName.value = '';
   draftCustomCategory.value = '';
   draftLabel.value = '';

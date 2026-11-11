@@ -8,7 +8,18 @@ const router = express.Router();
 // GET /api/positions
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const where = {};
+    if (req.query.motorcycleTypeId !== undefined && req.query.motorcycleTypeId !== '') {
+      const motorId = parseInt(req.query.motorcycleTypeId, 10);
+      if (!Number.isInteger(motorId)) {
+        return res.status(400).json({ error: 'ID tipe motor tidak valid.' });
+      }
+      // Only this motorcycle's own positions. No global bloat.
+      where.motorcycleTypeId = motorId;
+    }
+
     const positions = await prisma.boltPosition.findMany({
+      where,
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       include: {
         _count: {
@@ -26,9 +37,21 @@ router.get('/', requireAuth, async (req, res) => {
 // POST /api/positions (Admin only)
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, category, sortOrder, notes } = req.body;
+    const { name, category, sortOrder, notes, motorcycleTypeId } = req.body;
     if (!name || !String(name).trim()) {
       return res.status(400).json({ error: 'Nama area / posisi baut wajib diisi.' });
+    }
+
+    let motorId = null;
+    if (motorcycleTypeId !== undefined && motorcycleTypeId !== null && motorcycleTypeId !== '') {
+      motorId = parseInt(motorcycleTypeId, 10);
+      if (!Number.isInteger(motorId)) {
+        return res.status(400).json({ error: 'ID tipe motor tidak valid.' });
+      }
+      const motor = await prisma.motorcycleType.findUnique({ where: { id: motorId }, select: { id: true } });
+      if (!motor) {
+        return res.status(400).json({ error: 'Tipe motor tidak ditemukan.' });
+      }
     }
 
     const position = await prisma.boltPosition.create({
@@ -37,6 +60,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         category: category && String(category).trim() ? String(category).trim() : 'Area Kustom',
         sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
         notes: notes ? String(notes).trim() : null,
+        motorcycleTypeId: motorId,
       },
     });
 

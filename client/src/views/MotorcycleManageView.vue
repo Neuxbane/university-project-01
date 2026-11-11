@@ -814,14 +814,14 @@ const handleCreateAnnotation = async (payload) => {
   }
 };
 
-const handleUpdateAnnotation = async ({ id, boltPositionId, label }) => {
+const handleUpdateAnnotation = async ({ id, boltPositionId, customAreaName, customAreaCategory, label }) => {
   if (isSavingAnnotation.value) return;
   isSavingAnnotation.value = true;
   try {
     const res = await auth.apiFetch(`/api/position-annotations/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ boltPositionId, label }),
+      body: JSON.stringify({ boltPositionId, customAreaName, customAreaCategory, label }),
     });
     const updated = await res.json();
     if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui titik.');

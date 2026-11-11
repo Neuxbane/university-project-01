@@ -93,6 +93,7 @@ router.post('/motorcycles/:motorId/closeups', requireAuth, requireAdmin, (req, r
         boltPositionId: req.body.boltPositionId,
         customAreaName: req.body.customAreaName,
         customAreaCategory: req.body.customAreaCategory,
+        motorcycleTypeId,
       });
     } catch (posErr) {
       safeUnlink(req.file?.path);

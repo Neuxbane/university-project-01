@@ -77,6 +77,7 @@ model MotorcycleType {
   images       MotorcycleImage[]
   models       MotorcycleModel[]
   annotations  PositionAnnotation[]
+  boltPositions BoltPosition[]
   closeUpPhotos CloseUpPhoto[]
 
   @@unique([brand, model, variant, yearStart, yearEnd])
@@ -97,16 +98,20 @@ model MotorcycleImage {
 }
 
 model BoltPosition {
-  id           Int                    @id @default(autoincrement())
-  name         String                 @unique
-  category     String                 // Mesin, Bodi, Pengereman, Rangka, dll.
-  sortOrder    Int                    @default(0) @map("sort_order")
-  notes        String?
-  photoUrl     String?                @map("photo_url")
-  requirements MotorBoltRequirement[]
-  annotations  PositionAnnotation[]
-  closeUpPhotos CloseUpPhoto[]
+  id               Int                    @id @default(autoincrement())
+  motorcycleTypeId Int?                   @map("motorcycle_type_id")
+  name             String
+  category         String                 // Mesin, Bodi, Pengereman, Rangka, dll.
+  sortOrder        Int                    @default(0) @map("sort_order")
+  notes            String?
+  photoUrl         String?                @map("photo_url")
+  motorcycleType   MotorcycleType?        @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
+  requirements     MotorBoltRequirement[]
+  annotations      PositionAnnotation[]
+  closeUpPhotos    CloseUpPhoto[]
 
+  @@unique([motorcycleTypeId, name])
+  @@index([motorcycleTypeId])
   @@map("bolt_positions")
 }
 

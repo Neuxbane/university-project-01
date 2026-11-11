@@ -55,6 +55,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         boltPositionId,
         customAreaName,
         customAreaCategory,
+        motorcycleTypeId: motorId,
       });
     } catch (posErr) {
       return res.status(posErr.status || 400).json({ error: posErr.message });
@@ -104,6 +105,8 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 
     const {
       boltPositionId,
+      customAreaName,
+      customAreaCategory,
       x,
       y,
       z,
@@ -113,10 +116,25 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       label,
     } = req.body;
 
+    let resolvedPositionId;
+    if (boltPositionId !== undefined || customAreaName !== undefined) {
+      try {
+        const pos = await resolveOrCreatePosition(prisma, {
+          boltPositionId,
+          customAreaName,
+          customAreaCategory,
+          motorcycleTypeId: existing.motorcycleTypeId,
+        });
+        resolvedPositionId = pos.id;
+      } catch (posErr) {
+        return res.status(posErr.status || 400).json({ error: posErr.message });
+      }
+    }
+
     const updated = await prisma.positionAnnotation.update({
       where: { id },
       data: {
-        ...(boltPositionId !== undefined ? { boltPositionId: parseInt(boltPositionId, 10) } : {}),
+        ...(resolvedPositionId !== undefined ? { boltPositionId: resolvedPositionId } : {}),
         ...(x !== undefined ? { x: Number(x) } : {}),
         ...(y !== undefined ? { y: Number(y) } : {}),
         ...(z !== undefined ? { z: Number(z) } : {}),

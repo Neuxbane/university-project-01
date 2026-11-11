@@ -1,86 +1,58 @@
 <template>
   <div class="space-y-1.5">
     <div class="flex items-center justify-between gap-2">
-      <label
-        :for="inputId"
-        class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400"
-      >
+      <label :for="inputId" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400">
         {{ label }}
       </label>
-      <div class="flex items-center gap-2.5 shrink-0">
-        <router-link
-          v-if="auth.isAdmin"
-          to="/bolt-specs?tab=positions"
-          class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white underline underline-offset-2"
-        >
-          Kelola Master Posisi
-        </router-link>
-        <button
-          type="button"
-          @click="toggleCustomMode"
-          class="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 underline underline-offset-2 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
-        >
-          {{ isCustom ? 'Pilih dari daftar' : '+ Label Baru' }}
-        </button>
-      </div>
+      <router-link
+        to="/bolt-specs?tab=positions"
+        class="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 underline underline-offset-2 hover:text-zinc-950 dark:hover:text-white"
+      >
+        Kelola Master Posisi
+      </router-link>
     </div>
 
-    <select
-      v-if="!isCustom"
+    <!-- Free-text area name. Suggestions come only from this motorcycle. -->
+    <input
       :id="inputId"
-      :value="positionId"
-      :required="required && !isCustom"
-      @change="onSelectChange"
-      class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-    >
-      <option value="">-- Pilih atau Ketik Label Baru --</option>
-      <optgroup v-if="motorPositions.length" label="Area pada Motor Ini">
-        <option v-for="p in motorPositions" :key="`m-${p.id}`" :value="p.id">
-          {{ p.name }} ({{ p.category }})
-        </option>
-      </optgroup>
-      <optgroup v-if="remainingPositions.length" label="Daftar Area Tersimpan">
-        <option v-for="p in remainingPositions" :key="`o-${p.id}`" :value="p.id">
-          {{ p.name }} ({{ p.category }})
-        </option>
-      </optgroup>
-      <option value="__custom__">+ Buat Label Area Baru Sendiri...</option>
-    </select>
+      :value="textValue"
+      type="text"
+      :required="required"
+      :list="`${inputId}-suggestions`"
+      placeholder="Ketik nama area bebas (mis: Cover CVT Kiri)"
+      autocomplete="off"
+      @input="onTextInput"
+      class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
+    />
+    <datalist :id="`${inputId}-suggestions`">
+      <option v-for="p in motorPositions" :key="`s-${p.id}`" :value="p.name">
+        {{ p.category }}
+      </option>
+    </datalist>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
       <div class="sm:col-span-7">
-        <input
-          :id="inputId"
-          :value="customName"
-          type="text"
-          :required="required && isCustom"
-          placeholder="Ketik nama area motor (mis: Cover Aki Kanan)"
-          @input="$emit('update:customName', $event.target.value)"
-          class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-        />
-      </div>
-      <div class="sm:col-span-5">
         <input
           :value="customCategory"
           type="text"
           :list="`${inputId}-cats`"
-          placeholder="Kategori (opsional)"
+          placeholder="Kategori (opsional, mis: Mesin)"
           @input="$emit('update:customCategory', $event.target.value)"
-          class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
+          class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
         />
         <datalist :id="`${inputId}-cats`">
           <option v-for="c in categorySuggestions" :key="c" :value="c" />
         </datalist>
       </div>
+      <p class="sm:col-span-5 text-[11px] text-zinc-500 dark:text-zinc-500 self-center">
+        Saran hanya dari area motor ini. Nama baru otomatis jadi milik motor ini.
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useAuthStore } from '../../stores/auth';
-
-const auth = useAuthStore();
 
 const props = defineProps({
   inputId: { type: String, default: 'area-label-input' },
@@ -99,49 +71,48 @@ const emit = defineEmits([
   'update:customCategory',
 ]);
 
-const isCustom = ref(Boolean(props.customName && !props.positionId));
+const textValue = ref('');
 
-watch(
-  () => [props.positionId, props.customName],
-  ([pid, cname]) => {
-    if (cname && !pid) isCustom.value = true;
-    else if (pid && pid !== '__custom__') isCustom.value = false;
-  }
+const selectedPosition = computed(() =>
+  (props.motorPositions || []).find((p) => String(p.id) === String(props.positionId))
 );
 
-const remainingPositions = computed(() => {
-  const motorIds = new Set((props.motorPositions || []).map((p) => p.id));
-  return (props.allPositions || []).filter((p) => !motorIds.has(p.id));
-});
+const syncText = () => {
+  if (selectedPosition.value) {
+    textValue.value = selectedPosition.value.name;
+  } else {
+    textValue.value = props.customName || '';
+  }
+};
+
+watch(
+  () => [props.positionId, props.customName, props.motorPositions],
+  syncText,
+  { immediate: true, deep: true }
+);
+
+const onTextInput = (e) => {
+  const value = e.target.value;
+  textValue.value = value;
+  const trimmed = value.trim();
+  const match = (props.motorPositions || []).find(
+    (p) => p.name.toLowerCase() === trimmed.toLowerCase()
+  );
+
+  if (match) {
+    emit('update:positionId', match.id);
+    emit('update:customName', '');
+  } else {
+    emit('update:positionId', '');
+    emit('update:customName', value);
+  }
+};
 
 const categorySuggestions = computed(() => {
   const set = new Set();
-  for (const p of props.allPositions || []) {
+  for (const p of props.motorPositions || []) {
     if (p.category) set.add(p.category);
   }
   return Array.from(set).sort();
 });
-
-const toggleCustomMode = () => {
-  if (isCustom.value) {
-    isCustom.value = false;
-    emit('update:customName', '');
-    emit('update:customCategory', '');
-  } else {
-    isCustom.value = true;
-    emit('update:positionId', '');
-  }
-};
-
-const onSelectChange = (e) => {
-  const val = e.target.value;
-  if (val === '__custom__') {
-    isCustom.value = true;
-    emit('update:positionId', '');
-    return;
-  }
-  emit('update:positionId', val ? Number(val) || val : '');
-  emit('update:customName', '');
-  emit('update:customCategory', '');
-};
 </script>

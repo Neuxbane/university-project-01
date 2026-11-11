@@ -1,8 +1,27 @@
 /**
- * Resolves an existing BoltPosition by ID or creates a custom-labeled BoltPosition
- * on demand so admins are never locked to a hardcoded list of motorcycle areas.
+ * Resolves a BoltPosition for a specific motorcycle.
+ *
+ * Positions are owned by a motorcycle (motorcycleTypeId). A NULL owner means
+ * a shared library / legacy global position. When a custom name is typed, the
+ * position is created for that motorcycle only, so dropdowns never fill up
+ * with labels from other bikes.
  */
-async function resolveOrCreatePosition(db, { boltPositionId, customAreaName, customAreaCategory }) {
+async function resolveOrCreatePosition(db, {
+  boltPositionId,
+  customAreaName,
+  customAreaCategory,
+  motorcycleTypeId,
+} = {}) {
+  const motorId = motorcycleTypeId !== undefined && motorcycleTypeId !== null && motorcycleTypeId !== ''
+    ? parseInt(motorcycleTypeId, 10)
+    : null;
+
+  if (motorId !== null && !Number.isInteger(motorId)) {
+    const err = new Error('ID tipe motor tidak valid.');
+    err.status = 400;
+    throw err;
+  }
+
   if (boltPositionId !== undefined && boltPositionId !== null && boltPositionId !== '' && boltPositionId !== '__custom__') {
     const posId = parseInt(boltPositionId, 10);
     if (!Number.isInteger(posId)) {
@@ -16,18 +35,28 @@ async function resolveOrCreatePosition(db, { boltPositionId, customAreaName, cus
       err.status = 400;
       throw err;
     }
+    if (motorId !== null && existing.motorcycleTypeId !== null && existing.motorcycleTypeId !== motorId) {
+      const err = new Error('Area / posisi baut itu milik motor lain. Ketik nama area baru untuk motor ini.');
+      err.status = 400;
+      throw err;
+    }
     return existing;
   }
 
   const trimmedName = customAreaName ? String(customAreaName).trim() : '';
   if (!trimmedName) {
-    const err = new Error('Pilih area yang ada atau ketik nama label area baru.');
+    const err = new Error('Ketik nama area / posisi baut untuk motor ini.');
     err.status = 400;
     throw err;
   }
 
+  // Look only inside this motorcycle's own positions (or the shared library
+  // when no motorcycle is given). Never reuse another bike's label.
   const byName = await db.boltPosition.findFirst({
-    where: { name: { equals: trimmedName, mode: 'insensitive' } },
+    where: {
+      name: { equals: trimmedName, mode: 'insensitive' },
+      motorcycleTypeId: motorId,
+    },
   });
   if (byName) return byName;
 
@@ -40,6 +69,7 @@ async function resolveOrCreatePosition(db, { boltPositionId, customAreaName, cus
       name: trimmedName,
       category,
       sortOrder: 50,
+      motorcycleTypeId: motorId,
     },
   });
 }
