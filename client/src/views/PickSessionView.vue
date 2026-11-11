@@ -302,7 +302,7 @@
         <aside
           v-if="locationData"
           aria-label="Panduan lokasi 3D checklist baut"
-          class="lg:sticky lg:top-6 no-print"
+          class="lg:sticky lg:top-6 space-y-4 no-print"
           :class="mobileViewTab === 'model' ? 'block' : 'hidden lg:block'"
         >
           <component
@@ -323,6 +323,18 @@
             @select-annotation="onSelectAnnotation"
             @clear-selection="clearAnnotationSelection"
             @toggle-check="toggleAnnotationItems"
+          />
+
+          <!-- Precision Close-Up Photo with Live Checklist Status per Bolt Hole -->
+          <CloseUpViewer
+            v-if="locationData.closeUpPhotos && locationData.closeUpPhotos.length > 0"
+            :photos="locationData.closeUpPhotos"
+            :selected-photo-id="selectedCloseupPhotoId"
+            :session-items="session.items"
+            :is-toggling-check="isTogglingPoint"
+            :can-annotate="false"
+            @select-photo="(p) => selectedCloseupPhotoId = p.id"
+            @toggle-spec-check="toggleSpecCheck"
           />
         </aside>
       </div>
@@ -418,6 +430,7 @@ import { formatDateTime } from '../utils/date';
 import { resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
+import CloseUpViewer from '../components/location/CloseUpViewer.vue';
 import AppShell from '../components/ui/AppShell.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import ProgressBar from '../components/ui/ProgressBar.vue';
@@ -443,6 +456,7 @@ const togglingIds = ref(new Set());
 const isTogglingPoint = ref(false);
 const mobileViewTab = ref('checklist');
 const activeAnnotation = ref(null);
+const selectedCloseupPhotoId = ref(null);
 const focusedBolt = ref(null);
 const filterMode = ref('all');
 const searchQuery = ref('');
@@ -580,6 +594,10 @@ const focusItemOnModel = (item) => {
 
 const onSelectAnnotation = (ann) => {
   activeAnnotation.value = ann;
+  const cuMatch = (locationData.value?.closeUpPhotos || []).find((c) => c.boltPositionId === ann.boltPositionId);
+  if (cuMatch) {
+    selectedCloseupPhotoId.value = cuMatch.id;
+  }
   const resolved = resolveBoltForAnnotation(ann, locationData.value?.bolts, locationData.value?.positionBreakdown);
   if (resolved?.bolt) {
     focusedBolt.value = resolved.bolt;
@@ -594,6 +612,16 @@ const onSelectAnnotation = (ann) => {
 const clearAnnotationSelection = () => {
   activeAnnotation.value = null;
   focusedBolt.value = null;
+};
+
+const toggleSpecCheck = async (boltSpecId) => {
+  if (!session.value || !boltSpecId) return;
+  const item = session.value.items.find((it) => it.boltSpecId === boltSpecId);
+  if (!item) {
+    toast.info('Baut ini tidak termasuk dalam paket checklist aktif.');
+    return;
+  }
+  await toggleItem(item);
 };
 
 const toggleAnnotationItems = async (ann) => {

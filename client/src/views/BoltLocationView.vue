@@ -346,6 +346,15 @@
               @delete-annotation="handleDeleteAnnotation"
               @enable-annotation="annotationMode = true"
             />
+
+            <!-- Precision Close-Up Photo Viewer (multi-bolt pins inside 1 close-up photo) -->
+            <CloseUpViewer
+              v-if="locationData.closeUpPhotos && locationData.closeUpPhotos.length > 0"
+              :photos="locationData.closeUpPhotos"
+              :selected-photo-id="selectedCloseupPhotoId"
+              :can-annotate="false"
+              @select-photo="(p) => selectedCloseupPhotoId = p.id"
+            />
           </section>
         </div>
 
@@ -404,6 +413,7 @@ import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
 import ModelManagerPanel from '../components/location/ModelManagerPanel.vue';
+import CloseUpViewer from '../components/location/CloseUpViewer.vue';
 
 const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
 
@@ -422,6 +432,7 @@ const selectedSizeTier = ref('ALL');
 const selectedPackageId = ref(route.query.packageId ? parseInt(route.query.packageId, 10) : null);
 const selectedBolt = ref(null);
 const activeAnnotation = ref(null);
+const selectedCloseupPhotoId = ref(null);
 const annotationMode = ref(false);
 const showModelPanel = ref(route.query.modelPanel === '1');
 const isSavingAnnotation = ref(false);
@@ -585,6 +596,11 @@ const onSelectAnnotation = (ann) => {
   const matchBolt = bolts.find((b) => Array.isArray(b.positionIds) && b.positionIds.includes(ann.boltPositionId))
     || bolts.find((b) => (b.positionsSummary || '').toLowerCase().includes((ann.boltPosition?.name || '').toLowerCase()));
   selectedBolt.value = matchBolt || bolts[0] || null;
+
+  const cuMatch = (locationData.value?.closeUpPhotos || []).find((c) => c.boltPositionId === ann.boltPositionId);
+  if (cuMatch) {
+    selectedCloseupPhotoId.value = cuMatch.id;
+  }
 };
 
 const clearSelection = () => {

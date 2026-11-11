@@ -7,6 +7,7 @@ import PickListView from '../views/PickListView.vue';
 import PickSessionView from '../views/PickSessionView.vue';
 import BoltLocationView from '../views/BoltLocationView.vue';
 import MotorcyclesView from '../views/MotorcyclesView.vue';
+import MotorcycleManageView from '../views/MotorcycleManageView.vue';
 import BoltSpecsView from '../views/BoltSpecsView.vue';
 import PackagesView from '../views/PackagesView.vue';
 import AdminToolsView from '../views/AdminToolsView.vue';
@@ -22,6 +23,7 @@ const routes = [
   { path: '/dashboard', name: 'dashboard', component: DashboardView },
   { path: '/history', name: 'history', component: HistoryView },
   { path: '/motorcycles', name: 'motorcycles', component: MotorcyclesView },
+  { path: '/motorcycles/:motorId', name: 'motorcycle-manage', component: MotorcycleManageView },
   { path: '/bolt-specs', name: 'bolt-specs', component: BoltSpecsView },
   { path: '/packages', name: 'packages', component: PackagesView },
   { path: '/admin/import', name: 'admin-tools', component: AdminToolsView, meta: { requiresAdmin: true } },
