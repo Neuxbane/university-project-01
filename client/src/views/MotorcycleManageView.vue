@@ -308,6 +308,7 @@
               :positions="locationPositions"
               :all-positions="allPositions"
               :annotations="annotations"
+              :close-up-photos="closeUpPhotos"
               :bolts="consolidatedBolts"
               :position-breakdown="positionBreakdown"
               :active-annotation="activeAnnotation"

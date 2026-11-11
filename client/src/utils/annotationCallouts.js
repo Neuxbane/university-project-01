@@ -70,6 +70,37 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
 }
 
 /**
+ * Resolves the Area / Close-Up Part card payload for whole-bike 3D/2D markers.
+ * Prioritizes the real close-up photo of that area so the motor overview stays minimal
+ * (clicking the area opens FocusedPartOverlay showing the bolt-level details).
+ */
+export function resolvePartCalloutForAnnotation(
+  annotation,
+  closeUpPhotos = [],
+  motorcycle = null,
+  bolts = [],
+  positionBreakdown = []
+) {
+  const boltResolved = resolveBoltForAnnotation(annotation, bolts, positionBreakdown);
+  if (!boltResolved) return null;
+
+  const posId = annotation.boltPositionId;
+  const closeup = (closeUpPhotos || []).find((c) => c.boltPositionId === posId) || null;
+  const partImageUrl = closeup?.imageUrl
+    || annotation.boltPosition?.photoUrl
+    || boltResolved.bolt?.images?.[0]?.url
+    || motorcycle?.images?.[0]?.url
+    || null;
+
+  return {
+    ...boltResolved,
+    hasCloseup: Boolean(closeup),
+    partImageUrl,
+    pinsCount: closeup?.pins?.length || 0,
+  };
+}
+
+/**
  * Resolves live checklist completion status ('done' | 'partial' | 'pending' | null)
  * for a given annotation based on PickSession items.
  */
@@ -293,6 +324,37 @@ export function layoutVisibleCallouts(visibleEntries, stageW, stageH, modelScree
     for (const b of boxes) {
       b.x = clamp(b.x, pad, stageW - b.w - pad);
       b.y = clamp(b.y, pad, stageH - b.h - pad);
+    }
+  }
+
+  // Final overlap-free pass strictly inside stage bounds so adjacent points never stack
+  for (let pass = 0; pass < 6; pass++) {
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i];
+        const b = boxes[j];
+        const overlapX = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) + gap;
+        const overlapY = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) + gap;
+        if (overlapX > 0 && overlapY > 0) {
+          if (overlapY <= overlapX) {
+            const topBox = (a.y + a.h / 2) <= (b.y + b.h / 2) ? a : b;
+            const botBox = topBox === a ? b : a;
+            topBox.y = clamp(topBox.y - overlapY * 0.5, pad, stageH - topBox.h - pad);
+            botBox.y = clamp(topBox.y + topBox.h + gap, pad, stageH - botBox.h - pad);
+            if (botBox.y - topBox.y < topBox.h + gap) {
+              topBox.y = clamp(botBox.y - topBox.h - gap, pad, stageH - topBox.h - pad);
+            }
+          } else {
+            const leftBox = (a.x + a.w / 2) <= (b.x + b.w / 2) ? a : b;
+            const rightBox = leftBox === a ? b : a;
+            leftBox.x = clamp(leftBox.x - overlapX * 0.5, pad, stageW - leftBox.w - pad);
+            rightBox.x = clamp(leftBox.x + leftBox.w + gap, pad, stageW - rightBox.w - pad);
+            if (rightBox.x - leftBox.x < leftBox.w + gap) {
+              leftBox.x = clamp(rightBox.x - leftBox.w - gap, pad, stageW - leftBox.w - pad);
+            }
+          }
+        }
+      }
     }
   }
 

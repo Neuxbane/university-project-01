@@ -312,6 +312,7 @@
             :positions="locationData.positions"
             :all-positions="locationData.allPositions || []"
             :annotations="locationData.annotations"
+            :close-up-photos="locationData.closeUpPhotos || []"
             :bolts="locationData.bolts"
             :position-breakdown="locationData.positionBreakdown"
             :session-items="session.items"
@@ -323,17 +324,6 @@
             @select-annotation="onSelectAnnotation"
             @clear-selection="clearAnnotationSelection"
             @toggle-check="toggleAnnotationItems"
-          />
-
-          <!-- Precision Close-Up Photo with Live Checklist Status per Bolt Hole -->
-          <CloseUpViewer
-            v-if="locationData.closeUpPhotos && locationData.closeUpPhotos.length > 0"
-            :photos="locationData.closeUpPhotos"
-            :selected-photo-id="selectedCloseupPhotoId"
-            :session-items="session.items"
-            :is-toggling-check="isTogglingPoint"
-            :can-annotate="false"
-            @select-photo="(p) => selectedCloseupPhotoId = p.id"
             @toggle-spec-check="toggleSpecCheck"
           />
         </aside>
@@ -430,7 +420,6 @@ import { formatDateTime } from '../utils/date';
 import { resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
-import CloseUpViewer from '../components/location/CloseUpViewer.vue';
 import AppShell from '../components/ui/AppShell.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import ProgressBar from '../components/ui/ProgressBar.vue';

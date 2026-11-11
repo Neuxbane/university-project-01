@@ -6,6 +6,7 @@
     :positions="positions"
     :all-positions="allPositions"
     :annotations="annotations"
+    :close-up-photos="closeUpPhotos"
     :bolts="bolts"
     :position-breakdown="positionBreakdown"
     :session-items="sessionItems"
@@ -19,6 +20,7 @@
     @select-annotation="$emit('select-annotation', $event)"
     @clear-selection="$emit('clear-selection')"
     @toggle-check="$emit('toggle-check', $event)"
+    @toggle-spec-check="$emit('toggle-spec-check', $event)"
     @create-annotation="$emit('create-annotation', $event)"
     @update-annotation="$emit('update-annotation', $event)"
     @delete-annotation="$emit('delete-annotation', $event)"
@@ -85,8 +87,8 @@
         <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Memuat model 3D motor...</p>
       </div>
 
-      <!-- Top-Right 3D Controls (Reset View + Fullscreen) -->
-      <div class="absolute top-3 right-3 z-30 flex items-center gap-2">
+      <!-- Top-Right 3D Controls (hidden while FocusedPartOverlay is open) -->
+      <div v-if="!(activeAnnotation && !annotationMode)" class="absolute top-3 right-3 z-30 flex items-center gap-2">
         <button
           type="button"
           @click="resetView"
@@ -136,6 +138,8 @@
           <AutoCalloutCard
             :index="c.index"
             :bolt="c.resolved.bolt"
+            :image-url="c.resolved.partImageUrl"
+            :minimal-mode="true"
             :quantity="c.resolved.quantity"
             :extra-specs-count="c.resolved.extraSpecsCount"
             :position-name="c.resolved.positionName"
@@ -145,44 +149,37 @@
         </div>
       </template>
 
-      <!-- Projected SVG Leader Line (tracks active 3D hotspot each frame) -->
-      <LeaderLine
-        v-if="lineCoords && activeProjected && activeProjected.visible && !activeProjected.occluded && selectedBolt"
-        :x1="lineCoords.x1"
-        :y1="lineCoords.y1"
-        :x2="lineCoords.x2"
-        :y2="lineCoords.y2"
-      />
-
-      <!-- Projected 3D Hotspot Markers (hidden when occluded or behind camera) -->
-      <template v-for="proj in projectedHotspots" :key="proj.annotation.id">
-        <button
-          v-if="proj.visible && !proj.occluded"
-          type="button"
-          @click.stop="onHotspotClick(proj.annotation)"
-          :aria-label="`Titik ${proj.index}: ${proj.annotation.label || proj.annotation.boltPosition?.name || 'Baut'}`"
-          :aria-pressed="activeAnnotation?.id === proj.annotation.id"
-          class="absolute -translate-x-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full cursor-pointer transition-transform duration-100 focus-visible:ring-2 focus-visible:ring-amber-400 z-20"
-          :class="activeAnnotation?.id === proj.annotation.id ? 'scale-110 z-30' : 'hover:scale-110'"
-          :style="{ left: `${proj.screenX}px`, top: `${proj.screenY}px` }"
-        >
-          <span
-            class="absolute w-7 h-7 rounded-full pointer-events-none"
-            :class="activeAnnotation?.id === proj.annotation.id
-              ? 'bg-amber-400/50 motion-safe:animate-ping'
-              : getCheckStatus(proj.annotation) === 'done'
-                ? 'bg-emerald-400/35'
-                : 'bg-white/35 motion-safe:animate-pulse'"
-            aria-hidden="true"
-          ></span>
-          <span
-            class="relative w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center font-mono text-[10px] font-bold"
-            :class="hotspotDotClass(proj.annotation)"
+      <!-- Projected 3D Hotspot Markers (hidden when focused or occluded) -->
+      <template v-if="!(activeAnnotation && !annotationMode)">
+        <template v-for="proj in projectedHotspots" :key="proj.annotation.id">
+          <button
+            v-if="proj.visible && !proj.occluded"
+            type="button"
+            @click.stop="onHotspotClick(proj.annotation)"
+            :aria-label="`Titik ${proj.index}: ${proj.annotation.label || proj.annotation.boltPosition?.name || 'Baut'}`"
+            :aria-pressed="activeAnnotation?.id === proj.annotation.id"
+            class="absolute -translate-x-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full cursor-pointer transition-transform duration-100 focus-visible:ring-2 focus-visible:ring-amber-400 z-20"
+            :class="activeAnnotation?.id === proj.annotation.id ? 'scale-110 z-30' : 'hover:scale-110'"
+            :style="{ left: `${proj.screenX}px`, top: `${proj.screenY}px` }"
           >
-            <Check v-if="getCheckStatus(proj.annotation) === 'done' && activeAnnotation?.id !== proj.annotation.id" class="w-3.5 h-3.5 stroke-[3]" aria-hidden="true" />
-            <template v-else>{{ proj.index }}</template>
-          </span>
-        </button>
+            <span
+              class="absolute w-7 h-7 rounded-full pointer-events-none"
+              :class="activeAnnotation?.id === proj.annotation.id
+                ? 'bg-amber-400/50 motion-safe:animate-ping'
+                : getCheckStatus(proj.annotation) === 'done'
+                  ? 'bg-emerald-400/35'
+                  : 'bg-white/35 motion-safe:animate-pulse'"
+              aria-hidden="true"
+            ></span>
+            <span
+              class="relative w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center font-mono text-[10px] font-bold"
+              :class="hotspotDotClass(proj.annotation)"
+            >
+              <Check v-if="getCheckStatus(proj.annotation) === 'done' && activeAnnotation?.id !== proj.annotation.id" class="w-3.5 h-3.5 stroke-[3]" aria-hidden="true" />
+              <template v-else>{{ proj.index }}</template>
+            </span>
+          </button>
+        </template>
       </template>
 
       <!-- Ghost Draft Marker Overlay (while placing 3D annotation) -->
@@ -197,22 +194,19 @@
         </span>
       </div>
 
-      <!-- Floating Bolt Card anchored in opposite quadrant of projected hotspot -->
-      <div
-        v-if="activeProjected && activeProjected.visible && !activeProjected.occluded && selectedBolt && !annotationMode"
-        ref="cardWrapRef"
-        class="absolute z-30 pointer-events-none"
-        :class="cardPositionClass"
-      >
-        <FloatingBoltCard
-          :bolt="selectedBolt"
-          :position-name="activeAnnotation?.label || activeAnnotation?.boltPosition?.name || 'Titik Pasang'"
-          :check-status="getCheckStatus(activeAnnotation)"
-          :is-toggling-check="isTogglingCheck"
-          @close="$emit('clear-selection')"
-          @toggle-check="$emit('toggle-check', activeAnnotation)"
-        />
-      </div>
+      <!-- Focused Part Overlay: Blurs 3D motor background, places Part Close-Up Left + Bolt Cards & Lines Right -->
+      <FocusedPartOverlay
+        v-if="activeAnnotation && !annotationMode"
+        :annotation="activeAnnotation"
+        :close-up-photos="closeUpPhotos"
+        :motorcycle="motorcycle"
+        :bolts="bolts"
+        :position-breakdown="positionBreakdown"
+        :session-items="sessionItems"
+        :is-toggling-check="isTogglingCheck"
+        @close="$emit('clear-selection')"
+        @toggle-spec-check="$emit('toggle-spec-check', $event)"
+      />
 
     </div>
 
@@ -277,11 +271,12 @@ import { Box, Check, Eye, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-nex
 import { useTheme } from '../../composables/useTheme';
 import {
   resolveBoltForAnnotation,
+  resolvePartCalloutForAnnotation,
   resolveChecklistStatus,
   layoutVisibleCallouts,
 } from '../../utils/annotationCallouts';
 import LocationCanvas from './LocationCanvas.vue';
-import FloatingBoltCard from './FloatingBoltCard.vue';
+import FocusedPartOverlay from './FocusedPartOverlay.vue';
 import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import AnnotationEditor from './AnnotationEditor.vue';
@@ -292,6 +287,7 @@ const props = defineProps({
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
+  closeUpPhotos: { type: Array, default: () => [] },
   bolts: { type: Array, default: () => [] },
   positionBreakdown: { type: Array, default: () => [] },
   sessionItems: { type: Array, default: null },
@@ -308,6 +304,7 @@ const emit = defineEmits([
   'select-annotation',
   'clear-selection',
   'toggle-check',
+  'toggle-spec-check',
   'create-annotation',
   'update-annotation',
   'delete-annotation',
@@ -349,7 +346,13 @@ const autoCallouts = computed(() => {
     .filter((p) => p.visible && !p.occluded)
     .map((p) => ({
       ...p,
-      resolved: resolveBoltForAnnotation(p.annotation, props.bolts, props.positionBreakdown),
+      resolved: resolvePartCalloutForAnnotation(
+        p.annotation,
+        props.closeUpPhotos,
+        props.motorcycle,
+        props.bolts,
+        props.positionBreakdown
+      ),
     }))
     .filter((entry) => Boolean(entry.resolved?.bolt));
 

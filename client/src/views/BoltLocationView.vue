@@ -331,6 +331,7 @@
               :positions="locationData.positions"
               :all-positions="locationData.allPositions || []"
               :annotations="locationData.annotations"
+              :close-up-photos="locationData.closeUpPhotos || []"
               :bolts="locationData.bolts"
               :position-breakdown="locationData.positionBreakdown"
               :active-annotation="activeAnnotation"
@@ -345,15 +346,6 @@
               @update-annotation="handleUpdateAnnotation"
               @delete-annotation="handleDeleteAnnotation"
               @enable-annotation="annotationMode = true"
-            />
-
-            <!-- Precision Close-Up Photo Viewer (multi-bolt pins inside 1 close-up photo) -->
-            <CloseUpViewer
-              v-if="locationData.closeUpPhotos && locationData.closeUpPhotos.length > 0"
-              :photos="locationData.closeUpPhotos"
-              :selected-photo-id="selectedCloseupPhotoId"
-              :can-annotate="false"
-              @select-photo="(p) => selectedCloseupPhotoId = p.id"
             />
           </section>
         </div>
@@ -413,7 +405,6 @@ import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
 import ModelManagerPanel from '../components/location/ModelManagerPanel.vue';
-import CloseUpViewer from '../components/location/CloseUpViewer.vue';
 
 const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
 

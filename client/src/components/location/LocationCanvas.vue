@@ -83,6 +83,8 @@
           <AutoCalloutCard
             :index="c.index"
             :bolt="c.resolved.bolt"
+            :image-url="c.resolved.partImageUrl"
+            :minimal-mode="true"
             :quantity="c.resolved.quantity"
             :extra-specs-count="c.resolved.extraSpecsCount"
             :position-name="c.resolved.positionName"
@@ -92,27 +94,20 @@
         </div>
       </template>
 
-      <!-- Leader Line SVG between selected hotspot and FloatingBoltCard -->
-      <LeaderLine
-        v-if="lineCoords && activeAnnotation && selectedBolt && !annotationMode"
-        :x1="lineCoords.x1"
-        :y1="lineCoords.y1"
-        :x2="lineCoords.x2"
-        :y2="lineCoords.y2"
-      />
-
       <!-- Saved Hotspots -->
-      <HotspotMarker
-        v-for="(ann, idx) in annotations2D"
-        :key="ann.id"
-        :x="ann.x"
-        :y="ann.y"
-        :index-number="idx + 1"
-        :label="ann.label || ann.boltPosition?.name || 'Titik Baut'"
-        :active="activeAnnotation?.id === ann.id"
-        :check-status="getCheckStatus(ann)"
-        @select="onSelectAnnotation(ann)"
-      />
+      <template v-if="!(activeAnnotation && !annotationMode)">
+        <HotspotMarker
+          v-for="(ann, idx) in annotations2D"
+          :key="ann.id"
+          :x="ann.x"
+          :y="ann.y"
+          :index-number="idx + 1"
+          :label="ann.label || ann.boltPosition?.name || 'Titik Baut'"
+          :active="activeAnnotation?.id === ann.id"
+          :check-status="getCheckStatus(ann)"
+          @select="onSelectAnnotation(ann)"
+        />
+      </template>
 
       <!-- Draft Hotspot (when Admin clicks to place a new point) -->
       <HotspotMarker
@@ -125,22 +120,19 @@
         @select="() => {}"
       />
 
-      <!-- Floating Bolt Card anchored in opposite quadrant -->
-      <div
-        v-if="activeAnnotation && selectedBolt && !annotationMode"
-        ref="cardWrapRef"
-        class="absolute z-30 pointer-events-none"
-        :class="cardPositionClass"
-      >
-        <FloatingBoltCard
-          :bolt="selectedBolt"
-          :position-name="activeAnnotation.label || activeAnnotation.boltPosition?.name || 'Titik Pasang'"
-          :check-status="getCheckStatus(activeAnnotation)"
-          :is-toggling-check="isTogglingCheck"
-          @close="$emit('clear-selection')"
-          @toggle-check="$emit('toggle-check', activeAnnotation)"
-        />
-      </div>
+      <!-- Focused Part Overlay: Blurs 2D motor background, places Part Close-Up Left + Bolt Cards & Lines Right -->
+      <FocusedPartOverlay
+        v-if="activeAnnotation && !annotationMode"
+        :annotation="activeAnnotation"
+        :close-up-photos="closeUpPhotos"
+        :motorcycle="motorcycle"
+        :bolts="bolts"
+        :position-breakdown="positionBreakdown"
+        :session-items="sessionItems"
+        :is-toggling-check="isTogglingCheck"
+        @close="$emit('clear-selection')"
+        @toggle-spec-check="$emit('toggle-spec-check', $event)"
+      />
     </div>
 
     <!-- Compact Empty Annotations Bar (below photo so motor image stays unobstructed) -->
@@ -312,9 +304,9 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { Bike, Eye, MapPin, Trash2 } from 'lucide-vue-next';
-import { resolveBoltForAnnotation, resolveChecklistStatus, layoutVisibleCallouts } from '../../utils/annotationCallouts';
+import { resolvePartCalloutForAnnotation, resolveChecklistStatus, layoutVisibleCallouts } from '../../utils/annotationCallouts';
 import HotspotMarker from './HotspotMarker.vue';
-import FloatingBoltCard from './FloatingBoltCard.vue';
+import FocusedPartOverlay from './FocusedPartOverlay.vue';
 import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
@@ -324,6 +316,7 @@ const props = defineProps({
   positions: { type: Array, default: () => [] },
   allPositions: { type: Array, default: () => [] },
   annotations: { type: Array, default: () => [] },
+  closeUpPhotos: { type: Array, default: () => [] },
   bolts: { type: Array, default: () => [] },
   positionBreakdown: { type: Array, default: () => [] },
   sessionItems: { type: Array, default: null },
@@ -340,6 +333,7 @@ const emit = defineEmits([
   'select-annotation',
   'clear-selection',
   'toggle-check',
+  'toggle-spec-check',
   'create-annotation',
   'delete-annotation',
   'enable-annotation',
@@ -385,7 +379,13 @@ const autoCallouts2D = computed(() => {
       index: idx + 1,
       screenX: (Number(ann.x) / 100) * w,
       screenY: (Number(ann.y) / 100) * h,
-      resolved: resolveBoltForAnnotation(ann, props.bolts, props.positionBreakdown),
+      resolved: resolvePartCalloutForAnnotation(
+        ann,
+        props.closeUpPhotos,
+        props.motorcycle,
+        props.bolts,
+        props.positionBreakdown
+      ),
     }))
     .filter((entry) => Boolean(entry.resolved?.bolt));
   return layoutVisibleCallouts(entries, w, h);

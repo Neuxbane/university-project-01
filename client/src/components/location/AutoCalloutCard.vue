@@ -26,11 +26,11 @@
       <!-- Subtle bottom gradient scrim -->
       <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/85 to-transparent pointer-events-none" aria-hidden="true"></div>
 
-      <!-- Top-left Index + Diameter -->
+      <!-- Top-left Index (plus compact size tag when inspecting bolt-level pin) -->
       <span
         class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-zinc-950/90 border border-white/20 text-white font-mono text-[9px] sm:text-[10px] font-bold leading-none"
       >
-        #{{ index }} M{{ Number(bolt.diameterMm) }}&times;{{ Number(bolt.lengthMm) }}
+        #{{ index }}<template v-if="!minimalMode"> M{{ Number(bolt.diameterMm) }}&times;{{ Number(bolt.lengthMm) }}</template>
       </span>
 
       <!-- Top-right Checklist Status Badge (only in checklist mode) -->
@@ -84,6 +84,8 @@ import { getDiameterTier } from '../../utils/boltTokens';
 const props = defineProps({
   index: { type: [Number, String], required: true },
   bolt: { type: Object, required: true },
+  imageUrl: { type: String, default: null },
+  minimalMode: { type: Boolean, default: false },
   quantity: { type: Number, default: 0 },
   extraSpecsCount: { type: Number, default: 0 },
   positionName: { type: String, default: 'Titik Pasang' },
@@ -93,7 +95,7 @@ const props = defineProps({
 defineEmits(['select']);
 
 const tier = computed(() => getDiameterTier(props.bolt.diameterMm));
-const boltImage = computed(() => props.bolt.images?.[0]?.url || props.bolt.boltSpec?.images?.[0]?.url || null);
+const boltImage = computed(() => props.imageUrl || props.bolt.images?.[0]?.url || props.bolt.boltSpec?.images?.[0]?.url || null);
 
 const cardBorderClass = computed(() => {
   if (props.checkStatus === 'done') return 'border-emerald-500/80 dark:border-emerald-500/70';
