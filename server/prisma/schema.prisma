@@ -77,6 +77,7 @@ model MotorcycleType {
   images       MotorcycleImage[]
   models       MotorcycleModel[]
   annotations  PositionAnnotation[]
+  closeUpPhotos CloseUpPhoto[]
 
   @@unique([brand, model, variant, yearStart, yearEnd])
   @@map("motorcycle_types")
@@ -104,6 +105,7 @@ model BoltPosition {
   photoUrl     String?                @map("photo_url")
   requirements MotorBoltRequirement[]
   annotations  PositionAnnotation[]
+  closeUpPhotos CloseUpPhoto[]
 
   @@map("bolt_positions")
 }
@@ -145,6 +147,39 @@ model PositionAnnotation {
   @@map("position_annotations")
 }
 
+model CloseUpPhoto {
+  id               Int              @id @default(autoincrement())
+  motorcycleTypeId Int              @map("motorcycle_type_id")
+  boltPositionId   Int              @map("bolt_position_id")
+  imageUrl         String           @map("image_url")
+  caption          String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  motorcycleType   MotorcycleType   @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
+  boltPosition     BoltPosition     @relation(fields: [boltPositionId], references: [id], onDelete: Cascade)
+  pins             CloseUpBoltPin[]
+
+  @@index([motorcycleTypeId])
+  @@index([motorcycleTypeId, boltPositionId])
+  @@map("close_up_photos")
+}
+
+model CloseUpBoltPin {
+  id             Int          @id @default(autoincrement())
+  closeUpPhotoId Int          @map("close_up_photo_id")
+  boltSpecId     Int          @map("bolt_spec_id")
+  x              Float
+  y              Float
+  quantity       Int          @default(1)
+  label          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  closeUpPhoto   CloseUpPhoto @relation(fields: [closeUpPhotoId], references: [id], onDelete: Cascade)
+  boltSpec       BoltSpec     @relation(fields: [boltSpecId], references: [id], onDelete: Cascade)
+
+  @@index([closeUpPhotoId])
+  @@index([boltSpecId])
+  @@map("close_up_bolt_pins")
+}
+
 model BoltSpec {
   id           Int                    @id @default(autoincrement())
   code         String                 @unique
@@ -159,6 +194,7 @@ model BoltSpec {
   packageItems PackageItem[]
   sessionItems PickSessionItem[]
   images       BoltImage[]
+  closeUpPins  CloseUpBoltPin[]
 
   @@map("bolt_specs")
 }

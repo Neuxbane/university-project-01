@@ -503,6 +503,10 @@ async function main() {
   const glbSummary = await attachSampleGlbModels(prisma, { overwrite: true });
   console.log(`✅ Seeded ${glbSummary.attachedModels} 3D .glb models and ${glbSummary.attachedAnnotations} 3D position annotations.`);
 
+  const { attachSampleCloseUps } = require('../scripts/attachSampleCloseUps');
+  const cuSummary = await attachSampleCloseUps(prisma, { overwrite: true });
+  console.log(`✅ Seeded ${cuSummary.photosCreated} close-up photos and ${cuSummary.pinsCreated} multi-bolt pins.`);
+
   console.log('🎉 Seeding successfully completed!');
 }
 

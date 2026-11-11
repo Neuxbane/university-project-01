@@ -66,7 +66,7 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
 
     const pickData = await buildPickListData({ motorcycleTypeId, packageId });
 
-    const [latestModel, annotations, allPositions, motorPackages] = await Promise.all([
+    const [latestModel, annotations, allPositions, motorPackages, closeUpPhotos] = await Promise.all([
       prisma.motorcycleModel.findFirst({
         where: { motorcycleTypeId },
         orderBy: { createdAt: 'desc' },
@@ -91,6 +91,25 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
           _count: { select: { items: true } },
         },
         orderBy: { createdAt: 'desc' },
+      }),
+      prisma.closeUpPhoto.findMany({
+        where: { motorcycleTypeId },
+        include: {
+          boltPosition: true,
+          pins: {
+            orderBy: { id: 'asc' },
+            include: {
+              boltSpec: {
+                include: {
+                  images: {
+                    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: [{ boltPosition: { sortOrder: 'asc' } }, { createdAt: 'desc' }],
       }),
     ]);
 
@@ -124,6 +143,7 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
       positions: Array.from(posMap.values()),
       allPositions,
       annotations,
+      closeUpPhotos,
       bolts: pickData.consolidatedTotals,
       positionBreakdown: pickData.positionBreakdown,
     });

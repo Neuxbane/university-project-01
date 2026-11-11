@@ -505,4 +505,75 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(afterMap.status, 200);
     assert.equal(afterMap.data.model, null);
   });
+
+  test('12. Close-up area photos and multi-bolt pin CRUD', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    const { data: positions } = await apiRequest('/api/positions', { token: staffToken });
+    const { data: specs } = await apiRequest('/api/bolt-specs', { token: staffToken });
+    assert.ok(beat && positions.length > 0 && specs.length >= 2);
+
+    // 1. Staff denied creating close-up photo
+    const staffDenied = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+      method: 'POST',
+      token: staffToken,
+      body: { boltPositionId: positions[0].id, imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg' },
+    });
+    assert.equal(staffDenied.status, 403);
+
+    // 2. Admin creates close-up photo
+    const createdPhoto = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        boltPositionId: positions[0].id,
+        imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg',
+        caption: 'Close-Up Test',
+      },
+    });
+    assert.equal(createdPhoto.status, 201);
+    assert.equal(createdPhoto.data.boltPositionId, positions[0].id);
+
+    // 3. Admin adds two different bolt pins on that single close-up photo
+    const pin1 = await apiRequest(`/api/closeups/${createdPhoto.data.id}/pins`, {
+      method: 'POST',
+      token: adminToken,
+      body: { boltSpecId: specs[0].id, x: 25.5, y: 30.0, quantity: 4, label: 'Lubang Atas' },
+    });
+    const pin2 = await apiRequest(`/api/closeups/${createdPhoto.data.id}/pins`, {
+      method: 'POST',
+      token: adminToken,
+      body: { boltSpecId: specs[1].id, x: 60.0, y: 55.0, quantity: 2, label: 'Lubang Tengah' },
+    });
+    assert.equal(pin1.status, 201);
+    assert.equal(pin2.status, 201);
+
+    // 4. Verify location-map returns closeUpPhotos with pins
+    const mapRes = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: staffToken });
+    assert.equal(mapRes.status, 200);
+    const matchingCu = mapRes.data.closeUpPhotos.find((c) => c.id === createdPhoto.data.id);
+    assert.ok(matchingCu);
+    assert.equal(matchingCu.pins.length, 2);
+
+    // 5. Update pin & delete pin & delete close-up photo
+    const updatedPin = await apiRequest(`/api/closeup-pins/${pin1.data.id}`, {
+      method: 'PUT',
+      token: adminToken,
+      body: { quantity: 6, label: 'Lubang Atas (Revisi)' },
+    });
+    assert.equal(updatedPin.status, 200);
+    assert.equal(updatedPin.data.quantity, 6);
+
+    const delPin = await apiRequest(`/api/closeup-pins/${pin1.data.id}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delPin.status, 200);
+
+    const delPhoto = await apiRequest(`/api/closeups/${createdPhoto.data.id}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delPhoto.status, 200);
+  });
 });

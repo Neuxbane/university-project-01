@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="cbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="goldCaliper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#cbg)"/>
+  <!-- Brake Rotor Disc -->
+  <circle cx="450" cy="260" r="205" fill="#27272a" stroke="#71717a" stroke-width="8"/>
+  <circle cx="450" cy="260" r="135" fill="#18181b" stroke="#52525b" stroke-width="4"/>
+  <circle cx="450" cy="260" r="65" fill="#09090b" stroke="#71717a" stroke-width="3"/>
+  <!-- Fork Lower Leg -->
+  <rect x="200" y="30" width="68" height="390" rx="22" fill="#2e2e36" stroke="#71717a" stroke-width="4"/>
+  <!-- Caliper Bracket & Gold Caliper Body -->
+  <path d="M225 180 L345 145 C375 140 390 165 390 205 L385 320 C385 350 355 365 325 355 L225 310 Z" fill="url(#goldCaliper)" stroke="#fbbf24" stroke-width="3"/>
+  <text x="315" y="255" text-anchor="middle" fill="#fef3c7" font-family="monospace" font-size="16" font-weight="bold">KALIPER</text>
+  <!-- Caliper Mounting Bolts (M8x30) -->
+  <g fill="#09090b" stroke="#e4e4e7" stroke-width="3">
+    <circle cx="240" cy="195" r="11"/>
+    <circle cx="240" cy="300" r="11"/>
+    <!-- Disc Mounting Bolts (M8x20) -->
+    <circle cx="450" cy="150" r="10"/>
+    <circle cx="555" cy="260" r="10"/>
+    <circle cx="450" cy="370" r="10"/>
+    <circle cx="350" cy="295" r="10"/>
+  </g>
+</svg>

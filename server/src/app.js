@@ -16,6 +16,7 @@ const auditLogRoutes = require('./routes/auditLogs');
 const userRoutes = require('./routes/users');
 const roleRoutes = require('./routes/roles');
 const positionAnnotationRoutes = require('./routes/positionAnnotations');
+const closeupRoutes = require('./routes/closeups');
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/position-annotations', positionAnnotationRoutes);
+app.use('/api', closeupRoutes);
 
 // Serve uploaded files statically
 const uploadsPath = path.join(__dirname, '../uploads');
