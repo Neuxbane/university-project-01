@@ -1,53 +1,43 @@
 <template>
   <div class="space-y-1.5">
-    <div class="flex items-center justify-between gap-2">
-      <label :for="inputId" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400">
-        {{ label }}
-      </label>
-      <router-link
-        to="/bolt-specs?tab=positions"
-        class="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 underline underline-offset-2 hover:text-zinc-950 dark:hover:text-white"
+    <label :for="inputId" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400">
+      {{ label }}
+    </label>
+
+    <!-- Existing positions on THIS motorcycle, one tap to reuse -->
+    <div v-if="motorPositions.length" class="flex flex-wrap gap-1.5">
+      <button
+        v-for="p in motorPositions"
+        :key="`chip-${p.id}`"
+        type="button"
+        @click="selectExisting(p)"
+        class="min-h-[32px] px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-colors cursor-pointer"
+        :class="String(positionId) === String(p.id)
+          ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+          : 'bg-white dark:bg-[#18181c] text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'"
       >
-        Kelola Master Posisi
-      </router-link>
+        {{ p.name }}
+      </button>
     </div>
 
-    <!-- Free-text area name. Suggestions come only from this motorcycle. -->
     <input
       :id="inputId"
       :value="textValue"
       type="text"
       :required="required"
       :list="`${inputId}-suggestions`"
-      placeholder="Ketik nama area bebas (mis: Cover CVT Kiri)"
+      placeholder="Atau ketik area baru (mis: Cover CVT Kiri)"
       autocomplete="off"
       @input="onTextInput"
       class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
     />
     <datalist :id="`${inputId}-suggestions`">
-      <option v-for="p in motorPositions" :key="`s-${p.id}`" :value="p.name">
-        {{ p.category }}
-      </option>
+      <option v-for="p in motorPositions" :key="`s-${p.id}`" :value="p.name" />
     </datalist>
 
-    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-      <div class="sm:col-span-7">
-        <input
-          :value="customCategory"
-          type="text"
-          :list="`${inputId}-cats`"
-          placeholder="Kategori (opsional, mis: Mesin)"
-          @input="$emit('update:customCategory', $event.target.value)"
-          class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
-        />
-        <datalist :id="`${inputId}-cats`">
-          <option v-for="c in categorySuggestions" :key="c" :value="c" />
-        </datalist>
-      </div>
-      <p class="sm:col-span-5 text-[11px] text-zinc-500 dark:text-zinc-500 self-center">
-        Saran hanya dari area motor ini. Nama baru otomatis jadi milik motor ini.
-      </p>
-    </div>
+    <p class="text-[11px] text-zinc-500 dark:text-zinc-500">
+      Area baru otomatis jadi milik motor ini saja.
+    </p>
   </div>
 </template>
 
@@ -91,6 +81,13 @@ watch(
   { immediate: true, deep: true }
 );
 
+const selectExisting = (p) => {
+  emit('update:positionId', p.id);
+  emit('update:customName', '');
+  emit('update:customCategory', p.category || '');
+  textValue.value = p.name;
+};
+
 const onTextInput = (e) => {
   const value = e.target.value;
   textValue.value = value;
@@ -102,17 +99,10 @@ const onTextInput = (e) => {
   if (match) {
     emit('update:positionId', match.id);
     emit('update:customName', '');
+    emit('update:customCategory', match.category || '');
   } else {
     emit('update:positionId', '');
     emit('update:customName', value);
   }
 };
-
-const categorySuggestions = computed(() => {
-  const set = new Set();
-  for (const p of props.motorPositions || []) {
-    if (p.category) set.add(p.category);
-  }
-  return Array.from(set).sort();
-});
 </script>

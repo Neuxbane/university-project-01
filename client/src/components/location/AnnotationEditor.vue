@@ -178,7 +178,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
 import AreaLabelInput from '../ui/AreaLabelInput.vue';
@@ -189,6 +189,7 @@ const props = defineProps({
   annotations: { type: Array, default: () => [] },
   activeAnnotationId: { type: Number, default: null },
   draftPoint: { type: Object, default: null },
+  initialPositionId: { type: [String, Number], default: null },
   isSaving: { type: Boolean, default: false },
   isDeleting: { type: Boolean, default: false },
 });
@@ -208,6 +209,15 @@ const draftLabel = ref('');
 const editingId = ref(null);
 const editForm = ref({ boltPositionId: '', customName: '', customCategory: '', label: '' });
 const confirmDeleteTarget = ref(null);
+
+watch(
+  () => props.draftPoint,
+  (val) => {
+    if (val && props.initialPositionId) {
+      draftPositionId.value = props.initialPositionId;
+    }
+  }
+);
 
 const submitCreate = () => {
   if (!props.draftPoint || (!draftPositionId.value && !draftCustomName.value.trim())) return;

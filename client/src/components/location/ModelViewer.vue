@@ -264,6 +264,43 @@
       </button>
     </div>
 
+    <!-- Position checklist: always visible so the list never disappears -->
+    <div
+      v-if="!annotationMode && positions.length > 0"
+      class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215]"
+    >
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+          Daftar Posisi ({{ positions.length }})
+        </p>
+        <span class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
+          {{ annotatedPositionCount }} sudah ditandai
+        </span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button
+          v-for="p in positions"
+          :key="`pos-${p.id}`"
+          type="button"
+          @click="startAnnotatePosition(p)"
+          class="min-h-[44px] px-3 py-2 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer"
+          :class="hasAnnotation(p.id)
+            ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30'
+            : 'bg-zinc-50 dark:bg-[#18181c] border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'"
+        >
+          <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ p.name }}</span>
+          <span
+            class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
+            :class="hasAnnotation(p.id)
+              ? 'bg-emerald-600 text-white'
+              : 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'"
+          >
+            {{ hasAnnotation(p.id) ? 'SUDAH' : 'TANDAI' }}
+          </span>
+        </button>
+      </div>
+    </div>
+
     <!-- Phase C: Inline 3D Annotation Editor (Admin only) -->
     <AnnotationEditor
       v-if="annotationMode && canAnnotate"
@@ -272,6 +309,7 @@
       :annotations="annotations3D"
       :active-annotation-id="activeAnnotation?.id || null"
       :draft-point="draftPoint"
+      :initial-position-id="pendingPositionId"
       :is-saving="isSavingAnnotation"
       :is-deleting="isDeletingAnnotation"
       @select-annotation="onHotspotClick"
@@ -357,6 +395,20 @@ const modelScreenBounds = ref(null);
 const projectedHotspots = ref([]);
 const draftPoint = ref(null);
 const draftProjected = ref(null);
+const pendingPositionId = ref(null);
+
+const annotatedPositionIds = computed(
+  () => new Set(annotations3D.value.map((a) => a.boltPositionId))
+);
+const annotatedPositionCount = computed(
+  () => (props.positions || []).filter((p) => annotatedPositionIds.value.has(p.id)).length
+);
+const hasAnnotation = (positionId) => annotatedPositionIds.value.has(positionId);
+
+const startAnnotatePosition = (position) => {
+  pendingPositionId.value = position.id;
+  emit('enable-annotation');
+};
 const lineCoords = ref(null);
 
 const has3DModel = computed(() => Boolean(props.model?.modelUrl));
@@ -1147,6 +1199,7 @@ const onCanvasPointerUp = (e) => {
 
 const onCreateFromEditor = (payload) => {
   emit('create-annotation', payload);
+  pendingPositionId.value = null;
   clearDraft();
 };
 

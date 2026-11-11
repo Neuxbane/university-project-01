@@ -124,7 +124,7 @@
               />
             </div>
 
-            <div class="sm:col-span-4">
+            <div class="sm:col-span-5">
               <label for="req-spec" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
                 Spesifikasi Baut
               </label>
@@ -142,21 +142,6 @@
             </div>
 
             <div class="sm:col-span-2">
-              <label for="req-side" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-                Sisi
-              </label>
-              <select
-                id="req-side"
-                v-model="newReq.side"
-                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-              >
-                <option v-for="(label, sideKey) in SIDE_LABELS" :key="sideKey" :value="sideKey">
-                  {{ label }}
-                </option>
-              </select>
-            </div>
-
-            <div class="sm:col-span-1">
               <label for="req-qty" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
                 Jml
               </label>
@@ -232,7 +217,7 @@
                     </div>
                     <p class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate mt-0.5">
                       {{ req.boltPosition?.name }}
-                      <span class="font-normal text-zinc-500"> &bull; {{ sideLabel(req.side) }}</span>
+
                     </p>
                   </div>
                 </div>
