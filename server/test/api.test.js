@@ -1,6 +1,8 @@
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const app = require('../src/app');
 
 let server;
@@ -432,5 +434,75 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(deleted.status, 200);
     assert.equal(deleted.data.success, true);
+  });
+
+  test('11. 3D .glb model upload, transform update, and deletion CRUD (Phase D)', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    assert.ok(beat);
+
+    const sampleGlb = fs.readFileSync(path.join(__dirname, '../uploads/models/yamaha-nmax-155.glb'));
+    assert.equal(sampleGlb.toString('utf8', 0, 4), 'glTF');
+
+    // 1. Corrupt .glb should be rejected with HTTP 400
+    const badForm = new FormData();
+    badForm.append('model', new Blob([Buffer.from('not-a-glb-file')], { type: 'model/gltf-binary' }), 'bad.glb');
+    const badRes = await fetch(`${baseUrl}/api/motorcycles/${beat.id}/model`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: badForm,
+    });
+    assert.equal(badRes.status, 400);
+
+    // 2. Staff cannot upload 3D model
+    const staffForm = new FormData();
+    staffForm.append('model', new Blob([sampleGlb], { type: 'model/gltf-binary' }), 'test-beat.glb');
+    const staffUpload = await fetch(`${baseUrl}/api/motorcycles/${beat.id}/model`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${staffToken}` },
+      body: staffForm,
+    });
+    assert.equal(staffUpload.status, 403);
+
+    // 3. Admin uploads valid .glb
+    const validForm = new FormData();
+    validForm.append('model', new Blob([sampleGlb], { type: 'model/gltf-binary' }), 'test-beat.glb');
+    validForm.append('scale', '1.2');
+    validForm.append('rotationY', '1.57');
+    const uploadRes = await fetch(`${baseUrl}/api/motorcycles/${beat.id}/model`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: validForm,
+    });
+    const uploadedModel = await uploadRes.json();
+    assert.equal(uploadRes.status, 201);
+    assert.ok(uploadedModel.modelUrl.startsWith('/uploads/models/'));
+    assert.equal(uploadedModel.scale, 1.2);
+
+    // 4. Uploaded .glb is statically served
+    const glbGetRes = await fetch(`${baseUrl}${uploadedModel.modelUrl}`);
+    assert.equal(glbGetRes.status, 200);
+
+    // 5. Admin adjusts scale & rotationY via PATCH
+    const patchRes = await apiRequest(`/api/motorcycles/${beat.id}/model`, {
+      method: 'PATCH',
+      token: adminToken,
+      body: { scale: 1.5, rotationY: 0 },
+    });
+    assert.equal(patchRes.status, 200);
+    assert.equal(patchRes.data.scale, 1.5);
+    assert.equal(patchRes.data.rotationY, 0);
+
+    // 6. Admin deletes 3D model and motor reverts cleanly
+    const delRes = await apiRequest(`/api/motorcycles/${beat.id}/model`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(delRes.status, 200);
+    assert.equal(delRes.data.success, true);
+
+    const afterMap = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: staffToken });
+    assert.equal(afterMap.status, 200);
+    assert.equal(afterMap.data.model, null);
   });
 });

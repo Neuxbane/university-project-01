@@ -115,10 +115,19 @@
           <StatPill :icon="Bike" label="Merek" :value="selectedMotorDetail.brand" />
           <StatPill :icon="Calendar" label="Tahun" :value="`${selectedMotorDetail.yearStart}${selectedMotorDetail.yearEnd ? `-${selectedMotorDetail.yearEnd}` : ''}`" />
           <StatPill :icon="Wrench" label="Titik" :value="`${selectedMotorDetail._count?.requirements || 0} baut`" />
+          <StatPill :icon="Box" label="Model 3D" :value="(selectedMotorDetail._count?.models || selectedMotorDetail.models?.length || 0) > 0 ? 'Tersedia' : 'Foto 2D'" />
           <StatPill :icon="CircleCheck" label="Status" :value="selectedMotorDetail.isActive ? 'Aktif' : 'Nonaktif'" />
         </div>
 
         <div class="grid grid-cols-1 gap-2">
+          <router-link
+            v-if="auth.isAdmin"
+            :to="`/pick-list/${selectedMotorDetail.id}/lokasi?modelPanel=1`"
+            class="min-h-[48px] px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors"
+          >
+            <Box class="w-4 h-4" aria-hidden="true" />
+            Kelola Model 3D (.glb) &amp; Peta
+          </router-link>
           <button
             @click="openMotorGallery(selectedMotorDetail)"
             type="button"
@@ -502,7 +511,7 @@ import DetailSheet from '../components/ui/DetailSheet.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import StatPill from '../components/ui/StatPill.vue';
-import { Bike, Calendar, CircleCheck, Image as ImageIcon, Wrench } from 'lucide-vue-next';
+import { Bike, Box, Calendar, CircleCheck, Image as ImageIcon, Wrench } from 'lucide-vue-next';
 import { useToast } from '../composables/useToast';
 
 const auth = useAuthStore();

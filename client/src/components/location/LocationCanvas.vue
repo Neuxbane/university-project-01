@@ -11,7 +11,7 @@
 
       <div class="flex items-center gap-2">
         <span class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-          {{ annotations.length }} titik
+          {{ annotations2D.length }} titik
         </span>
       </div>
     </div>
@@ -54,7 +54,7 @@
 
       <!-- Saved Hotspots -->
       <HotspotMarker
-        v-for="(ann, idx) in annotations"
+        v-for="(ann, idx) in annotations2D"
         :key="ann.id"
         :x="ann.x"
         :y="ann.y"
@@ -92,7 +92,7 @@
 
     <!-- Compact Empty Annotations Bar (below photo so motor image stays unobstructed) -->
     <div
-      v-if="annotations.length === 0 && !annotationMode"
+      v-if="annotations2D.length === 0 && !annotationMode"
       class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-center justify-between gap-2"
     >
       <p class="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -110,7 +110,7 @@
 
     <!-- Inline Note when bolt is selected on left list but has no annotation yet -->
     <div
-      v-if="selectedBolt && !activeAnnotation && !annotationMode && annotations.length > 0"
+      v-if="selectedBolt && !activeAnnotation && !annotationMode && annotations2D.length > 0"
       class="px-4 py-2.5 bg-amber-50 dark:bg-amber-500/10 border-t border-amber-300 dark:border-amber-500/30 text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between gap-2"
     >
       <span>
@@ -201,13 +201,13 @@
       </p>
 
       <!-- Existing Annotations List (with delete) -->
-      <div v-if="annotations.length > 0" class="space-y-2">
+      <div v-if="annotations2D.length > 0" class="space-y-2">
         <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-          Daftar Titik Terpasang ({{ annotations.length }})
+          Daftar Titik Terpasang ({{ annotations2D.length }})
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div
-            v-for="(ann, idx) in annotations"
+            v-for="(ann, idx) in annotations2D"
             :key="ann.id"
             class="p-2.5 rounded-xl bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 flex items-center justify-between gap-2"
           >
@@ -301,6 +301,10 @@ const activePositionPhoto = computed(() => {
 
 const displayPhotoUrl = computed(() => {
   return activePositionPhoto.value || props.motorcycle?.images?.[0]?.url || null;
+});
+
+const annotations2D = computed(() => {
+  return (props.annotations || []).filter((a) => a.modelId == null && Number(a.z) === 0);
 });
 
 const otherPositions = computed(() => {

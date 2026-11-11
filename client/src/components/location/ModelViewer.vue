@@ -161,23 +161,24 @@
         />
       </div>
 
-      <!-- Empty 3D Annotations Overlay -->
-      <div
-        v-if="!isModelLoading && annotations3D.length === 0 && !annotationMode"
-        class="absolute inset-x-4 bottom-4 z-20 bg-zinc-950/85 backdrop-blur-md border border-zinc-700 rounded-2xl p-3.5 text-center space-y-2"
+    </div>
+
+    <!-- Compact Empty 3D Annotations Bar (below 3D viewport so model stays unobstructed) -->
+    <div
+      v-if="!isModelLoading && annotations3D.length === 0 && !annotationMode"
+      class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-center justify-between gap-2"
+    >
+      <p class="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        Belum ada titik 3D yang ditandai pada model ini.
+      </p>
+      <button
+        v-if="canAnnotate"
+        type="button"
+        @click.stop="$emit('enable-annotation')"
+        class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer transition-colors shrink-0"
       >
-        <p class="text-xs sm:text-sm font-semibold text-white">
-          Belum ada titik 3D yang ditandai pada model ini.
-        </p>
-        <button
-          v-if="canAnnotate"
-          type="button"
-          @click.stop="$emit('enable-annotation')"
-          class="min-h-[44px] px-4 py-2 rounded-xl bg-white text-zinc-900 text-xs font-bold cursor-pointer hover:bg-zinc-200 transition-colors"
-        >
-          Tandai Lokasi Sekarang
-        </button>
-      </div>
+        Tandai Lokasi Sekarang
+      </button>
     </div>
 
     <!-- Phase C: Inline 3D Annotation Editor (Admin only) -->
@@ -759,6 +760,23 @@ watch(
       await nextTick();
       initThree();
     }
+  }
+);
+
+watch(
+  () => [props.model?.scale, props.model?.rotationY],
+  ([nextScale, nextRotY]) => {
+    if (!loadedModelRoot || !camera || !controls) return;
+    loadedModelRoot.scale.setScalar(Number(nextScale) || 1);
+    loadedModelRoot.rotation.y = Number(nextRotY) || 0;
+
+    const box = new THREE.Box3().setFromObject(loadedModelRoot);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    modelMaxDim = Math.max(size.x, size.y, size.z, 0.5);
+    defaultTarget.copy(center);
+    controls.target.copy(center);
+    controls.update();
   }
 );
 

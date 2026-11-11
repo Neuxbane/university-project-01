@@ -98,6 +98,20 @@
                 <button
                   v-if="auth.isAdmin && locationData"
                   type="button"
+                  @click="toggleModelPanel"
+                  :aria-pressed="showModelPanel"
+                  class="min-h-[44px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                  :class="showModelPanel
+                    ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+                    : 'bg-zinc-50 dark:bg-[#18181c] text-zinc-800 dark:text-zinc-200 border-zinc-400 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'"
+                >
+                  <Box class="w-4 h-4" aria-hidden="true" />
+                  <span>Model 3D</span>
+                </button>
+
+                <button
+                  v-if="auth.isAdmin && locationData"
+                  type="button"
                   @click="annotationMode = !annotationMode"
                   :aria-pressed="annotationMode"
                   class="min-h-[44px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
@@ -296,9 +310,20 @@
           <!-- RIGHT COLUMN: 3D MODEL VIEWER (lazy-loaded) or 2D LocationCanvas fallback -->
           <section
             aria-label="Tampilan lokasi baut pada motor"
-            class="lg:sticky lg:top-6"
+            class="lg:sticky lg:top-6 space-y-4"
             :class="mobileTab === 'lokasi' ? 'block' : 'hidden lg:block'"
           >
+            <ModelManagerPanel
+              v-if="auth.isAdmin && showModelPanel && locationData?.motorcycle?.id"
+              :motorcycle-id="locationData.motorcycle.id"
+              :motorcycle-name="locationData.motorcycle.displayName"
+              :model="locationData.model"
+              @uploaded="onModelUploaded"
+              @updated="onModelUpdated"
+              @deleted="onModelDeleted"
+              @close="showModelPanel = false"
+            />
+
             <component
               :is="locationData.model?.modelUrl ? AsyncModelViewer : LocationCanvas"
               :motorcycle="locationData.motorcycle"
@@ -361,7 +386,7 @@
 <script setup>
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowRight, Crosshair, Layers, Nut, Printer, Wrench } from 'lucide-vue-next';
+import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Nut, Printer, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { formatSideLabel, getDiameterTier, getCompletenessMeta } from '../utils/boltTokens';
@@ -376,6 +401,7 @@ import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
+import ModelManagerPanel from '../components/location/ModelManagerPanel.vue';
 
 const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
 
@@ -395,6 +421,7 @@ const selectedPackageId = ref(route.query.packageId ? parseInt(route.query.packa
 const selectedBolt = ref(null);
 const activeAnnotation = ref(null);
 const annotationMode = ref(false);
+const showModelPanel = ref(route.query.modelPanel === '1');
 const isSavingAnnotation = ref(false);
 const isDeletingAnnotation = ref(false);
 const isCreatingSession = ref(false);
@@ -689,6 +716,32 @@ const startSession = async () => {
 const resetBoltFilter = () => {
   boltSearch.value = '';
   selectedSizeTier.value = 'ALL';
+};
+
+const toggleModelPanel = () => {
+  showModelPanel.value = !showModelPanel.value;
+  if (showModelPanel.value) {
+    mobileTab.value = 'lokasi';
+  }
+};
+
+const onModelUploaded = async () => {
+  toast.success('Model 3D berhasil diunggah dan dipasang');
+  activeAnnotation.value = null;
+  await loadLocationMap();
+};
+
+const onModelUpdated = (updatedModel) => {
+  if (locationData.value) {
+    locationData.value.model = updatedModel;
+  }
+  toast.success('Posisi model 3D disimpan');
+};
+
+const onModelDeleted = async () => {
+  toast.success('Model 3D dihapus. Tampilan kembali ke foto 2D.');
+  activeAnnotation.value = null;
+  await loadLocationMap();
 };
 
 const handlePrint = () => {

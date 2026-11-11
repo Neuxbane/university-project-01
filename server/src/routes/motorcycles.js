@@ -37,10 +37,15 @@ router.get('/', requireAuth, async (req, res) => {
         images: {
           orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
         },
+        models: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
         _count: {
           select: {
             requirements: true,
             packages: true,
+            models: true,
           },
         },
       },
@@ -131,6 +136,47 @@ router.get('/:id/location-map', requireAuth, async (req, res) => {
   }
 });
 
+function safeUnlinkFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return;
+  try {
+    fs.unlinkSync(filePath);
+  } catch (err) {
+    console.warn('Failed to unlink file:', err.message);
+  }
+}
+
+async function unlinkModelFileIfUnused(modelUrl) {
+  if (!modelUrl || !modelUrl.startsWith('/uploads/models/')) return;
+  const refs = await prisma.motorcycleModel.count({ where: { modelUrl } });
+  if (refs === 0) {
+    safeUnlinkFile(path.join(__dirname, '../..', modelUrl));
+  }
+}
+
+function validateUploadedModelFile(file) {
+  if (!file || !file.path) return false;
+  const ext = path.extname(file.originalname || file.filename || '').toLowerCase();
+  try {
+    if (ext === '.glb') {
+      const fd = fs.openSync(file.path, 'r');
+      const hdr = Buffer.alloc(12);
+      const bytesRead = fs.readSync(fd, hdr, 0, 12, 0);
+      fs.closeSync(fd);
+      if (bytesRead < 12) return false;
+      // Magic header must be 'glTF' (0x46546c67 LE)
+      return hdr.readUInt32LE(0) === 0x46546c67 && hdr.readUInt32LE(4) === 2;
+    }
+    if (ext === '.gltf') {
+      const raw = fs.readFileSync(file.path, 'utf8');
+      const parsed = JSON.parse(raw);
+      return Boolean(parsed && typeof parsed === 'object' && parsed.asset);
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 // POST /api/motorcycles/:id/model (Admin only, multipart .glb/.gltf)
 router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
   uploadModel.single('model')(req, res, (err) => {
@@ -144,6 +190,7 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const motorcycle = await prisma.motorcycleType.findUnique({ where: { id: motorcycleTypeId } });
     if (!motorcycle) {
+      safeUnlinkFile(req.file?.path);
       return res.status(404).json({ error: 'Tipe motor tidak ditemukan.' });
     }
 
@@ -151,17 +198,24 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
       return res.status(400).json({ error: 'File model 3D (.glb/.gltf) wajib diunggah.' });
     }
 
+    if (!validateUploadedModelFile(req.file)) {
+      safeUnlinkFile(req.file.path);
+      return res.status(400).json({ error: 'File model 3D (.glb/.gltf) tidak valid atau rusak.' });
+    }
+
     const modelUrl = `/uploads/models/${req.file.filename}`;
-    const scale = req.body.scale !== undefined ? Number(req.body.scale) : 1;
-    const rotationY = req.body.rotationY !== undefined ? Number(req.body.rotationY) : 0;
+    const rawScale = req.body.scale !== undefined ? Number(req.body.scale) : 1;
+    const rawRotY = req.body.rotationY !== undefined ? Number(req.body.rotationY) : 0;
+    const scale = Number.isFinite(rawScale) && rawScale >= 0.05 && rawScale <= 20 ? rawScale : 1;
+    const rotationY = Number.isFinite(rawRotY) ? rawRotY : 0;
 
     const created = await prisma.motorcycleModel.create({
       data: {
         motorcycleTypeId,
         modelUrl,
         thumbnailUrl: req.body.thumbnailUrl || null,
-        scale: Number.isFinite(scale) ? scale : 1,
-        rotationY: Number.isFinite(rotationY) ? rotationY : 0,
+        scale,
+        rotationY,
       },
     });
 
@@ -175,13 +229,115 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
 
     res.status(201).json({
       id: created.id,
+      motorcycleTypeId: created.motorcycleTypeId,
       modelUrl: created.modelUrl,
+      thumbnailUrl: created.thumbnailUrl,
       scale: created.scale,
       rotationY: created.rotationY,
+      createdAt: created.createdAt,
     });
   } catch (error) {
+    safeUnlinkFile(req.file?.path);
     console.error('Error uploading motorcycle 3D model:', error);
     res.status(500).json({ error: 'Gagal menyimpan model 3D motor.' });
+  }
+});
+
+// PATCH /api/motorcycles/:id/model (Admin only, adjust scale / rotationY)
+router.patch('/:id/model', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const motorcycleTypeId = parseInt(req.params.id, 10);
+    if (Number.isNaN(motorcycleTypeId)) {
+      return res.status(400).json({ error: 'ID motor tidak valid.' });
+    }
+
+    const activeModel = await prisma.motorcycleModel.findFirst({
+      where: { motorcycleTypeId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!activeModel) {
+      return res.status(404).json({ error: 'Belum ada model 3D pada motor ini.' });
+    }
+
+    const data = {};
+    if (req.body.scale !== undefined) {
+      const s = Number(req.body.scale);
+      if (!Number.isFinite(s) || s < 0.05 || s > 20) {
+        return res.status(400).json({ error: 'Skala model harus di antara 0.05 hingga 20.' });
+      }
+      data.scale = s;
+    }
+    if (req.body.rotationY !== undefined) {
+      const r = Number(req.body.rotationY);
+      if (!Number.isFinite(r)) {
+        return res.status(400).json({ error: 'Nilai rotasi Y tidak valid.' });
+      }
+      data.rotationY = r;
+    }
+
+    const updated = await prisma.motorcycleModel.update({
+      where: { id: activeModel.id },
+      data,
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'UPDATE',
+      entity: 'MOTORCYCLE_MODEL',
+      entityId: updated.id,
+      detail: `Mengubah skala/rotasi model 3D #${updated.id} (scale=${updated.scale}, rotY=${updated.rotationY})`,
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Error updating motorcycle 3D model:', error);
+    res.status(500).json({ error: 'Gagal memperbarui pengaturan model 3D.' });
+  }
+});
+
+// DELETE /api/motorcycles/:id/model (Admin only, remove active 3D model(s) & revert to 2D)
+router.delete('/:id/model', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const motorcycleTypeId = parseInt(req.params.id, 10);
+    if (Number.isNaN(motorcycleTypeId)) {
+      return res.status(400).json({ error: 'ID motor tidak valid.' });
+    }
+
+    const existingModels = await prisma.motorcycleModel.findMany({
+      where: { motorcycleTypeId },
+    });
+    if (existingModels.length === 0) {
+      return res.status(404).json({ error: 'Belum ada model 3D pada motor ini.' });
+    }
+
+    const modelIds = existingModels.map((m) => m.id);
+    const urls = [...new Set(existingModels.map((m) => m.modelUrl).filter(Boolean))];
+
+    await prisma.$transaction([
+      prisma.positionAnnotation.deleteMany({
+        where: { modelId: { in: modelIds } },
+      }),
+      prisma.motorcycleModel.deleteMany({
+        where: { motorcycleTypeId },
+      }),
+    ]);
+
+    for (const url of urls) {
+      await unlinkModelFileIfUnused(url);
+    }
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'DELETE',
+      entity: 'MOTORCYCLE_MODEL',
+      entityId: motorcycleTypeId,
+      detail: `Menghapus ${existingModels.length} model 3D dari motor ID ${motorcycleTypeId}`,
+    });
+
+    res.json({ success: true, deletedCount: existingModels.length });
+  } catch (error) {
+    console.error('Error deleting motorcycle 3D model:', error);
+    res.status(500).json({ error: 'Gagal menghapus model 3D motor.' });
   }
 });
 
@@ -194,6 +350,9 @@ router.get('/:id', requireAuth, async (req, res) => {
       include: {
         images: {
           orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
+        },
+        models: {
+          orderBy: { createdAt: 'desc' },
         },
         requirements: {
           include: {
