@@ -75,6 +75,8 @@ model MotorcycleType {
   packages     Package[]
   pickSessions PickSession[]
   images       MotorcycleImage[]
+  models       MotorcycleModel[]
+  annotations  PositionAnnotation[]
 
   @@unique([brand, model, variant, yearStart, yearEnd])
   @@map("motorcycle_types")
@@ -99,9 +101,48 @@ model BoltPosition {
   category     String                 // Mesin, Bodi, Pengereman, Rangka, dll.
   sortOrder    Int                    @default(0) @map("sort_order")
   notes        String?
+  photoUrl     String?                @map("photo_url")
   requirements MotorBoltRequirement[]
+  annotations  PositionAnnotation[]
 
   @@map("bolt_positions")
+}
+
+model MotorcycleModel {
+  id               Int                  @id @default(autoincrement())
+  motorcycleTypeId Int                  @map("motorcycle_type_id")
+  modelUrl         String               @map("model_url")
+  thumbnailUrl     String?              @map("thumbnail_url")
+  scale            Float                @default(1)
+  rotationY        Float                @default(0) @map("rotation_y")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  motorcycleType   MotorcycleType       @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
+  annotations      PositionAnnotation[]
+
+  @@index([motorcycleTypeId])
+  @@map("motorcycle_models")
+}
+
+model PositionAnnotation {
+  id               Int              @id @default(autoincrement())
+  boltPositionId   Int              @map("bolt_position_id")
+  motorcycleTypeId Int              @map("motorcycle_type_id")
+  modelId          Int?             @map("model_id")
+  x                Float
+  y                Float
+  z                Float            @default(0)
+  normalX          Float            @default(0) @map("normal_x")
+  normalY          Float            @default(0) @map("normal_y")
+  normalZ          Float            @default(1) @map("normal_z")
+  label            String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  boltPosition     BoltPosition     @relation(fields: [boltPositionId], references: [id], onDelete: Cascade)
+  motorcycleType   MotorcycleType   @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
+  model            MotorcycleModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
+
+  @@index([motorcycleTypeId])
+  @@index([boltPositionId])
+  @@map("position_annotations")
 }
 
 model BoltSpec {

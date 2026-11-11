@@ -315,15 +315,30 @@
             </template>
 
             <template #footer>
-              <button
-                type="button"
-                @click="openBoltGrid"
-                :disabled="isGenerating || isLoadingInspect"
-                class="w-full min-h-[52px] px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]"
-              >
-                <span>{{ isGenerating ? 'Menyiapkan Daftar...' : 'Buka Daftar Ambil Baut' }}</span>
-                <ArrowRight class="w-4 h-4" aria-hidden="true" />
-              </button>
+              <div class="flex items-center gap-2">
+                <router-link
+                  :to="{
+                    name: 'bolt-location',
+                    params: { motorId: inspectedMotor.id },
+                    query: selectedPackageId ? { packageId: selectedPackageId } : undefined,
+                  }"
+                  class="min-h-[52px] px-3.5 py-3 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-semibold text-sm inline-flex items-center justify-center gap-1.5 shrink-0 transition-colors"
+                  title="Buka peta lokasi titik baut"
+                >
+                  <MapPin class="w-4 h-4" aria-hidden="true" />
+                  <span>Lokasi</span>
+                </router-link>
+
+                <button
+                  type="button"
+                  @click="openBoltGrid"
+                  :disabled="isGenerating || isLoadingInspect"
+                  class="flex-1 min-h-[52px] px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  <span>{{ isGenerating ? 'Menyiapkan Daftar...' : 'Buka Daftar Ambil Baut' }}</span>
+                  <ArrowRight class="w-4 h-4" aria-hidden="true" />
+                </button>
+              </div>
             </template>
           </DetailSheet>
         </div>
@@ -347,7 +362,7 @@
                   <span>Roster</span>
                 </button>
 
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                   <h1 class="text-base sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
                     {{ pickData?.motorcycle?.displayName || 'Daftar Baut' }}
                   </h1>
@@ -358,10 +373,34 @@
                     </span>
                   </p>
                 </div>
+
+                <router-link
+                  v-if="pickData"
+                  :to="{
+                    name: 'bolt-location',
+                    params: { motorId: pickData.motorcycle.id },
+                    query: pickData.package ? { packageId: pickData.package.id } : undefined,
+                  }"
+                  class="md:hidden min-h-[44px] px-3 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] text-zinc-900 dark:text-zinc-100 text-xs font-semibold inline-flex items-center gap-1.5 shrink-0"
+                >
+                  <MapPin class="w-4 h-4" aria-hidden="true" />
+                  <span>Lokasi</span>
+                </router-link>
               </div>
 
               <!-- Desktop Top Quick Actions -->
               <div v-if="pickData" class="hidden md:flex items-center gap-2 shrink-0">
+                <router-link
+                  :to="{
+                    name: 'bolt-location',
+                    params: { motorId: pickData.motorcycle.id },
+                    query: pickData.package ? { packageId: pickData.package.id } : undefined,
+                  }"
+                  class="min-h-[44px] px-4 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-semibold inline-flex items-center gap-2"
+                >
+                  <MapPin class="w-4 h-4" aria-hidden="true" />
+                  <span>Peta Lokasi</span>
+                </router-link>
                 <button
                   type="button"
                   @click="handlePrint"
@@ -677,6 +716,7 @@ import {
   ArrowRight,
   ArrowLeft,
   AlertTriangle,
+  MapPin,
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';

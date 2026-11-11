@@ -373,4 +373,56 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(deleteRoleSuccess.status, 200);
   });
+
+  test('10. Location map and position annotation CRUD (Phase A)', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const nmax = motorcycles.find((m) => m.displayName.includes('NMAX 155'));
+    assert.ok(nmax);
+
+    const mapRes = await apiRequest(`/api/motorcycles/${nmax.id}/location-map`, { token: staffToken });
+    assert.equal(mapRes.status, 200);
+    assert.equal(mapRes.data.motorcycle.id, nmax.id);
+    assert.ok(Array.isArray(mapRes.data.positions));
+    assert.ok(Array.isArray(mapRes.data.annotations));
+    assert.ok(Array.isArray(mapRes.data.bolts));
+    assert.ok(mapRes.data.bolts.length > 0);
+    const posId = mapRes.data.positions[0]?.id || mapRes.data.allPositions[0]?.id;
+    assert.ok(posId);
+
+    // Staff cannot create annotation
+    const staffDenied = await apiRequest('/api/position-annotations', {
+      method: 'POST',
+      token: staffToken,
+      body: { boltPositionId: posId, motorcycleTypeId: nmax.id, x: 42.5, y: 63.0, label: 'Test' },
+    });
+    assert.equal(staffDenied.status, 403);
+
+    // Admin creates annotation
+    const created = await apiRequest('/api/position-annotations', {
+      method: 'POST',
+      token: adminToken,
+      body: { boltPositionId: posId, motorcycleTypeId: nmax.id, x: 42.5, y: 63.0, label: 'Titik Test' },
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.data.x, 42.5);
+    assert.equal(created.data.y, 63.0);
+
+    // Admin updates annotation
+    const updated = await apiRequest(`/api/position-annotations/${created.data.id}`, {
+      method: 'PUT',
+      token: adminToken,
+      body: { x: 50.0, y: 55.0, label: 'Titik Test Ubah' },
+    });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.data.x, 50.0);
+    assert.equal(updated.data.label, 'Titik Test Ubah');
+
+    // Admin deletes annotation
+    const deleted = await apiRequest(`/api/position-annotations/${created.data.id}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(deleted.status, 200);
+    assert.equal(deleted.data.success, true);
+  });
 });

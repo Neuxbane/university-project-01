@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
+const { buildPickListData } = require('../utils/pickListAggregator');
 
 const router = express.Router();
 
@@ -13,182 +14,18 @@ router.post('/generate', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'ID tipe motor wajib dipilih.' });
     }
 
-    const mId = parseInt(motorcycleTypeId, 10);
-    const motorcycle = await prisma.motorcycleType.findUnique({
-      where: { id: mId },
-      include: {
-        images: {
-          orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
-        },
-      },
-    });
-
-    if (!motorcycle || !motorcycle.isActive) {
-      return res.status(404).json({ error: 'Tipe motor tidak ditemukan atau dinonaktifkan.' });
-    }
-
-    let selectedPackage = null;
-    let itemsToProcess = [];
-    let isPackageMode = false;
-
-    if (packageId) {
-      const pId = parseInt(packageId, 10);
-      selectedPackage = await prisma.package.findUnique({
-        where: { id: pId },
-        include: {
-          items: {
-            include: {
-              boltSpec: {
-                include: {
-                  images: {
-                    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (!selectedPackage || selectedPackage.motorcycleTypeId !== mId) {
-        return res.status(400).json({
-          error: 'Paket yang dipilih tidak sesuai dengan tipe motor ini.',
-        });
-      }
-
-      isPackageMode = true;
-    }
-
-    // Load full motorcycle requirements
-    const requirements = await prisma.motorBoltRequirement.findMany({
-      where: { motorcycleTypeId: mId },
-      include: {
-        boltPosition: true,
-        boltSpec: {
-          include: {
-            images: {
-              orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }],
-            },
-          },
-        },
-      },
-      orderBy: [
-        { boltPosition: { sortOrder: 'asc' } },
-        { sortOrder: 'asc' },
-      ],
-    });
-
-    // Consolidated aggregation Map: boltSpecId -> { spec, quantity, positions: Set }
-    const consolidatedMap = new Map();
-    // Position breakdown list
-    const positionBreakdown = [];
-
-    if (isPackageMode && selectedPackage) {
-      // Process package items
-      for (const item of selectedPackage.items) {
-        const specId = item.boltSpecId;
-        const current = consolidatedMap.get(specId) || {
-          boltSpec: item.boltSpec,
-          quantity: 0,
-          notes: [],
-        };
-        current.quantity += item.quantity;
-        if (item.emblemNote) {
-          current.notes.push(item.emblemNote);
-        }
-        consolidatedMap.set(specId, current);
-
-        positionBreakdown.push({
-          positionName: item.emblemNote || 'Paket Komponen',
-          category: selectedPackage.packageType,
-          side: 'NONE',
-          boltSpec: item.boltSpec,
-          quantity: item.quantity,
-          isOptional: false,
-        });
-      }
-    } else {
-      // Process motorcycle requirements
-      for (const reqRow of requirements) {
-        const specId = reqRow.boltSpecId;
-        const current = consolidatedMap.get(specId) || {
-          boltSpec: reqRow.boltSpec,
-          quantity: 0,
-          positions: [],
-        };
-        current.quantity += reqRow.quantity;
-        current.positions.push(`${reqRow.boltPosition.name} (${reqRow.quantity}${reqRow.side !== 'NONE' ? ` ${reqRow.side}` : ''})`);
-        consolidatedMap.set(specId, current);
-
-        positionBreakdown.push({
-          positionId: reqRow.boltPosition.id,
-          positionName: reqRow.boltPosition.name,
-          category: reqRow.boltPosition.category,
-          side: reqRow.side,
-          boltSpec: reqRow.boltSpec,
-          quantity: reqRow.quantity,
-          isOptional: reqRow.isOptional,
-        });
-      }
-    }
-
-    const consolidatedTotals = Array.from(consolidatedMap.values()).map((entry) => ({
-      boltSpecId: entry.boltSpec.id,
-      code: entry.boltSpec.code,
-      diameterMm: entry.boltSpec.diameterMm,
-      lengthMm: entry.boltSpec.lengthMm,
-      headType: entry.boltSpec.headType,
-      material: entry.boltSpec.material,
-      finish: entry.boltSpec.finish,
-      totalQuantity: entry.quantity,
-      positionsSummary: entry.positions ? entry.positions.join(', ') : (entry.notes ? entry.notes.join(', ') : ''),
-      images: entry.boltSpec.images || [],
-      boltSpec: entry.boltSpec,
-    }));
-
-    // Sort consolidated totals by diameter, length, headType
-    consolidatedTotals.sort((a, b) => {
-      if (a.diameterMm !== b.diameterMm) return Number(a.diameterMm) - Number(b.diameterMm);
-      if (a.lengthMm !== b.lengthMm) return Number(a.lengthMm) - Number(b.lengthMm);
-      return a.code.localeCompare(b.code);
-    });
-
-    const totalQuantity = consolidatedTotals.reduce((sum, item) => sum + item.totalQuantity, 0);
-    const distinctBoltSpecsCount = consolidatedTotals.length;
-
-    const warnings = [];
-    if (requirements.length === 0 && !isPackageMode) {
-      warnings.push('Data spesifikasi baut untuk tipe motor ini belum diisi (masih kosong).');
-    } else if (requirements.length < 5 && !isPackageMode) {
-      warnings.push('Data spesifikasi baut untuk motor ini belum lengkap (baru terdata sebagian).');
-    }
-
+    const data = await buildPickListData({ motorcycleTypeId, packageId });
     res.json({
-      motorcycle: {
-        id: motorcycle.id,
-        displayName: motorcycle.displayName,
-        brand: motorcycle.brand,
-        model: motorcycle.model,
-        variant: motorcycle.variant,
-        images: motorcycle.images || [],
-      },
-      package: selectedPackage
-        ? {
-            id: selectedPackage.id,
-            name: selectedPackage.name,
-            packageType: selectedPackage.packageType,
-          }
-        : null,
-      summary: {
-        totalQuantity,
-        distinctBoltSpecsCount,
-        hasWarnings: warnings.length > 0,
-        warnings,
-      },
-      consolidatedTotals,
-      positionBreakdown,
+      motorcycle: data.motorcycle,
+      package: data.package,
+      summary: data.summary,
+      consolidatedTotals: data.consolidatedTotals,
+      positionBreakdown: data.positionBreakdown,
     });
   } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
     console.error('Error generating pick list:', error);
     res.status(500).json({ error: 'Gagal membuat daftar ambil baut otomatis.' });
   }

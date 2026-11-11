@@ -4,10 +4,12 @@ const fs = require('fs');
 const prisma = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
-const { createUploader } = require('../middleware/upload');
+const { createUploader, createModelUploader } = require('../middleware/upload');
+const { buildPickListData } = require('../utils/pickListAggregator');
 
 const router = express.Router();
 const upload = createUploader('motorcycles');
+const uploadModel = createModelUploader();
 
 // GET /api/motorcycles
 router.get('/', requireAuth, async (req, res) => {
@@ -48,6 +50,126 @@ router.get('/', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching motorcycles:', error);
     res.status(500).json({ error: 'Gagal mengambil data tipe motor.' });
+  }
+});
+
+// GET /api/motorcycles/:id/location-map
+router.get('/:id/location-map', requireAuth, async (req, res) => {
+  try {
+    const motorcycleTypeId = parseInt(req.params.id, 10);
+    const packageId = req.query.packageId ? parseInt(req.query.packageId, 10) : undefined;
+
+    const pickData = await buildPickListData({ motorcycleTypeId, packageId });
+
+    const [latestModel, annotations, allPositions] = await Promise.all([
+      prisma.motorcycleModel.findFirst({
+        where: { motorcycleTypeId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.positionAnnotation.findMany({
+        where: { motorcycleTypeId },
+        include: {
+          boltPosition: true,
+        },
+        orderBy: { id: 'asc' },
+      }),
+      prisma.boltPosition.findMany({
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      }),
+    ]);
+
+    // Derive distinct positions used on this motorcycle (with bolt count & boltSpecIds)
+    const posMap = new Map();
+    for (const reqRow of pickData.requirements) {
+      const p = reqRow.boltPosition;
+      if (!p) continue;
+      const existing = posMap.get(p.id) || {
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        photoUrl: p.photoUrl,
+        quantity: 0,
+        side: reqRow.side,
+        boltSpecIds: [],
+      };
+      existing.quantity += reqRow.quantity;
+      if (!existing.boltSpecIds.includes(reqRow.boltSpecId)) {
+        existing.boltSpecIds.push(reqRow.boltSpecId);
+      }
+      posMap.set(p.id, existing);
+    }
+
+    res.json({
+      motorcycle: pickData.motorcycle,
+      package: pickData.package,
+      summary: pickData.summary,
+      model: latestModel || null,
+      positions: Array.from(posMap.values()),
+      allPositions,
+      annotations,
+      bolts: pickData.consolidatedTotals,
+      positionBreakdown: pickData.positionBreakdown,
+    });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error('Error fetching motorcycle location map:', error);
+    res.status(500).json({ error: 'Gagal memuat peta lokasi baut motor.' });
+  }
+});
+
+// POST /api/motorcycles/:id/model (Admin only, multipart .glb/.gltf)
+router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
+  uploadModel.single('model')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Gagal mengunggah model 3D.' });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const motorcycleTypeId = parseInt(req.params.id, 10);
+    const motorcycle = await prisma.motorcycleType.findUnique({ where: { id: motorcycleTypeId } });
+    if (!motorcycle) {
+      return res.status(404).json({ error: 'Tipe motor tidak ditemukan.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'File model 3D (.glb/.gltf) wajib diunggah.' });
+    }
+
+    const modelUrl = `/uploads/models/${req.file.filename}`;
+    const scale = req.body.scale !== undefined ? Number(req.body.scale) : 1;
+    const rotationY = req.body.rotationY !== undefined ? Number(req.body.rotationY) : 0;
+
+    const created = await prisma.motorcycleModel.create({
+      data: {
+        motorcycleTypeId,
+        modelUrl,
+        thumbnailUrl: req.body.thumbnailUrl || null,
+        scale: Number.isFinite(scale) ? scale : 1,
+        rotationY: Number.isFinite(rotationY) ? rotationY : 0,
+      },
+    });
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'CREATE',
+      entity: 'MOTORCYCLE_MODEL',
+      entityId: created.id,
+      detail: `Mengunggah model 3D untuk motor ${motorcycle.displayName}: ${modelUrl}`,
+    });
+
+    res.status(201).json({
+      id: created.id,
+      modelUrl: created.modelUrl,
+      scale: created.scale,
+      rotationY: created.rotationY,
+    });
+  } catch (error) {
+    console.error('Error uploading motorcycle 3D model:', error);
+    res.status(500).json({ error: 'Gagal menyimpan model 3D motor.' });
   }
 });
 

@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue';
 import DashboardView from '../views/DashboardView.vue';
 import PickListView from '../views/PickListView.vue';
 import PickSessionView from '../views/PickSessionView.vue';
+import BoltLocationView from '../views/BoltLocationView.vue';
 import MotorcyclesView from '../views/MotorcyclesView.vue';
 import BoltSpecsView from '../views/BoltSpecsView.vue';
 import PackagesView from '../views/PackagesView.vue';
@@ -16,6 +17,7 @@ const routes = [
   { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
   { path: '/', redirect: '/pick-list' },
   { path: '/pick-list', name: 'pick-list', component: PickListView },
+  { path: '/pick-list/:motorId/lokasi', name: 'bolt-location', component: BoltLocationView },
   { path: '/pick-list/:sessionId', name: 'pick-session', component: PickSessionView },
   { path: '/dashboard', name: 'dashboard', component: DashboardView },
   { path: '/history', name: 'history', component: HistoryView },
