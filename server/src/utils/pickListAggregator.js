@@ -54,6 +54,12 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
       throw err;
     }
 
+    if (!allowInactive && selectedPackage.status !== 'ACTIVE') {
+      const err = new Error('Paket yang dipilih sedang dinonaktifkan.');
+      err.status = 404;
+      throw err;
+    }
+
     isPackageMode = true;
   }
 

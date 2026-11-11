@@ -82,7 +82,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100">Kelola Data</h2>
-            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">Tipe motor, master baut, bundling, dan akun staf.</p>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">Tipe motor, master baut, paket baut, dan akun staf.</p>
           </div>
           <ArrowRight class="w-5 h-5 text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 shrink-0 transition-colors" aria-hidden="true" />
         </div>

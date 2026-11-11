@@ -878,4 +878,104 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(delOff.status, 200);
   });
+
+  test('18. Package full CRUD, status toggle, and bolt images inclusion', async () => {
+    const [{ data: motorcycles }, { data: specs }] = await Promise.all([
+      apiRequest('/api/motorcycles', { token: adminToken }),
+      apiRequest('/api/bolt-specs', { token: adminToken }),
+    ]);
+    const vario = motorcycles.find((m) => m.displayName.includes('Vario 160'));
+    assert.ok(vario && specs.length >= 2);
+
+    // 1. Staff cannot create package (403)
+    const staffCreate = await apiRequest('/api/packages', {
+      method: 'POST',
+      token: staffToken,
+      body: {
+        motorcycleTypeId: vario.id,
+        packageType: 'Mesin',
+        name: 'Forbidden Package',
+        items: [{ boltSpecId: specs[0].id, quantity: 4 }],
+      },
+    });
+    assert.equal(staffCreate.status, 403);
+
+    // 2. Admin creates package (201) with full relations
+    const created = await apiRequest('/api/packages', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        motorcycleTypeId: vario.id,
+        packageType: 'Mesin',
+        name: 'Paket Uji CRUD Vario 160',
+        description: 'Paket mesin uji otomatis',
+        items: [{ boltSpecId: specs[0].id, quantity: 6, emblemNote: 'Cover CVT' }],
+      },
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.data.status, 'ACTIVE');
+    assert.equal(created.data.items.length, 1);
+    assert.ok(Array.isArray(created.data.items[0].boltSpec.images));
+    const pkgId = created.data.id;
+
+    // 3. GET /api/packages includes motorcycleType & boltSpec.images
+    const listRes = await apiRequest('/api/packages', { token: staffToken });
+    assert.equal(listRes.status, 200);
+    const found = listRes.data.find((p) => p.id === pkgId);
+    assert.ok(found && found.motorcycleType?.displayName.includes('Vario 160'));
+    assert.ok(Array.isArray(found.items[0].boltSpec.images));
+
+    // 4. PUT updates metadata and replaces items atomically
+    const updated = await apiRequest(`/api/packages/${pkgId}`, {
+      method: 'PUT',
+      token: adminToken,
+      body: {
+        motorcycleTypeId: vario.id,
+        packageType: 'Pengereman',
+        name: 'Paket Uji Pengereman Vario 160',
+        description: 'Updated deskripsi',
+        items: [
+          { boltSpecId: specs[0].id, quantity: 4, emblemNote: 'Kaliper' },
+          { boltSpecId: specs[1].id, quantity: 6, emblemNote: 'Disc Rotor' },
+        ],
+      },
+    });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.data.packageType, 'Pengereman');
+    assert.equal(updated.data.items.length, 2);
+
+    // 5. PATCH status toggles ACTIVE -> INACTIVE and blocks pick-list generate
+    const deactivated = await apiRequest(`/api/packages/${pkgId}/status`, {
+      method: 'PATCH',
+      token: adminToken,
+      body: {},
+    });
+    assert.equal(deactivated.status, 200);
+    assert.equal(deactivated.data.status, 'INACTIVE');
+
+    const pickInactive = await apiRequest('/api/pick-lists/generate', {
+      method: 'POST',
+      token: staffToken,
+      body: { motorcycleTypeId: vario.id, packageId: pkgId },
+    });
+    assert.equal(pickInactive.status, 404);
+
+    // 6. Toggle back ACTIVE -> DELETE removes cleanly
+    const reactivated = await apiRequest(`/api/packages/${pkgId}/status`, {
+      method: 'PATCH',
+      token: adminToken,
+      body: { status: 'ACTIVE' },
+    });
+    assert.equal(reactivated.status, 200);
+    assert.equal(reactivated.data.status, 'ACTIVE');
+
+    const deleted = await apiRequest(`/api/packages/${pkgId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(deleted.status, 200);
+
+    const afterDelete = await apiRequest(`/api/packages/${pkgId}`, { token: adminToken });
+    assert.equal(afterDelete.status, 404);
+  });
 });

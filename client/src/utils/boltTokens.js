@@ -12,7 +12,7 @@ export const SIDE_LABELS = {
 };
 
 export const PACKAGE_TYPE_LABELS = {
-  FULL_BIKE: 'Lengkap Satu Motor',
+  FULL_BIKE: 'Full Bike',
   ENGINE: 'Mesin',
   BRAKE: 'Pengereman',
   BODY: 'Bodi',
@@ -20,14 +20,71 @@ export const PACKAGE_TYPE_LABELS = {
   CUSTOM: 'Kustom',
 };
 
+const PACKAGE_TYPE_META_MAP = {
+  FULL_BIKE: {
+    key: 'FULL_BIKE',
+    label: 'Full Bike',
+    band: 'bg-amber-500 dark:bg-amber-400',
+    badge: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
+  },
+  ENGINE: {
+    key: 'ENGINE',
+    label: 'Mesin',
+    band: 'bg-sky-600 dark:bg-sky-400',
+    badge: 'bg-sky-50 text-sky-800 border-sky-300 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30',
+  },
+  BRAKE: {
+    key: 'BRAKE',
+    label: 'Pengereman',
+    band: 'bg-rose-600 dark:bg-rose-500',
+    badge: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
+  },
+  BODY: {
+    key: 'BODY',
+    label: 'Bodi',
+    band: 'bg-violet-600 dark:bg-violet-500',
+    badge: 'bg-violet-50 text-violet-800 border-violet-300 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30',
+  },
+  CVT: {
+    key: 'CVT',
+    label: 'CVT',
+    band: 'bg-emerald-600 dark:bg-emerald-500',
+    badge: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
+  },
+};
+
+export function getPackageTypeMeta(type) {
+  const raw = String(type || '').trim();
+  if (!raw) {
+    return {
+      key: 'OTHER',
+      label: 'Paket',
+      band: 'bg-zinc-600 dark:bg-zinc-400',
+      badge: 'bg-zinc-100 text-zinc-800 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700',
+    };
+  }
+  const normalized = raw.toLowerCase().replace(/[\s_-]+/g, '');
+  if (normalized === 'fullbike' || normalized === 'lengkapsatumotor') return PACKAGE_TYPE_META_MAP.FULL_BIKE;
+  if (normalized === 'engine' || normalized === 'mesin') return PACKAGE_TYPE_META_MAP.ENGINE;
+  if (normalized === 'brake' || normalized === 'pengereman' || normalized === 'rem') return PACKAGE_TYPE_META_MAP.BRAKE;
+  if (normalized === 'body' || normalized === 'bodi') return PACKAGE_TYPE_META_MAP.BODY;
+  if (normalized === 'cvt') return PACKAGE_TYPE_META_MAP.CVT;
+
+  return {
+    key: raw,
+    label: PACKAGE_TYPE_LABELS[raw] || raw,
+    band: 'bg-zinc-600 dark:bg-zinc-400',
+    badge: 'bg-zinc-100 text-zinc-800 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700',
+  };
+}
+
 export function formatSideLabel(side) {
   if (!side) return 'Netral';
   return SIDE_LABELS[side] || side;
 }
 
 export function formatPackageType(type) {
-  if (!type) return 'Paket';
-  return PACKAGE_TYPE_LABELS[type] || type;
+  return getPackageTypeMeta(type).label;
 }
 
 /**

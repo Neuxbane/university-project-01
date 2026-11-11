@@ -12,7 +12,7 @@ async function main() {
     { code: 'ROLES_MANAGE', name: 'Manajemen Peran & Hak Akses (RBAC)', category: 'Pengguna', description: 'Membuat peran kustom dan mengatur izin aksesnya' },
     { code: 'MOTORCYCLES_MANAGE', name: 'Kelola Master 20 Tipe Motor & Matriks Baut', category: 'Master Data', description: 'Menambah, mengubah, dan memetakan baut pada motor' },
     { code: 'BOLTS_MANAGE', name: 'Kelola Master Spesifikasi Baut & Finishing', category: 'Master Data', description: 'Menambah dan mengubah standar dimensi baut' },
-    { code: 'PACKAGES_MANAGE', name: 'Kelola Paket Bundling Baut', category: 'Master Data', description: 'Mengatur formula paket Mesin, Pengereman, dan Full Bike' },
+    { code: 'PACKAGES_MANAGE', name: 'Kelola Paket Baut', category: 'Master Data', description: 'Mengatur formula paket Mesin, Pengereman, dan Full Bike' },
     { code: 'MEDIA_UPLOAD', name: 'Unggah & Hapus Galeri Foto', category: 'Media', description: 'Mengunggah foto spesifikasi baut dan tipe motor' },
     { code: 'CSV_IMPORT_EXPORT', name: 'Impor & Ekspor Data Massal (CSV)', category: 'Data', description: 'Mengimpor matriks kebutuhan baut melalui file CSV' },
     { code: 'SYSTEM_BACKUP_RESTORE', name: 'Pencadangan (Backup) & Pemulihan (Restore)', category: 'Sistem', description: 'Mengunduh dump JSON offline dan memulihkan database' },
@@ -370,70 +370,91 @@ async function main() {
 
   console.log('✅ Seeded requirements matrix for NMAX 155, Vario 160, and Aerox 155.');
 
-  // 6. Seed Packages (Program 3 integration) for NMAX 155
-  const pkgMesin = await prisma.package.create({
-    data: {
-      motorcycleTypeId: nmax.id,
+  // 6. Seed Packages (Program 3 integration) for NMAX 155 (idempotent & deduplicated)
+  const seedPackagesData = [
+    {
       packageType: 'Mesin',
       name: 'Paket Area Mesin & CVT NMAX 155',
       description: 'Set baut titanium untuk cover CVT, crankcase kanan, dan cover radiator.',
-      status: 'ACTIVE',
-      items: {
-        create: [
-          { boltSpecId: specsMap['HEX-M6-25-FL'].id, quantity: 11, emblemNote: 'CVT (6) + Kanan (5)' },
-          { boltSpecId: specsMap['HEX-M6-35-FL'].id, quantity: 4, emblemNote: 'CVT (4)' },
-          { boltSpecId: specsMap['HEX-M6-40-FL'].id, quantity: 2, emblemNote: 'CVT Tengah (2)' },
-          { boltSpecId: specsMap['HEX-M6-30-FL'].id, quantity: 3, emblemNote: 'Kanan (3)' },
-          { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 4, emblemNote: 'Radiator (4)' },
-        ],
-      },
+      items: [
+        { boltSpecId: specsMap['HEX-M6-25-FL'].id, quantity: 11, emblemNote: 'CVT (6) + Kanan (5)' },
+        { boltSpecId: specsMap['HEX-M6-35-FL'].id, quantity: 4, emblemNote: 'CVT (4)' },
+        { boltSpecId: specsMap['HEX-M6-40-FL'].id, quantity: 2, emblemNote: 'CVT Tengah (2)' },
+        { boltSpecId: specsMap['HEX-M6-30-FL'].id, quantity: 3, emblemNote: 'Kanan (3)' },
+        { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 4, emblemNote: 'Radiator (4)' },
+      ],
     },
-  });
-
-  const pkgPengereman = await prisma.package.create({
-    data: {
-      motorcycleTypeId: nmax.id,
+    {
       packageType: 'Pengereman',
       name: 'Paket Pengereman & Kaliper NMAX 155',
       description: 'Set baut titanium untuk kaliper depan/belakang, disc brake, dan master rem.',
-      status: 'ACTIVE',
-      items: {
-        create: [
-          { boltSpecId: specsMap['HEX-M8-30-FL'].id, quantity: 2, emblemNote: 'Kaliper Depan' },
-          { boltSpecId: specsMap['HEX-M8-25-FL'].id, quantity: 2, emblemNote: 'Kaliper Belakang' },
-          { boltSpecId: specsMap['HEX-M8-20-FL'].id, quantity: 6, emblemNote: 'Disc Brake Depan (3) + Belakang (3)' },
-          { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 4, emblemNote: 'Master Rem Stang' },
-        ],
-      },
+      items: [
+        { boltSpecId: specsMap['HEX-M8-30-FL'].id, quantity: 2, emblemNote: 'Kaliper Depan' },
+        { boltSpecId: specsMap['HEX-M8-25-FL'].id, quantity: 2, emblemNote: 'Kaliper Belakang' },
+        { boltSpecId: specsMap['HEX-M8-20-FL'].id, quantity: 6, emblemNote: 'Disc Brake Depan (3) + Belakang (3)' },
+        { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 4, emblemNote: 'Master Rem Stang' },
+      ],
     },
-  });
-
-  const pkgFull = await prisma.package.create({
-    data: {
-      motorcycleTypeId: nmax.id,
+    {
       packageType: 'Full Bike',
       name: 'Paket Full Bike Titanium NMAX 155',
       description: 'Komposisi lengkap seluruh baut eksterior, pengereman, mesin, dan bodi NMAX 155.',
-      status: 'ACTIVE',
-      items: {
-        create: [
-          { boltSpecId: specsMap['HEX-M6-25-FL'].id, quantity: 11, emblemNote: 'Mesin & CVT' },
-          { boltSpecId: specsMap['HEX-M6-35-FL'].id, quantity: 4, emblemNote: 'CVT' },
-          { boltSpecId: specsMap['HEX-M6-40-FL'].id, quantity: 2, emblemNote: 'CVT' },
-          { boltSpecId: specsMap['HEX-M6-30-FL'].id, quantity: 3, emblemNote: 'Mesin Kanan' },
-          { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 8, emblemNote: 'Radiator (4) & Master Rem (4)' },
-          { boltSpecId: specsMap['HEX-M8-30-FL'].id, quantity: 6, emblemNote: 'Kaliper (2) & Footstep (4)' },
-          { boltSpecId: specsMap['HEX-M8-25-FL'].id, quantity: 6, emblemNote: 'Kaliper (2) & Behel (4)' },
-          { boltSpecId: specsMap['HEX-M8-20-FL'].id, quantity: 6, emblemNote: 'Disc Rotor (6)' },
-          { boltSpecId: specsMap['BTN-M6-16-DO'].id, quantity: 4, emblemNote: 'Visor Windshield' },
-          { boltSpecId: specsMap['HEX-M6-12-FL'].id, quantity: 3, emblemNote: 'Cover Knalpot' },
-          { boltSpecId: specsMap['HEX-M8-35-FL'].id, quantity: 2, emblemNote: 'Silencer Knalpot' },
-        ],
-      },
+      items: [
+        { boltSpecId: specsMap['HEX-M6-25-FL'].id, quantity: 11, emblemNote: 'Mesin & CVT' },
+        { boltSpecId: specsMap['HEX-M6-35-FL'].id, quantity: 4, emblemNote: 'CVT' },
+        { boltSpecId: specsMap['HEX-M6-40-FL'].id, quantity: 2, emblemNote: 'CVT' },
+        { boltSpecId: specsMap['HEX-M6-30-FL'].id, quantity: 3, emblemNote: 'Mesin Kanan' },
+        { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 8, emblemNote: 'Radiator (4) & Master Rem (4)' },
+        { boltSpecId: specsMap['HEX-M8-30-FL'].id, quantity: 6, emblemNote: 'Kaliper (2) & Footstep (4)' },
+        { boltSpecId: specsMap['HEX-M8-25-FL'].id, quantity: 6, emblemNote: 'Kaliper (2) & Behel (4)' },
+        { boltSpecId: specsMap['HEX-M8-20-FL'].id, quantity: 6, emblemNote: 'Disc Rotor (6)' },
+        { boltSpecId: specsMap['BTN-M6-16-DO'].id, quantity: 4, emblemNote: 'Visor Windshield' },
+        { boltSpecId: specsMap['HEX-M6-12-FL'].id, quantity: 3, emblemNote: 'Cover Knalpot' },
+        { boltSpecId: specsMap['HEX-M8-35-FL'].id, quantity: 2, emblemNote: 'Silencer Knalpot' },
+      ],
     },
-  });
+  ];
 
-  console.log(`✅ Seeded packages for NMAX 155 (${pkgMesin.name}, ${pkgPengereman.name}, ${pkgFull.name})`);
+  const seededPackageNames = [];
+  let removedDuplicatePackages = 0;
+  for (const pkgDef of seedPackagesData) {
+    const existingList = await prisma.package.findMany({
+      where: { motorcycleTypeId: nmax.id, name: pkgDef.name },
+      orderBy: { id: 'asc' },
+      include: { _count: { select: { pickSessions: true } } },
+    });
+
+    if (existingList.length === 0) {
+      const created = await prisma.package.create({
+        data: {
+          motorcycleTypeId: nmax.id,
+          packageType: pkgDef.packageType,
+          name: pkgDef.name,
+          description: pkgDef.description,
+          status: 'ACTIVE',
+          items: { create: pkgDef.items },
+        },
+      });
+      seededPackageNames.push(created.name);
+    } else {
+      const keeper = existingList.find((p) => p._count.pickSessions > 0) || existingList[0];
+      seededPackageNames.push(keeper.name);
+      const duplicateIds = existingList
+        .filter((p) => p.id !== keeper.id && p._count.pickSessions === 0)
+        .map((p) => p.id);
+      if (duplicateIds.length > 0) {
+        const delRes = await prisma.package.deleteMany({
+          where: { id: { in: duplicateIds } },
+        });
+        removedDuplicatePackages += delRes.count;
+      }
+    }
+  }
+
+  console.log(
+    `✅ Seeded packages for NMAX 155 (${seededPackageNames.join(', ')})`
+    + (removedDuplicatePackages > 0 ? ` — cleaned ${removedDuplicatePackages} duplicate rows` : '')
+  );
 
   // 6. Seed Sample Photos, 3D Models, and Close-Ups (idempotent: never wipe existing admin data)
   console.log('📸 Checking sample bolt & motorcycle photos...');
