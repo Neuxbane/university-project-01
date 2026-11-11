@@ -120,19 +120,28 @@
         @select="() => {}"
       />
 
-      <!-- Focused Part Overlay: Blurs 2D motor background, places Part Close-Up Left + Bolt Cards & Lines Right -->
-      <FocusedPartOverlay
-        v-if="activeAnnotation && !annotationMode"
-        :annotation="activeAnnotation"
-        :close-up-photos="closeUpPhotos"
-        :motorcycle="motorcycle"
-        :bolts="bolts"
-        :position-breakdown="positionBreakdown"
-        :session-items="sessionItems"
-        :is-toggling-check="isTogglingCheck"
-        @close="$emit('clear-selection')"
-        @toggle-spec-check="$emit('toggle-spec-check', $event)"
-      />
+      <!-- Focused Part Overlay: Softly blurs 2D motor background, focuses chosen area image + bolt AutoCalloutCards -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 scale-[0.98]"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-[0.98]"
+      >
+        <FocusedPartOverlay
+          v-if="activeAnnotation && !annotationMode"
+          :annotation="activeAnnotation"
+          :close-up-photos="closeUpPhotos"
+          :motorcycle="motorcycle"
+          :bolts="bolts"
+          :position-breakdown="positionBreakdown"
+          :session-items="sessionItems"
+          :is-toggling-check="isTogglingCheck"
+          @close="$emit('clear-selection')"
+          @toggle-spec-check="$emit('toggle-spec-check', $event)"
+        />
+      </Transition>
     </div>
 
     <!-- Compact Empty Annotations Bar (below photo so motor image stays unobstructed) -->
