@@ -71,7 +71,7 @@
     >
       <canvas
         ref="canvasRef"
-        @pointerdown="onCanvasPointerDown"
+        @pointerdown.capture="onCanvasPointerDown"
         @pointerup="onCanvasPointerUp"
         @wheel="markUserInteraction"
         @touchstart.passive="markUserInteraction"
@@ -102,23 +102,6 @@
       <!-- Top-Right 3D Controls (hidden while FocusedPartOverlay is open) -->
       <div v-if="!(activeAnnotation && !annotationMode)" class="absolute top-3 right-3 z-30 flex items-center gap-2">
         <button
-          v-if="!annotationMode"
-          type="button"
-          @click="toggleCinematicManual"
-          :aria-pressed="isCinematicPlaying"
-          aria-label="Putar atau jeda kamera sinematik"
-          title="Kamera Sinematik (Otomatis 5 dtk)"
-          class="min-w-[44px] min-h-[44px] px-3 py-2 rounded-xl border shadow-md backdrop-blur-sm inline-flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-colors"
-          :class="isCinematicPlaying
-            ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
-            : 'bg-white/90 dark:bg-zinc-900/90 hover:bg-white dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700'"
-        >
-          <Pause v-if="isCinematicPlaying" class="w-4 h-4" aria-hidden="true" />
-          <Play v-else class="w-4 h-4" aria-hidden="true" />
-          <span class="hidden sm:inline">Sinematik</span>
-        </button>
-
-        <button
           type="button"
           @click="onManualResetClick"
           aria-label="Reset tampilan kamera 3D"
@@ -139,17 +122,6 @@
           <Minimize2 v-if="isFullscreen" class="w-4 h-4" aria-hidden="true" />
           <Maximize2 v-else class="w-4 h-4" aria-hidden="true" />
         </button>
-      </div>
-
-      <!-- Subtle Cinematic HUD Pill -->
-      <div
-        v-if="isCinematicPlaying && !(activeAnnotation && !annotationMode)"
-        class="absolute top-3 left-3 z-20 pointer-events-none"
-      >
-        <span class="px-2.5 py-1 rounded-lg bg-black/70 text-zinc-100 text-[11px] font-mono backdrop-blur-sm inline-flex items-center gap-1.5 shadow">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true"></span>
-          <span>{{ cinematicPresetLabel }} &bull; Ketuk kanvas untuk reset</span>
-        </span>
       </div>
 
       <!-- Auto-Show Leader Lines + Compact Bolt Callouts for all visible non-occluded points -->
@@ -307,7 +279,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Box, Check, Eye, Maximize2, Minimize2, Pause, Play, RotateCcw } from 'lucide-vue-next';
+import { Box, Check, Eye, Maximize2, Minimize2, RotateCcw } from 'lucide-vue-next';
 import { useTheme } from '../../composables/useTheme';
 import {
   resolvePartCalloutForAnnotation,
@@ -315,8 +287,10 @@ import {
   layoutVisibleCallouts,
 } from '../../utils/annotationCallouts';
 import {
+  createCinematicDeck,
   evaluatePresetPose,
-  pickNextPreset,
+  getPresetById,
+  pickNextPresetFromQueue,
   pickRandomTransition,
 } from '../../utils/cinematicCamera';
 import LocationCanvas from './LocationCanvas.vue';
@@ -366,7 +340,6 @@ const loadFailed = ref(false);
 const isFullscreen = ref(false);
 const autoShowCallouts = ref(true);
 const isCinematicPlaying = ref(false);
-const cinematicPresetLabel = ref('');
 const cinematicCurtainOpacity = ref(0);
 const canvasTransitionClass = ref('');
 const isTransitionCutting = ref(false);
@@ -464,12 +437,12 @@ let modelBoxCorners = [];
 let cameraTween = null;
 const raycaster = new THREE.Raycaster();
 
-// AAA Cinematic Camera Director state (5s inactivity trigger + random transitions)
+// AAA Cinematic Camera Director state (5s inactivity trigger + random shuffled shots & transitions)
 const IDLE_CINEMATIC_DELAY_MS = 5000;
 let lastInteractionAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
-let userPausedManually = false;
 let wasCinematicOnPointerDown = false;
-let cinematicShot = null; // { preset, startTime, stepCount, transitionType, frozen? }
+let cinematicDeck = [];
+let cinematicShot = null; // { preset, startTime, transitionType }
 let cinematicCutTimer = null;
 let cinematicSettleTimer = null;
 
@@ -578,6 +551,10 @@ function focusCameraOnAnnotation(ann) {
 
 const resetView = () => {
   if (!camera || !controls) return;
+  if (camera.fov !== 45) {
+    camera.fov = 45;
+    camera.updateProjectionMatrix();
+  }
   if (prefersReducedMotion()) {
     camera.position.copy(defaultCamPos);
     controls.target.copy(defaultTarget);
@@ -788,39 +765,45 @@ function applyIncomingEntryTransform(type) {
   }
 }
 
-function stopCinematicMode({ manual = false } = {}) {
+function stopCinematicMode() {
   clearCinematicTimers();
   isCinematicPlaying.value = false;
-  cinematicPresetLabel.value = '';
   cinematicCurtainOpacity.value = 0;
   canvasTransitionClass.value = '';
   isTransitionCutting.value = false;
   cinematicShot = null;
-  if (manual) {
-    userPausedManually = true;
+}
+
+function applyPoseToCamera(pose) {
+  if (!camera || !controls) return;
+  camera.position.set(pose.camPos[0], pose.camPos[1], pose.camPos[2]);
+  controls.target.set(pose.target[0], pose.target[1], pose.target[2]);
+  if (pose.fov && Math.abs(camera.fov - pose.fov) > 0.05) {
+    camera.fov = pose.fov;
+    camera.updateProjectionMatrix();
   }
+}
+
+function pickNextDeckPreset(currentId = null) {
+  return pickNextPresetFromQueue(cinematicDeck, currentId);
 }
 
 function advanceCinematicShot({ initial = false } = {}) {
   if (!camera || !controls || !loadedModelRoot || props.annotationMode || props.activeAnnotation) return;
   clearCinematicTimers();
 
-  const nextStep = cinematicShot ? cinematicShot.stepCount + 1 : (initial ? 0 : 1);
-  const nextPreset = pickNextPreset(cinematicShot?.preset?.id || null, nextStep);
+  const nextPreset = pickNextDeckPreset(cinematicShot?.preset?.id || null);
   const transitionType = initial ? 'smooth_glide' : pickRandomTransition(cinematicShot?.transitionType || null);
 
   const startShotNow = () => {
     const pose = evaluatePresetPose(nextPreset, 0, modelCenter, modelMaxDim, baseFitDist);
-    camera.position.set(pose.camPos[0], pose.camPos[1], pose.camPos[2]);
-    controls.target.set(pose.target[0], pose.target[1], pose.target[2]);
+    applyPoseToCamera(pose);
     controls.update();
     cinematicShot = {
       preset: nextPreset,
       startTime: performance.now(),
-      stepCount: nextStep,
       transitionType,
     };
-    cinematicPresetLabel.value = nextPreset.label;
   };
 
   if (transitionType === 'smooth_glide' && !initial) {
@@ -828,10 +811,8 @@ function advanceCinematicShot({ initial = false } = {}) {
     cinematicShot = {
       preset: nextPreset,
       startTime: performance.now(),
-      stepCount: nextStep,
       transitionType,
     };
-    cinematicPresetLabel.value = nextPreset.label;
     cameraTween = {
       startPos: camera.position.clone(),
       endPos: new THREE.Vector3(...pose.camPos),
@@ -845,16 +826,18 @@ function advanceCinematicShot({ initial = false } = {}) {
   if (initial) {
     // Opening cinematic glide cleanly from elevated intro pose
     const pose0 = evaluatePresetPose(nextPreset, 0, modelCenter, modelMaxDim, baseFitDist);
-    camera.position.set(pose0.camPos[0] * 1.15, pose0.camPos[1] + modelMaxDim * 0.4, pose0.camPos[2] * 1.15);
+    camera.position.set(pose0.camPos[0] * 1.18, pose0.camPos[1] + modelMaxDim * 0.45, pose0.camPos[2] * 1.18);
     controls.target.copy(defaultTarget);
+    if (pose0.fov) {
+      camera.fov = pose0.fov;
+      camera.updateProjectionMatrix();
+    }
     controls.update();
     cinematicShot = {
       preset: nextPreset,
       startTime: performance.now(),
-      stepCount: nextStep,
       transitionType: 'smooth_glide',
     };
-    cinematicPresetLabel.value = nextPreset.label;
     cameraTween = {
       startPos: camera.position.clone(),
       endPos: new THREE.Vector3(...pose0.camPos),
@@ -867,6 +850,7 @@ function advanceCinematicShot({ initial = false } = {}) {
 
   applyOutgoingTransition(transitionType);
   cinematicCutTimer = setTimeout(() => {
+    cinematicCutTimer = null;
     if (!isCinematicPlaying.value) return;
     startShotNow();
     applyIncomingEntryTransform(transitionType);
@@ -875,6 +859,7 @@ function advanceCinematicShot({ initial = false } = {}) {
       canvasTransitionClass.value = '';
     });
     cinematicSettleTimer = setTimeout(() => {
+      cinematicSettleTimer = null;
       isTransitionCutting.value = false;
     }, 260);
   }, 260);
@@ -882,33 +867,30 @@ function advanceCinematicShot({ initial = false } = {}) {
 
 function startCinematicMode({ initial = false } = {}) {
   if (prefersReducedMotion() || !loadedModelRoot || props.annotationMode || props.activeAnnotation) return;
-  userPausedManually = false;
   isCinematicPlaying.value = true;
   cinematicShot = null;
+
+  // Build fresh shuffled deck; when starting from idle, schedule Top 360 & Bottom 360 before random moves
+  const shuffled = createCinematicDeck();
+  if (initial) {
+    // Truly random starting shot on page load (any of the 28 moves!)
+    cinematicDeck = shuffled;
+  } else {
+    const rest = shuffled.filter((id) => id !== 'high_orbit_360' && id !== 'low_orbit_360');
+    cinematicDeck = ['high_orbit_360', 'low_orbit_360', ...rest];
+  }
   advanceCinematicShot({ initial });
 }
 
 function markUserInteraction() {
   lastInteractionAt = performance.now();
-  userPausedManually = false;
   if (isCinematicPlaying.value) {
     stopCinematicMode();
   }
 }
 
-function toggleCinematicManual() {
-  lastInteractionAt = performance.now();
-  if (isCinematicPlaying.value) {
-    stopCinematicMode({ manual: true });
-    resetView();
-  } else {
-    startCinematicMode({ initial: false });
-  }
-}
-
 function onManualResetClick() {
   lastInteractionAt = performance.now();
-  userPausedManually = false;
   if (isCinematicPlaying.value) {
     stopCinematicMode();
   }
@@ -939,12 +921,10 @@ function animateLoop() {
       }
     } else if (!cinematicCutTimer) {
       const pose = evaluatePresetPose(cinematicShot.preset, progress, modelCenter, modelMaxDim, baseFitDist);
-      camera.position.set(pose.camPos[0], pose.camPos[1], pose.camPos[2]);
-      controls.target.set(pose.target[0], pose.target[1], pose.target[2]);
+      applyPoseToCamera(pose);
     }
   } else if (
     !isCinematicPlaying.value
-    && !userPausedManually
     && loadedModelRoot
     && !isModelLoading.value
     && !props.annotationMode
@@ -1114,7 +1094,6 @@ const onCanvasPointerUp = (e) => {
   // If user tapped (didn't drag) canvas while Cinematic Mode was playing, return cleanly to Reset position
   if (!props.annotationMode && wasCinematicOnPointerDown && dist < 6) {
     wasCinematicOnPointerDown = false;
-    userPausedManually = false;
     stopCinematicMode();
     resetView();
     return;

@@ -1,8 +1,10 @@
 /**
  * AAA Showroom Cinematic Camera Director for Three.js Motorcycle Viewer.
- * Provides >= 20 procedural camera presets (including full top & bottom 360 orbits,
- * close-up wheel/CVT/exhaust/visor passes, crane sweeps, and profiles) plus random
- * transition effects (fade, zoom in/out, swipe left/right/up/down, smooth glide).
+ * Implements 28 real video-production / automotive-showcase camera movements
+ * (360 top/bottom orbits, diagonal dolly out/in, crab/truck lateral moves,
+ * crab dolly back-right, pullback 30 deg right/left, pedestal/crane/jib arcs,
+ * vertigo dolly-zoom, drone overhead flyover, close tracking shots) plus
+ * 8 random transition effects and deck-shuffled random sequencing.
  */
 
 export const TRANSITION_TYPES = [
@@ -17,302 +19,265 @@ export const TRANSITION_TYPES = [
 ];
 
 /**
- * 24 named camera presets parameterized in spherical / relative offsets around
- * model center & modelMaxDim so every uploaded .glb frames consistently.
- * azimuth: radians around Y (0 = +X front, PI/2 = +Z right side, -PI/2 = -Z left side, PI = -X rear)
- * elevation: radians above horizon (+ = looking down from above, - = low ground angle)
- * distMul: multiplier of base fitDist
- * durationMs: shot playback duration
- * targetOffset: [ox, oy, oz] fractions of modelMaxDim shifted from box center
+ * 28 video-production camera presets.
+ * Each shot supports independent start/end spherical camera angles (az, el, dist),
+ * independent start/end camera-target offsets (allowing true lateral crabbing,
+ * push-throughs, and pan reveals), and optional lens FOV shifts (e.g. dolly-zoom).
+ * Coordinate convention: +X = Front, -X = Rear, +Y = Up, +Z = Right, -Z = Left.
  */
 export const CINEMATIC_PRESETS = [
   {
     id: 'high_orbit_360',
-    label: 'Putaran Atas 360°',
-    durationMs: 7500,
-    azimuthStart: 0.65,
-    azimuthEnd: 0.65 + Math.PI * 2,
-    elevationStart: 0.88,
-    elevationEnd: 0.82,
-    distStart: 1.05,
-    distEnd: 1.0,
-    targetOffset: [0, 0, 0],
+    durationMs: 7000,
+    az: [0.6, 0.6 + Math.PI * 2],
+    el: [0.9, 0.84],
+    dist: [1.05, 1.0],
+    targetStart: [0, 0, 0],
+    targetEnd: [0, 0, 0],
   },
   {
     id: 'low_orbit_360',
-    label: 'Putaran Bawah 360°',
-    durationMs: 7500,
-    azimuthStart: -0.9,
-    azimuthEnd: -0.9 + Math.PI * 2,
-    elevationStart: 0.1,
-    elevationEnd: 0.14,
-    distStart: 0.96,
-    distEnd: 0.96,
-    targetOffset: [0, -0.08, 0],
+    durationMs: 7000,
+    az: [-0.85, -0.85 + Math.PI * 2],
+    el: [0.09, 0.14],
+    dist: [0.95, 0.95],
+    targetStart: [0, -0.08, 0],
+    targetEnd: [0, -0.06, 0],
   },
   {
-    id: 'hero_front_34_right',
-    label: 'Hero Depan Kanan',
-    durationMs: 4200,
-    azimuthStart: 0.45,
-    azimuthEnd: 0.92,
-    elevationStart: 0.28,
-    elevationEnd: 0.22,
-    distStart: 0.98,
-    distEnd: 0.9,
-    targetOffset: [0.06, 0.02, 0],
-  },
-  {
-    id: 'hero_front_34_left',
-    label: 'Hero Depan Kiri',
-    durationMs: 4200,
-    azimuthStart: -0.45,
-    azimuthEnd: -0.98,
-    elevationStart: 0.24,
-    elevationEnd: 0.3,
-    distStart: 0.95,
-    distEnd: 0.88,
-    targetOffset: [0.05, 0.02, 0],
-  },
-  {
-    id: 'hero_rear_34_right',
-    label: 'Hero Belakang Kanan',
-    durationMs: 4200,
-    azimuthStart: 2.1,
-    azimuthEnd: 2.65,
-    elevationStart: 0.22,
-    elevationEnd: 0.3,
-    distStart: 0.95,
-    distEnd: 0.88,
-    targetOffset: [-0.08, 0, 0],
-  },
-  {
-    id: 'hero_rear_34_left',
-    label: 'Hero Belakang Kiri',
-    durationMs: 4200,
-    azimuthStart: -2.05,
-    azimuthEnd: -2.6,
-    elevationStart: 0.25,
-    elevationEnd: 0.18,
-    distStart: 0.96,
-    distEnd: 0.88,
-    targetOffset: [-0.08, 0, 0],
-  },
-  {
-    id: 'overhead_top_down',
-    label: 'Drone Atas Menyapu',
-    durationMs: 4400,
-    azimuthStart: 1.35,
-    azimuthEnd: 1.85,
-    elevationStart: 1.32,
-    elevationEnd: 1.24,
-    distStart: 1.05,
-    distEnd: 0.92,
-    targetOffset: [0.12, 0, 0],
-  },
-  {
-    id: 'wheel_front_closeup',
-    label: 'Close-Up Roda & Kaliper Depan',
+    id: 'diagonal_dolly_out',
     durationMs: 4000,
-    azimuthStart: -0.55,
-    azimuthEnd: -1.15,
-    elevationStart: 0.08,
-    elevationEnd: 0.15,
-    distStart: 0.62,
-    distEnd: 0.56,
-    targetOffset: [0.28, -0.14, -0.02],
+    az: [-0.45, -1.15],
+    el: [0.16, 0.58],
+    dist: [0.68, 1.24],
+    targetStart: [0.16, -0.05, -0.04],
+    targetEnd: [0, 0.03, 0],
   },
   {
-    id: 'wheel_rear_closeup',
-    label: 'Close-Up Roda Belakang',
-    durationMs: 4000,
-    azimuthStart: 2.05,
-    azimuthEnd: 2.55,
-    elevationStart: 0.09,
-    elevationEnd: 0.16,
-    distStart: 0.64,
-    distEnd: 0.58,
-    targetOffset: [-0.28, -0.14, 0.02],
+    id: 'diagonal_dolly_in',
+    durationMs: 3900,
+    az: [1.1, 0.42],
+    el: [0.54, 0.16],
+    dist: [1.22, 0.68],
+    targetStart: [0, 0.04, 0],
+    targetEnd: [0.18, 0.02, 0.04],
   },
   {
-    id: 'cvt_crankcase_dolly',
-    label: 'Dolly Area CVT Kiri',
+    id: 'crab_dolly_back_right',
     durationMs: 4200,
-    azimuthStart: -1.85,
-    azimuthEnd: -1.35,
-    elevationStart: 0.12,
-    elevationEnd: 0.18,
-    distStart: 0.68,
-    distEnd: 0.62,
-    targetOffset: [-0.14, -0.12, -0.06],
+    az: [1.35, 2.25],
+    el: [0.22, 0.34],
+    dist: [0.76, 1.18],
+    targetStart: [0.1, -0.04, 0.04],
+    targetEnd: [-0.14, 0.04, 0.1],
   },
   {
-    id: 'exhaust_muffler_pan',
-    label: 'Pan Area Knalpot Kanan',
+    id: 'crab_dolly_back_left',
     durationMs: 4200,
-    azimuthStart: 1.32,
-    azimuthEnd: 1.92,
-    elevationStart: 0.1,
-    elevationEnd: 0.16,
-    distStart: 0.68,
-    distEnd: 0.6,
-    targetOffset: [-0.16, -0.1, 0.06],
+    az: [-1.35, -2.25],
+    el: [0.2, 0.32],
+    dist: [0.76, 1.18],
+    targetStart: [0.1, -0.04, -0.04],
+    targetEnd: [-0.14, 0.04, -0.1],
   },
   {
-    id: 'visor_cockpit_tilt',
-    label: 'Sudut Stang & Visor',
-    durationMs: 4000,
-    azimuthStart: 0.38,
-    azimuthEnd: -0.38,
-    elevationStart: 0.68,
-    elevationEnd: 0.56,
-    distStart: 0.72,
-    distEnd: 0.66,
-    targetOffset: [0.16, 0.2, 0],
-  },
-  {
-    id: 'tail_behel_glide',
-    label: 'Sweep Ekor & Behel Jok',
-    durationMs: 4000,
-    azimuthStart: -2.4,
-    azimuthEnd: -3.3,
-    elevationStart: 0.45,
-    elevationEnd: 0.32,
-    distStart: 0.78,
-    distEnd: 0.7,
-    targetOffset: [-0.24, 0.12, 0],
-  },
-  {
-    id: 'front_headlamp_push',
-    label: 'Sorot Depan Simetris',
+    id: 'pullback_30_right',
     durationMs: 3800,
-    azimuthStart: -0.12,
-    azimuthEnd: 0.12,
-    elevationStart: 0.16,
-    elevationEnd: 0.24,
-    distStart: 1.08,
-    distEnd: 0.76,
-    targetOffset: [0.18, 0.04, 0],
+    az: [0.52, 0.58], // ~30 deg right of front axis
+    el: [0.24, 0.32],
+    dist: [0.64, 1.22],
+    targetStart: [0.2, 0.04, 0.04],
+    targetEnd: [0, 0.02, 0],
   },
   {
-    id: 'rear_tail_pullback',
-    label: 'Tarik Belakang Simetris',
+    id: 'pullback_30_left',
     durationMs: 3800,
-    azimuthStart: 2.98,
-    azimuthEnd: 3.28,
-    elevationStart: 0.22,
-    elevationEnd: 0.34,
-    distStart: 0.76,
-    distEnd: 1.1,
-    targetOffset: [-0.18, 0.04, 0],
+    az: [-0.52, -0.58], // ~30 deg left of front axis
+    el: [0.22, 0.32],
+    dist: [0.64, 1.22],
+    targetStart: [0.2, 0.04, -0.04],
+    targetEnd: [0, 0.02, 0],
   },
   {
-    id: 'dutch_rise_left',
-    label: 'Crane Naik Sisi Kiri',
-    durationMs: 4300,
-    azimuthStart: -1.9,
-    azimuthEnd: -1.1,
-    elevationStart: 0.08,
-    elevationEnd: 0.75,
-    distStart: 0.92,
-    distEnd: 1.02,
-    targetOffset: [0, 0.04, 0],
+    id: 'crab_truck_left',
+    durationMs: 4100,
+    az: [-1.57, -1.57],
+    el: [0.18, 0.2],
+    dist: [0.74, 0.78],
+    targetStart: [0.28, -0.04, 0],
+    targetEnd: [-0.28, -0.02, 0],
   },
   {
-    id: 'crane_descend_right',
-    label: 'Crane Turun Sisi Kanan',
-    durationMs: 4300,
-    azimuthStart: 1.1,
-    azimuthEnd: 1.95,
-    elevationStart: 0.85,
-    elevationEnd: 0.12,
-    distStart: 1.05,
-    distEnd: 0.85,
-    targetOffset: [0, 0, 0],
+    id: 'crab_truck_right',
+    durationMs: 4100,
+    az: [1.57, 1.57],
+    el: [0.18, 0.2],
+    dist: [0.74, 0.78],
+    targetStart: [-0.28, -0.02, 0],
+    targetEnd: [0.28, -0.04, 0],
   },
   {
-    id: 'side_profile_left',
-    label: 'Siluet Samping Kiri',
-    durationMs: 4000,
-    azimuthStart: -1.57,
-    azimuthEnd: -1.57,
-    elevationStart: 0.18,
-    elevationEnd: 0.18,
-    distStart: 1.12,
-    distEnd: 0.94,
-    targetOffset: [0, 0, 0],
+    id: 'pedestal_up_front',
+    durationMs: 3900,
+    az: [0.78, 0.65],
+    el: [0.06, 0.72],
+    dist: [0.88, 0.96],
+    targetStart: [0.12, -0.12, 0],
+    targetEnd: [0.04, 0.12, 0],
   },
   {
-    id: 'side_profile_right',
-    label: 'Siluet Samping Kanan',
-    durationMs: 4000,
-    azimuthStart: 1.57,
-    azimuthEnd: 1.57,
-    elevationStart: 0.18,
-    elevationEnd: 0.18,
-    distStart: 1.12,
-    distEnd: 0.94,
-    targetOffset: [0, 0, 0],
+    id: 'pedestal_down_rear',
+    durationMs: 3900,
+    az: [-2.45, -2.3],
+    el: [0.75, 0.09],
+    dist: [0.98, 0.86],
+    targetStart: [-0.1, 0.14, 0],
+    targetEnd: [-0.14, -0.1, 0],
   },
   {
-    id: 'ground_level_pass',
-    label: 'Kamera Rendah Menyusur',
-    durationMs: 4200,
-    azimuthStart: -0.65,
-    azimuthEnd: -2.45,
-    elevationStart: 0.06,
-    elevationEnd: 0.08,
-    distStart: 0.88,
-    distEnd: 0.88,
-    targetOffset: [0, -0.1, 0],
-  },
-  {
-    id: 'diag_high_sweep',
-    label: 'Sweep Diagonal Tinggi',
+    id: 'crane_arc_over',
     durationMs: 4400,
-    azimuthStart: 0.6,
-    azimuthEnd: -0.9,
-    elevationStart: 0.95,
-    elevationEnd: 0.65,
-    distStart: 1.15,
-    distEnd: 0.95,
-    targetOffset: [0, 0.04, 0],
+    az: [0.85, -0.85],
+    el: [0.24, 0.92],
+    dist: [0.94, 1.06],
+    targetStart: [0, 0, 0],
+    targetEnd: [0.05, 0.05, 0],
   },
   {
-    id: 'engine_belly_orbit',
-    label: 'Fokus Tengah Rangka & Mesin',
-    durationMs: 4200,
-    azimuthStart: 1.0,
-    azimuthEnd: 2.15,
-    elevationStart: 0.15,
-    elevationEnd: 0.25,
-    distStart: 0.7,
-    distEnd: 0.68,
-    targetOffset: [-0.04, -0.08, 0],
+    id: 'jib_sweep_left',
+    durationMs: 4400,
+    az: [-2.15, -0.75],
+    el: [0.12, 0.56],
+    dist: [0.84, 1.02],
+    targetStart: [-0.15, -0.06, 0],
+    targetEnd: [0.12, 0.06, 0],
+  },
+  {
+    id: 'vertigo_dolly_zoom',
+    durationMs: 4000,
+    az: [0.42, 0.52],
+    el: [0.2, 0.22],
+    dist: [0.72, 1.24],
+    targetStart: [0.06, 0.02, 0],
+    targetEnd: [0, 0.02, 0],
+    fov: [54, 34],
+  },
+  {
+    id: 'overhead_flyover',
+    durationMs: 4300,
+    az: [1.45, 1.75],
+    el: [1.34, 1.28],
+    dist: [1.06, 0.92],
+    targetStart: [0.24, 0, 0],
+    targetEnd: [-0.24, 0, 0],
+  },
+  {
+    id: 'worm_eye_front',
+    durationMs: 3800,
+    az: [-0.22, 0.22],
+    el: [0.04, 0.12],
+    dist: [0.92, 0.82],
+    targetStart: [0.16, -0.12, 0],
+    targetEnd: [0.14, 0.1, 0],
+  },
+  {
+    id: 'whip_orbit_front',
+    durationMs: 3600,
+    az: [-1.15, 1.15],
+    el: [0.22, 0.28],
+    dist: [0.92, 0.88],
+    targetStart: [0.08, 0, 0],
+    targetEnd: [0.08, 0, 0],
+  },
+  {
+    id: 'track_cvt_left',
+    durationMs: 3900,
+    az: [-1.85, -1.28],
+    el: [0.12, 0.18],
+    dist: [0.66, 0.62],
+    targetStart: [-0.22, -0.12, -0.06],
+    targetEnd: [-0.04, -0.1, -0.04],
+  },
+  {
+    id: 'track_exhaust_right',
+    durationMs: 3900,
+    az: [1.28, 1.95],
+    el: [0.1, 0.18],
+    dist: [0.68, 0.62],
+    targetStart: [-0.04, -0.1, 0.05],
+    targetEnd: [-0.24, -0.08, 0.06],
+  },
+  {
+    id: 'visor_cockpit_arc',
+    durationMs: 4000,
+    az: [0.5, -0.5],
+    el: [0.7, 0.52],
+    dist: [0.74, 0.66],
+    targetStart: [0.18, 0.18, 0],
+    targetEnd: [0.14, 0.16, 0],
+  },
+  {
+    id: 'caliper_tight_pan',
+    durationMs: 3800,
+    az: [-0.55, -1.2],
+    el: [0.08, 0.16],
+    dist: [0.62, 0.56],
+    targetStart: [0.3, -0.15, -0.03],
+    targetEnd: [0.24, -0.13, -0.02],
+  },
+  {
+    id: 'tail_reveal_pan',
+    durationMs: 3900,
+    az: [2.35, 3.35],
+    el: [0.42, 0.26],
+    dist: [0.76, 0.94],
+    targetStart: [-0.24, 0.1, 0],
+    targetEnd: [-0.14, 0.04, 0],
   },
   {
     id: 'spiral_ascend_360',
-    label: 'Spiral Naik 360°',
-    durationMs: 7000,
-    azimuthStart: 0,
-    azimuthEnd: Math.PI * 2,
-    elevationStart: 0.12,
-    elevationEnd: 0.95,
-    distStart: 0.85,
-    distEnd: 1.12,
-    targetOffset: [0, 0, 0],
+    durationMs: 6800,
+    az: [0, Math.PI * 2],
+    el: [0.12, 0.96],
+    dist: [0.85, 1.12],
+    targetStart: [0, -0.04, 0],
+    targetEnd: [0, 0.02, 0],
   },
   {
     id: 'helix_descend_360',
-    label: 'Helix Turun 360°',
-    durationMs: 7000,
-    azimuthStart: Math.PI,
-    azimuthEnd: -Math.PI,
-    elevationStart: 0.92,
-    elevationEnd: 0.14,
-    distStart: 1.12,
-    distEnd: 0.88,
-    targetOffset: [0, 0, 0],
+    durationMs: 6800,
+    az: [Math.PI, -Math.PI],
+    el: [0.94, 0.12],
+    dist: [1.14, 0.86],
+    targetStart: [0, 0.03, 0],
+    targetEnd: [0, -0.05, 0],
+  },
+  {
+    id: 'diagonal_climb_sweep',
+    durationMs: 4300,
+    az: [-2.5, -1.3],
+    el: [0.14, 0.78],
+    dist: [0.78, 1.15],
+    targetStart: [-0.18, -0.06, 0],
+    targetEnd: [0.06, 0.06, 0],
+  },
+  {
+    id: 'wide_establish_right',
+    durationMs: 4000,
+    az: [0.65, 1.35],
+    el: [0.34, 0.24],
+    dist: [1.22, 0.94],
+    targetStart: [0, 0.02, 0],
+    targetEnd: [0, 0, 0],
+  },
+  {
+    id: 'reverse_arc_left',
+    durationMs: 4000,
+    az: [-0.65, -1.45],
+    el: [0.32, 0.22],
+    dist: [0.9, 1.18],
+    targetStart: [0.06, 0, 0],
+    targetEnd: [-0.04, 0.02, 0],
   },
 ];
 
@@ -321,18 +286,20 @@ export function easeInOutSine(t) {
 }
 
 /**
- * Evaluates world camera position and target for a preset at progress t in [0, 1].
+ * Evaluates world camera position, target, and FOV for a preset at progress t in [0, 1].
  */
 export function evaluatePresetPose(preset, progress, center, modelMaxDim, baseFitDist) {
   const t = easeInOutSine(Math.max(0, Math.min(1, progress)));
-  const az = preset.azimuthStart + (preset.azimuthEnd - preset.azimuthStart) * t;
-  const el = preset.elevationStart + (preset.elevationEnd - preset.elevationStart) * t;
-  const dist = baseFitDist * (preset.distStart + (preset.distEnd - preset.distStart) * t);
+  const az = preset.az[0] + (preset.az[1] - preset.az[0]) * t;
+  const el = preset.el[0] + (preset.el[1] - preset.el[0]) * t;
+  const dist = baseFitDist * (preset.dist[0] + (preset.dist[1] - preset.dist[0]) * t);
+  const fov = preset.fov ? preset.fov[0] + (preset.fov[1] - preset.fov[0]) * t : 45;
 
-  const off = preset.targetOffset || [0, 0, 0];
-  const tx = center.x + off[0] * modelMaxDim;
-  const ty = center.y + off[1] * modelMaxDim;
-  const tz = center.z + off[2] * modelMaxDim;
+  const ts = preset.targetStart || [0, 0, 0];
+  const te = preset.targetEnd || [0, 0, 0];
+  const tx = center.x + (ts[0] + (te[0] - ts[0]) * t) * modelMaxDim;
+  const ty = center.y + (ts[1] + (te[1] - ts[1]) * t) * modelMaxDim;
+  const tz = center.z + (ts[2] + (te[2] - ts[2]) * t) * modelMaxDim;
 
   const cosEl = Math.cos(el);
   const sinEl = Math.sin(el);
@@ -343,23 +310,38 @@ export function evaluatePresetPose(preset, progress, center, modelMaxDim, baseFi
   return {
     camPos: [cx, cy, cz],
     target: [tx, ty, tz],
+    fov,
   };
 }
 
 /**
- * Picks next preset index avoiding immediate repeats. When forcePair is true (e.g.
- * initial idle sequence), cycles high_orbit_360 -> low_orbit_360 first before randomizing.
+ * Fisher-Yates shuffled deck director so every cinematic shot plays in random order
+ * without repeats until all presets are exhausted, prioritizing top & bottom orbits early
+ * when returning from idle.
  */
-export function pickNextPreset(currentId = null, stepCount = 0) {
-  if (stepCount === 0 && !currentId) {
-    // Cinematic opening shot on page load
-    return CINEMATIC_PRESETS[2]; // hero_front_34_right or pick random hero
+export function createCinematicDeck(excludeId = null) {
+  const ids = CINEMATIC_PRESETS.map((p) => p.id).filter((id) => id !== excludeId);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
   }
-  if (stepCount === 1) return CINEMATIC_PRESETS[0]; // high_orbit_360 (1 top turn)
-  if (stepCount === 2) return CINEMATIC_PRESETS[1]; // low_orbit_360 (1 bottom turn)
+  return ids;
+}
 
-  const pool = CINEMATIC_PRESETS.filter((p) => p.id !== currentId);
-  return pool[Math.floor(Math.random() * pool.length)] || CINEMATIC_PRESETS[0];
+export function getPresetById(id) {
+  return CINEMATIC_PRESETS.find((p) => p.id === id) || CINEMATIC_PRESETS[0];
+}
+
+export function pickNextPresetFromQueue(queue, currentId = null) {
+  if (!Array.isArray(queue) || queue.length === 0) {
+    queue.push(...createCinematicDeck(currentId));
+  }
+  let nextId = queue.shift();
+  if (nextId === currentId && queue.length > 0) {
+    queue.push(nextId);
+    nextId = queue.shift();
+  }
+  return getPresetById(nextId);
 }
 
 export function pickRandomTransition(prevType = null) {
