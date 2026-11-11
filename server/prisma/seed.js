@@ -532,6 +532,12 @@ async function main() {
   const cuSummary = await attachSampleCloseUps(prisma, { overwrite: false });
   console.log(`✅ Attached ${cuSummary.photosCreated} missing close-up photos and ${cuSummary.pinsCreated} multi-bolt pins.`);
 
+  if (process.argv.includes('--with-demo-annotations')) {
+    const { seedDemoAnnotations } = require('../scripts/seedDemoAnnotations');
+    const demoSummary = await seedDemoAnnotations(prisma);
+    console.log(`✅ [DEMO] Seeded ${demoSummary.createdCount} demo 3D annotations.`);
+  }
+
   console.log('🎉 Seeding successfully completed!');
 }
 

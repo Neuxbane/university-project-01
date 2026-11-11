@@ -9,6 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "node prisma/seed.js",
+    "prisma:seed:demo": "node scripts/seedDemoAnnotations.js --with-demo-annotations",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

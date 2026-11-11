@@ -1,0 +1,14 @@
+[
+  { "area": "Cover Crankcase Kiri / CVT", "label": "Bak CVT Kiri", "x": -0.42, "y": 0.29, "z": -0.192, "nx": 0, "ny": 0, "nz": -1 },
+  { "area": "Cover Crankcase Kanan", "label": "Crankcase Kanan", "x": -0.24, "y": 0.27, "z": 0.115, "nx": 0, "ny": 0, "nz": 1 },
+  { "area": "Cover Radiator & Kipas", "label": "Cover Kipas / Radiator", "x": -0.21, "y": 0.29, "z": 0.186, "nx": 0, "ny": 0, "nz": 1 },
+  { "area": "Kaliper Cakram Depan", "label": "Kaliper Rem Depan", "xMode": "fx", "xOff": -0.088, "yMode": "ft", "yOff": 0.035, "z": -0.091, "nx": 0, "ny": 0, "nz": -1 },
+  { "area": "Piringan Cakram Depan", "label": "Disc Brake Depan", "xMode": "fx", "xOff": 0.06, "yMode": "ft", "yOff": 0.05, "z": -0.063, "nx": 0, "ny": 0, "nz": -1 },
+  { "area": "Master Rem & Klem Stang", "label": "Master Rem Kanan", "xMode": "fx", "xOff": -0.185, "y": 0.916, "z": 0.17, "nx": 0.3, "ny": 0.9, "nz": 0.2 },
+  { "area": "Windshield & Visor", "label": "Visor Depan", "xMode": "fx", "xOff": -0.095, "yMode": "visor", "z": 0, "nx": 0.92, "ny": 0.38, "nz": 0 },
+  { "area": "Behel Jok Belakang", "label": "Behel Belakang", "xMode": "rx", "xOff": -0.08, "y": 0.815, "z": 0.08, "nx": -0.4, "ny": 0.9, "nz": 0.2 },
+  { "area": "Cover Knalpot & Silencer", "label": "Tameng Knalpot", "xMode": "rx", "xOff": 0.06, "y": 0.31, "z": 0.232, "nx": 0, "ny": 0, "nz": 1 },
+  { "area": "Footstep Belakang", "label": "Footstep Kiri", "x": -0.34, "y": 0.37, "z": -0.238, "nx": 0, "ny": 0, "nz": -1 },
+  { "area": "Kaliper Cakram Belakang", "label": "Kaliper Rem Belakang", "xMode": "rx", "xOff": 0.068, "yMode": "rt", "yOff": 0.058, "z": 0.096, "nx": 0, "ny": 0, "nz": 1, "requiresRearDisc": true },
+  { "area": "Piringan Cakram Belakang", "label": "Disc Brake Belakang", "xMode": "rx", "xOff": -0.05, "yMode": "rt", "yOff": -0.04, "z": 0.073, "nx": 0, "ny": 0, "nz": 1, "requiresRearDisc": true }
+]
