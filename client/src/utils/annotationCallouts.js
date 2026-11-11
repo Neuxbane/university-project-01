@@ -319,7 +319,18 @@ export function layoutVisibleCallouts(visibleEntries, stageW, stageH, modelScree
       }
     }
 
-    // 4. Clamp inside viewport bounds
+    // 4. Always keep every callout card clear of every visible pin circle so cards never overlap pins
+    for (const b of boxes) {
+      for (const p of chosen) {
+        pushBoxOutsideObstacle(
+          b,
+          { minX: p.screenX - 14, maxX: p.screenX + 14, minY: p.screenY - 14, maxY: p.screenY + 14 },
+          14
+        );
+      }
+    }
+
+    // 5. Clamp inside viewport bounds
     for (const b of boxes) {
       b.x = clamp(b.x, pad, stageW - b.w - pad);
       b.y = clamp(b.y, pad, stageH - b.h - pad);

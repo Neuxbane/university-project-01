@@ -451,8 +451,10 @@ async function main() {
     { specCode: 'BTN-M5-15-DO', url: '/uploads/bolts/titanium-button-head-doff.svg', caption: 'Button Head Doff M5', isPrimary: true },
   ];
 
+  const seededSpecCodesWithImages = new Set();
   for (const img of sampleBoltImages) {
     if (specsMap[img.specCode]) {
+      seededSpecCodesWithImages.add(img.specCode);
       await prisma.boltImage.create({
         data: {
           boltSpecId: specsMap[img.specCode].id,
@@ -462,6 +464,21 @@ async function main() {
         },
       });
     }
+  }
+
+  for (const spec of Object.values(specsMap)) {
+    if (seededSpecCodesWithImages.has(spec.code)) continue;
+    const isButton = (spec.headType || '').toLowerCase().includes('button');
+    await prisma.boltImage.create({
+      data: {
+        boltSpecId: spec.id,
+        url: isButton
+          ? '/uploads/bolts/titanium-button-head-doff.svg'
+          : '/uploads/bolts/titanium-flange-hex-blue.svg',
+        caption: `${spec.headType} ${spec.finish || 'Titanium'}`,
+        isPrimary: true,
+      },
+    });
   }
 
   // Motorcycle Images

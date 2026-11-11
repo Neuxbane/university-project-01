@@ -33,10 +33,10 @@
       class="relative flex-1 min-h-0 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-8"
       @click.self="$emit('close')"
     >
-      <!-- SVG Leader Lines identical in visual style to LeaderLine.vue -->
+      <!-- SVG Leader Lines identical in visual style to LeaderLine.vue (z-30 so lines exit visibly from pin rims) -->
       <svg
         v-if="connectorLines.length > 0"
-        class="hidden sm:block absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
+        class="hidden sm:block absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible"
         aria-hidden="true"
       >
         <g v-for="line in connectorLines" :key="line.key" :class="line.active ? 'opacity-100' : 'opacity-80'">
@@ -356,8 +356,15 @@ const measureLines = () => {
       const pinEl = pinEls.get(entry.key);
       if (!pinEl) return;
       const pRect = pinEl.getBoundingClientRect();
-      x1 = pRect.left + pRect.width / 2 - cRect.left;
-      y1 = pRect.top + pRect.height / 2 - cRect.top;
+      const cx = pRect.left + pRect.width / 2 - cRect.left;
+      const cy = pRect.top + pRect.height / 2 - cRect.top;
+      const dx = x2 - cx;
+      const dy = y2 - cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      // Start just outside the 12px pin circle border so line exits cleanly from the pin rim
+      const rimOffset = Math.min(14, dist * 0.4);
+      x1 = cx + (dx / dist) * rimOffset;
+      y1 = cy + (dy / dist) * rimOffset;
     } else if (pBoxRect) {
       // Connect cleanly from the right edge of the focused area frame when close-up pin coordinates aren't set yet
       const frac = totalCount <= 1 ? 0.5 : 0.25 + (idx / (totalCount - 1)) * 0.5;

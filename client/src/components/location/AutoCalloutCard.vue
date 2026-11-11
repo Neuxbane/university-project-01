@@ -59,7 +59,7 @@
       <span
         class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-zinc-950/90 border border-white/20 text-white font-mono text-[9px] sm:text-[10px] font-bold leading-none"
       >
-        {{ quantity }} pcs<template v-if="extraSpecsCount > 0"> +{{ extraSpecsCount }}</template>
+        {{ quantity }} pcs
       </span>
     </div>
 

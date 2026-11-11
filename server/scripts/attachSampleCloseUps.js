@@ -132,6 +132,14 @@ async function attachSampleCloseUps(db = prisma, { overwrite = false } = {}) {
     const existingCount = await db.closeUpPhoto.count({ where: { motorcycleTypeId: motor.id } });
     if (existingCount > 0) continue;
 
+    const motorReqs = await db.motorBoltRequirement.findMany({
+      where: { motorcycleTypeId: motor.id },
+    });
+    const qtyFor = (posId, specId, fallback) => {
+      const match = motorReqs.find((r) => r.boltPositionId === posId && r.boltSpecId === specId);
+      return match ? match.quantity : fallback;
+    };
+
     if (cvtPos && m6x25 && m6x35) {
       const cvtPhoto = await db.closeUpPhoto.create({
         data: {
@@ -144,11 +152,11 @@ async function attachSampleCloseUps(db = prisma, { overwrite = false } = {}) {
       photosCreated++;
 
       const cvtPins = [
-        { boltSpecId: m6x25.id, x: 41.2, y: 31.0, quantity: 6, label: 'Bibir Luar Atas CVT' },
-        { boltSpecId: m6x35.id, x: 52.0, y: 59.0, quantity: 3, label: 'Bos Tengah Bak CVT' },
+        { boltSpecId: m6x25.id, x: 41.2, y: 31.0, quantity: qtyFor(cvtPos.id, m6x25.id, 6), label: 'Bibir Luar Atas CVT' },
+        { boltSpecId: m6x35.id, x: 52.0, y: 59.0, quantity: qtyFor(cvtPos.id, m6x35.id, 3), label: 'Bos Tengah Bak CVT' },
       ];
-      if (m6x40 && motor.displayName.includes('NMAX')) {
-        cvtPins.push({ boltSpecId: m6x40.id, x: 26.8, y: 29.6, quantity: 2, label: 'Baut Panjang Depan CVT' });
+      if (m6x40 && motorReqs.some((r) => r.boltPositionId === cvtPos.id && r.boltSpecId === m6x40.id)) {
+        cvtPins.push({ boltSpecId: m6x40.id, x: 26.8, y: 29.6, quantity: qtyFor(cvtPos.id, m6x40.id, 2), label: 'Baut Panjang Depan CVT' });
       }
       await db.closeUpBoltPin.createMany({
         data: cvtPins.map((p) => ({ ...p, closeUpPhotoId: cvtPhoto.id })),
@@ -167,9 +175,10 @@ async function attachSampleCloseUps(db = prisma, { overwrite = false } = {}) {
       });
       photosCreated++;
 
+      const discPos = posByName.get('Piringan Cakram Depan');
       const calPins = [
-        { boltSpecId: m8x30.id, x: 30.0, y: 39.0, quantity: 2, label: 'Breket Kaliper Atas & Bawah' },
-        { boltSpecId: m8x20.id, x: 56.2, y: 30.0, quantity: 4, label: 'Baut Piringan Cakram' },
+        { boltSpecId: m8x30.id, x: 30.0, y: 39.0, quantity: qtyFor(kaliperPos.id, m8x30.id, 2), label: 'Breket Kaliper Atas & Bawah' },
+        { boltSpecId: m8x20.id, x: 56.2, y: 30.0, quantity: qtyFor(discPos?.id || kaliperPos.id, m8x20.id, 4), label: 'Baut Piringan Cakram' },
       ];
       await db.closeUpBoltPin.createMany({
         data: calPins.map((p) => ({ ...p, closeUpPhotoId: calPhoto.id })),
