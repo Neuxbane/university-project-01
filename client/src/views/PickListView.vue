@@ -124,35 +124,31 @@ const rosterGridRef = ref(null);
 
 const brandChips = computed(() => {
   const list = motorcycles.value.filter((m) => m.isActive !== false);
-  const countOf = (b) => list.filter((m) => (m.brand || '').toLowerCase() === b.toLowerCase()).length;
-  const known = ['honda', 'yamaha', 'suzuki', 'kawasaki'];
-  const others = list.filter((m) => !known.includes((m.brand || '').toLowerCase())).length;
-
-  const chips = [
-    { value: 'Semua', label: 'Semua', count: list.length },
-    { value: 'Honda', label: 'Honda', count: countOf('honda') },
-    { value: 'Yamaha', label: 'Yamaha', count: countOf('yamaha') },
-    { value: 'Suzuki', label: 'Suzuki', count: countOf('suzuki') },
-    { value: 'Kawasaki', label: 'Kawasaki', count: countOf('kawasaki') },
-  ].filter((c) => c.value === 'Semua' || c.count > 0);
-
-  if (others > 0) {
-    chips.push({ value: 'Lainnya', label: 'Lainnya', count: others });
+  const brandMap = new Map();
+  for (const m of list) {
+    const raw = (m.brand || '').trim();
+    if (!raw) continue;
+    const key = raw.toLowerCase();
+    const entry = brandMap.get(key) || { value: raw, label: raw, count: 0 };
+    entry.count++;
+    brandMap.set(key, entry);
   }
-  return chips;
+
+  const dynamicBrands = Array.from(brandMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+  return [
+    { value: 'Semua', label: 'Semua', count: list.length },
+    ...dynamicBrands,
+  ];
 });
 
 const filteredMotors = computed(() => {
   const q = rosterSearch.value.trim().toLowerCase();
-  const known = ['honda', 'yamaha', 'suzuki', 'kawasaki'];
   return motorcycles.value.filter((m) => {
     if (m.isActive === false) return false;
     const brandLower = (m.brand || '').toLowerCase();
     const matchBrand =
       selectedBrand.value === 'Semua' ||
-      (selectedBrand.value === 'Lainnya'
-        ? !known.includes(brandLower)
-        : brandLower === selectedBrand.value.toLowerCase());
+      brandLower === selectedBrand.value.toLowerCase();
     if (!matchBrand) return false;
     if (!q) return true;
     return (

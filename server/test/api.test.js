@@ -576,4 +576,59 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     assert.equal(delPhoto.status, 200);
   });
+
+  test('13. Custom area label creation (customAreaName) & position DELETE guard', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
+    assert.ok(beat);
+
+    const uniqueAreaName = `Spakbor Belakang Custom ${Date.now()}`;
+
+    // 1. Admin creates close-up photo using customAreaName instead of boltPositionId
+    const cu1 = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        customAreaName: uniqueAreaName,
+        customAreaCategory: 'Bodi Kustom',
+        imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg',
+        caption: 'Area Label Sendiri',
+      },
+    });
+    assert.equal(cu1.status, 201);
+    assert.ok(cu1.data.boltPositionId);
+    assert.equal(cu1.data.boltPosition.name, uniqueAreaName);
+    assert.equal(cu1.data.boltPosition.category, 'Bodi Kustom');
+
+    const createdPosId = cu1.data.boltPositionId;
+
+    // 2. Posting with same area name in different casing reuses the existing BoltPosition
+    const cu2 = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        customAreaName: uniqueAreaName.toLowerCase(),
+        imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg',
+      },
+    });
+    assert.equal(cu2.status, 201);
+    assert.equal(cu2.data.boltPositionId, createdPosId);
+
+    // 3. DELETE /api/positions/:id blocked (400) while referenced by close-up photos
+    const blockedDel = await apiRequest(`/api/positions/${createdPosId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(blockedDel.status, 400);
+
+    // 4. Clean up close-up photos, then DELETE /api/positions/:id succeeds (200)
+    await apiRequest(`/api/closeups/${cu1.data.id}`, { method: 'DELETE', token: adminToken });
+    await apiRequest(`/api/closeups/${cu2.data.id}`, { method: 'DELETE', token: adminToken });
+
+    const allowedDel = await apiRequest(`/api/positions/${createdPosId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assert.equal(allowedDel.status, 200);
+  });
 });

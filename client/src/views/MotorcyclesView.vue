@@ -55,18 +55,18 @@
           <label for="motor-brand" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
             Merek
           </label>
-          <select
+          <input
             id="motor-brand"
             v-model="newMotor.brand"
+            type="text"
+            list="motor-brands-list"
             required
+            placeholder="Ketik merek (mis: Vespa, Honda)"
             class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-          >
-            <option value="Honda">Honda</option>
-            <option value="Yamaha">Yamaha</option>
-            <option value="Suzuki">Suzuki</option>
-            <option value="Kawasaki">Kawasaki</option>
-            <option value="Vespa">Vespa</option>
-          </select>
+          />
+          <datalist id="motor-brands-list">
+            <option v-for="b in availableBrands" :key="b" :value="b" />
+          </datalist>
         </div>
 
         <div class="sm:col-span-3">
@@ -138,7 +138,7 @@
       </div>
       <div class="flex flex-wrap sm:flex-nowrap items-center gap-1 bg-zinc-100 dark:bg-[#18181c] p-1 rounded-xl border border-zinc-300 dark:border-zinc-700 overflow-x-auto max-w-full">
         <button
-          v-for="b in ['Semua', 'Honda', 'Yamaha', 'Suzuki', 'Kawasaki']"
+          v-for="b in brandFilterOptions"
           :key="b"
           @click="selectedBrand = b"
           type="button"
@@ -215,7 +215,20 @@ const errorMsg = ref('');
 const showAddForm = ref(false);
 const isSubmittingMotor = ref(false);
 const addMotorErrorMsg = ref('');
-const newMotor = ref({ brand: 'Honda', model: '', variant: '', yearStart: 2024, yearEnd: 2026 });
+const newMotor = ref({ brand: '', model: '', variant: '', yearStart: 2024, yearEnd: 2026 });
+
+const availableBrands = computed(() => {
+  const seen = new Map();
+  for (const m of motorcycles.value) {
+    const raw = (m.brand || '').trim();
+    if (!raw) continue;
+    const key = raw.toLowerCase();
+    if (!seen.has(key)) seen.set(key, raw);
+  }
+  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b));
+});
+
+const brandFilterOptions = computed(() => ['Semua', ...availableBrands.value]);
 
 const filteredMotors = computed(() => {
   return motorcycles.value.filter((m) => {
@@ -233,7 +246,7 @@ const goToManageMotor = (motor) => {
 const toggleAddForm = () => {
   addMotorErrorMsg.value = '';
   if (!showAddForm.value) {
-    newMotor.value = { brand: 'Honda', model: '', variant: '', yearStart: 2024, yearEnd: 2026 };
+    newMotor.value = { brand: '', model: '', variant: '', yearStart: 2024, yearEnd: 2026 };
   }
   showAddForm.value = !showAddForm.value;
 };

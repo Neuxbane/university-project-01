@@ -193,27 +193,16 @@
 
         <form @submit.prevent="submitDraft" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
           <div class="sm:col-span-6">
-            <label for="annotation-position-select" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Titik Posisi Baut
-            </label>
-            <select
-              id="annotation-position-select"
-              v-model="draftPositionId"
-              required
-              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 text-sm text-zinc-900 dark:text-zinc-100"
-            >
-              <option value="">-- Pilih Posisi Baut --</option>
-              <optgroup v-if="positions.length" label="Posisi di Motor Ini">
-                <option v-for="p in positions" :key="`motor-${p.id}`" :value="p.id">
-                  {{ p.name }} ({{ p.quantity }} baut)
-                </option>
-              </optgroup>
-              <optgroup v-if="otherPositions.length" label="Semua Posisi Lainnya">
-                <option v-for="p in otherPositions" :key="`all-${p.id}`" :value="p.id">
-                  {{ p.name }} ({{ p.category }})
-                </option>
-              </optgroup>
-            </select>
+            <AreaLabelInput
+              input-id="annotation-position-select"
+              label="Area / Posisi Baut"
+              v-model:position-id="draftPositionId"
+              v-model:custom-name="draftCustomName"
+              v-model:custom-category="draftCustomCategory"
+              :motor-positions="positions"
+              :all-positions="allPositions"
+              :required="true"
+            />
           </div>
 
           <div class="sm:col-span-4">
@@ -232,7 +221,7 @@
           <div class="sm:col-span-2 flex items-end">
             <button
               type="submit"
-              :disabled="isSavingAnnotation || !draftPositionId"
+              :disabled="isSavingAnnotation || (!draftPositionId && !draftCustomName.trim())"
               class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
             >
               {{ isSavingAnnotation ? '...' : 'Simpan' }}
@@ -310,6 +299,7 @@ import FocusedPartOverlay from './FocusedPartOverlay.vue';
 import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
+import AreaLabelInput from '../ui/AreaLabelInput.vue';
 
 const props = defineProps({
   motorcycle: { type: Object, default: null },
@@ -348,6 +338,8 @@ const stageRef = ref(null);
 const cardWrapRef = ref(null);
 const draftPoint = ref(null);
 const draftPositionId = ref('');
+const draftCustomName = ref('');
+const draftCustomCategory = ref('');
 const draftLabel = ref('');
 const confirmDeleteTarget = ref(null);
 const autoShowCallouts = ref(true);
@@ -489,14 +481,18 @@ const onSelectAnnotation = (ann) => {
 };
 
 const submitDraft = () => {
-  if (!draftPoint.value || !draftPositionId.value) return;
+  if (!draftPoint.value || (!draftPositionId.value && !draftCustomName.value.trim())) return;
   emit('create-annotation', {
-    boltPositionId: draftPositionId.value,
+    boltPositionId: draftPositionId.value || null,
+    customAreaName: draftCustomName.value.trim() || null,
+    customAreaCategory: draftCustomCategory.value.trim() || null,
     x: draftPoint.value.x,
     y: draftPoint.value.y,
     label: draftLabel.value.trim() || null,
   });
   draftPoint.value = null;
+  draftCustomName.value = '';
+  draftCustomCategory.value = '';
   draftLabel.value = '';
 };
 

@@ -79,52 +79,249 @@
         </div>
       </div>
 
-      <!-- Positions Grid -->
+      <!-- Positions Grid (Dynamic Custom Areas & Inline CRUD) -->
       <div v-else-if="activeTab === 'positions'" class="space-y-4">
-        <div class="flex items-center justify-between gap-3">
+        <!-- Inline Add Custom Area Form (Admin only) -->
+        <form
+          v-if="auth.isAdmin"
+          @submit.prevent="handleCreatePosition"
+          class="bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 rounded-xl p-4 space-y-3"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Buat Label Area / Titik Pasang Baru</h2>
+              <p class="text-xs text-zinc-600 dark:text-zinc-400">Bebas memberi nama dan kelompok area motor sendiri tanpa daftar kaku.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+            <div class="sm:col-span-5">
+              <label for="new-pos-name" class="block text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                Nama Area / Titik Pasang
+              </label>
+              <input
+                id="new-pos-name"
+                v-model="newPosition.name"
+                type="text"
+                required
+                placeholder="Misal: Cover Kipas Bawah / Dudukan Plat"
+                class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+              />
+            </div>
+
+            <div class="sm:col-span-3">
+              <label for="new-pos-cat" class="block text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                Kelompok Area
+              </label>
+              <input
+                id="new-pos-cat"
+                v-model="newPosition.category"
+                type="text"
+                list="position-categories-list"
+                placeholder="Misal: Mesin / Area Kustom"
+                class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+              />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label for="new-pos-notes" class="block text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                Catatan (Opsional)
+              </label>
+              <input
+                id="new-pos-notes"
+                v-model="newPosition.notes"
+                type="text"
+                placeholder="Keterangan singkat"
+                class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+              />
+            </div>
+
+            <div class="sm:col-span-2">
+              <button
+                type="submit"
+                :disabled="isSubmittingPosition || !newPosition.name.trim()"
+                class="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer transition-colors"
+              >
+                <Plus class="w-4 h-4" />
+                {{ isSubmittingPosition ? 'Menyimpan...' : 'Tambah Area' }}
+              </button>
+            </div>
+          </div>
+
+          <datalist id="position-categories-list">
+            <option v-for="cat in availableCategories" :key="cat" :value="cat" />
+          </datalist>
+        </form>
+
+        <!-- Inline status feedback -->
+        <div
+          v-if="positionFeedback"
+          class="p-3 rounded-xl text-xs font-medium flex items-center justify-between gap-2 border"
+          :class="positionFeedbackType === 'error'
+            ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 text-rose-800 dark:text-rose-300'
+            : 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'"
+        >
+          <span>{{ positionFeedback }}</span>
+          <button type="button" @click="positionFeedback = ''" class="min-w-[36px] min-h-[36px] px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer">
+            Tutup
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <SearchInput
+            v-model="positionSearch"
+            placeholder="Cari label area atau kelompok..."
+            class="w-full sm:w-80"
+          />
           <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-            {{ positions.length }} titik pasang terdaftar
+            {{ filteredPositions.length }} dari {{ positions.length }} area terdaftar
           </p>
         </div>
 
         <EmptyState
-          v-if="positions.length === 0"
+          v-if="filteredPositions.length === 0"
           :icon="Wrench"
-          title="Belum ada titik pasang"
-          description="Tambahkan posisi baut melalui menu admin."
+          :title="positionSearch ? 'Area tidak ditemukan' : 'Belum ada label area'"
+          :description="positionSearch ? 'Coba kata kunci lain atau hapus pencarian.' : 'Tambahkan label area motor baru menggunakan formulir di atas.'"
         />
 
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-          <SlotCard
-            v-for="p in positions"
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div
+            v-for="p in filteredPositions"
             :key="p.id"
-            :slot-data="{ positionName: p.name, category: p.category, side: 'NONE', quantity: p._count?.requirements || 0 }"
-            @select="selectedPosition = p"
-          />
+            class="bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 rounded-xl p-4 flex flex-col justify-between gap-3"
+          >
+            <!-- Inline Edit Mode -->
+            <form
+              v-if="editingPositionId === p.id"
+              @submit.prevent="saveEditPosition(p.id)"
+              class="space-y-2.5"
+            >
+              <div>
+                <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Nama Area</label>
+                <input
+                  v-model="editForm.name"
+                  type="text"
+                  required
+                  class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-zinc-100"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Kelompok</label>
+                  <input
+                    v-model="editForm.category"
+                    type="text"
+                    list="position-categories-list"
+                    class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Urutan</label>
+                  <input
+                    v-model.number="editForm.sortOrder"
+                    type="number"
+                    class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Catatan</label>
+                <input
+                  v-model="editForm.notes"
+                  type="text"
+                  placeholder="Catatan area (opsional)"
+                  class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100"
+                />
+              </div>
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  @click="cancelEditPosition"
+                  class="min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  :disabled="isSubmittingPosition"
+                  class="min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Check class="w-3.5 h-3.5" />
+                  Simpan
+                </button>
+              </div>
+            </form>
+
+            <!-- Read Mode (Inline — No Modal Popup) -->
+            <template v-else>
+              <div class="space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 mb-1">
+                      {{ p.category || 'Area Kustom' }}
+                    </span>
+                    <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug break-words">
+                      {{ p.name }}
+                    </h3>
+                  </div>
+                  <span class="text-[11px] font-mono text-zinc-500 shrink-0">#{{ p.sortOrder }}</span>
+                </div>
+
+                <p v-if="p.notes" class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  {{ p.notes }}
+                </p>
+              </div>
+
+              <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+                <div class="flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
+                  <span class="px-2 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                    {{ p._count?.requirements || 0 }} matriks
+                  </span>
+                  <span class="px-2 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                    {{ p._count?.annotations || 0 }} titik 2D/3D
+                  </span>
+                  <span class="px-2 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                    {{ p._count?.closeUpPhotos || 0 }} foto
+                  </span>
+                </div>
+
+                <div v-if="auth.isAdmin" class="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    @click="startEditPosition(p)"
+                    class="min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Pencil class="w-3.5 h-3.5" />
+                    Ubah
+                  </button>
+                  <button
+                    type="button"
+                    @click="requestDeletePosition(p)"
+                    class="min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </template>
 
-    <!-- Position Detail -->
-    <DetailSheet
-      :open="Boolean(selectedPosition)"
-      :is-modal="true"
-      eyebrow="Titik Pasang"
-      :title="selectedPosition?.name || ''"
-      @close="selectedPosition = null"
-    >
-      <div v-if="selectedPosition" class="space-y-4">
-        <div class="flex flex-wrap gap-2">
-          <StatPill :icon="Wrench" label="Area" :value="selectedPosition.category" />
-          <StatPill :icon="Bike" label="Dipakai" :value="`${selectedPosition._count?.requirements || 0} motor`" />
-          <StatPill :icon="ListOrdered" label="Urutan" :value="selectedPosition.sortOrder" />
-        </div>
-        <div class="p-4 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
-          <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">Catatan Peruntukan</p>
-          <p class="text-sm text-zinc-800 dark:text-zinc-200">{{ selectedPosition.notes || 'Belum ada catatan untuk titik pasang ini.' }}</p>
-        </div>
-      </div>
-    </DetailSheet>
+    <!-- Delete Position Confirmation (Popup hanya untuk konfirmasi) -->
+    <ConfirmDialog
+      :open="Boolean(positionToDelete)"
+      title="Hapus Label Area?"
+      :message="positionToDelete ? `Area '${positionToDelete.name}' (${positionToDelete.category}) akan dihapus permanen jika belum dipakai di motor mana pun.` : ''"
+      confirm-text="Ya, Hapus Area"
+      :danger="true"
+      :loading="isSubmittingPosition"
+      @confirm="confirmDeletePosition"
+      @cancel="positionToDelete = null"
+    />
 
     <!-- Photo Gallery -->
     <PhotoGalleryModal
@@ -146,28 +343,35 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Bike, ListOrdered, Nut, Wrench } from 'lucide-vue-next';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { Check, Nut, Pencil, Plus, Trash2, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
 import SegmentedControl from '../components/ui/SegmentedControl.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
 import ItemCard from '../components/ui/ItemCard.vue';
-import SlotCard from '../components/ui/SlotCard.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
-import StatPill from '../components/ui/StatPill.vue';
-import DetailSheet from '../components/ui/DetailSheet.vue';
+import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 
 const auth = useAuthStore();
 const activeTab = ref('specs');
 const specs = ref([]);
 const positions = ref([]);
 const specSearch = ref('');
+const positionSearch = ref('');
 const selectedSpecForGallery = ref(null);
-const selectedPosition = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
+
+// Inline Position CRUD State
+const newPosition = reactive({ name: '', category: '', notes: '' });
+const editingPositionId = ref(null);
+const editForm = reactive({ name: '', category: '', notes: '', sortOrder: 0 });
+const positionToDelete = ref(null);
+const isSubmittingPosition = ref(false);
+const positionFeedback = ref('');
+const positionFeedbackType = ref('success');
 
 const filteredSpecs = computed(() => {
   if (!specSearch.value.trim()) return specs.value;
@@ -180,6 +384,138 @@ const filteredSpecs = computed(() => {
     s.material?.toLowerCase().includes(q)
   );
 });
+
+const availableCategories = computed(() => {
+  const set = new Set();
+  for (const p of positions.value) {
+    if (p.category?.trim()) set.add(p.category.trim());
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'id'));
+});
+
+const filteredPositions = computed(() => {
+  if (!positionSearch.value.trim()) return positions.value;
+  const q = positionSearch.value.trim().toLowerCase();
+  return positions.value.filter((p) =>
+    p.name?.toLowerCase().includes(q) ||
+    p.category?.toLowerCase().includes(q) ||
+    p.notes?.toLowerCase().includes(q)
+  );
+});
+
+const setFeedback = (msg, type = 'success') => {
+  positionFeedback.value = msg;
+  positionFeedbackType.value = type;
+};
+
+const refreshPositions = async () => {
+  const res = await auth.apiFetch('/api/positions');
+  if (res.ok) {
+    const data = await res.json();
+    positions.value = Array.isArray(data) ? data : [];
+  }
+};
+
+const handleCreatePosition = async () => {
+  const name = newPosition.name.trim();
+  if (!name) return;
+  isSubmittingPosition.value = true;
+  positionFeedback.value = '';
+  try {
+    const res = await auth.apiFetch('/api/positions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        category: newPosition.category.trim() || 'Area Kustom',
+        notes: newPosition.notes.trim() || null,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Gagal menambahkan area baru.');
+    }
+    newPosition.name = '';
+    newPosition.category = '';
+    newPosition.notes = '';
+    await refreshPositions();
+    setFeedback(`Area "${data.name}" berhasil ditambahkan.`, 'success');
+  } catch (err) {
+    setFeedback(err.message, 'error');
+  } finally {
+    isSubmittingPosition.value = false;
+  }
+};
+
+const startEditPosition = (pos) => {
+  editingPositionId.value = pos.id;
+  editForm.name = pos.name || '';
+  editForm.category = pos.category || '';
+  editForm.notes = pos.notes || '';
+  editForm.sortOrder = pos.sortOrder ?? 0;
+  positionFeedback.value = '';
+};
+
+const cancelEditPosition = () => {
+  editingPositionId.value = null;
+};
+
+const saveEditPosition = async (posId) => {
+  if (!editForm.name.trim()) return;
+  isSubmittingPosition.value = true;
+  positionFeedback.value = '';
+  try {
+    const res = await auth.apiFetch(`/api/positions/${posId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editForm.name.trim(),
+        category: editForm.category.trim() || 'Area Kustom',
+        notes: editForm.notes.trim() || null,
+        sortOrder: Number.isFinite(Number(editForm.sortOrder)) ? Number(editForm.sortOrder) : 0,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Gagal memperbarui area.');
+    }
+    editingPositionId.value = null;
+    await refreshPositions();
+    setFeedback(`Area "${data.name}" berhasil diperbarui.`, 'success');
+  } catch (err) {
+    setFeedback(err.message, 'error');
+  } finally {
+    isSubmittingPosition.value = false;
+  }
+};
+
+const requestDeletePosition = (pos) => {
+  positionFeedback.value = '';
+  positionToDelete.value = pos;
+};
+
+const confirmDeletePosition = async () => {
+  if (!positionToDelete.value) return;
+  const target = positionToDelete.value;
+  isSubmittingPosition.value = true;
+  try {
+    const res = await auth.apiFetch(`/api/positions/${target.id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Gagal menghapus area.');
+    }
+    positionToDelete.value = null;
+    await refreshPositions();
+    setFeedback(`Area "${target.name}" berhasil dihapus.`, 'success');
+  } catch (err) {
+    positionToDelete.value = null;
+    setFeedback(err.message, 'error');
+  } finally {
+    isSubmittingPosition.value = false;
+  }
+};
 
 const loadData = async () => {
   errorMsg.value = '';

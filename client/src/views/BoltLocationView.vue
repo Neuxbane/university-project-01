@@ -448,17 +448,17 @@ const leftTabOptions = computed(() => {
 
 const sizeTierChips = computed(() => {
   const items = locationData.value?.bolts || [];
-  const counts = { ALL: items.length, M6: 0, M8: 0, M10: 0, M12: 0 };
+  const counts = new Map();
   for (const item of items) {
-    const key = getDiameterTier(item.diameterMm).key;
-    if (counts[key] !== undefined) counts[key]++;
-    else counts.M6++;
+    const diam = Number(item.diameterMm);
+    if (!Number.isFinite(diam) || diam <= 0) continue;
+    counts.set(diam, (counts.get(diam) || 0) + 1);
   }
-  const chips = [{ value: 'ALL', label: 'Semua', count: counts.ALL }];
-  if (counts.M6) chips.push({ value: 'M6', label: 'M5/M6', count: counts.M6 });
-  if (counts.M8) chips.push({ value: 'M8', label: 'M8', count: counts.M8 });
-  if (counts.M10) chips.push({ value: 'M10', label: 'M10', count: counts.M10 });
-  if (counts.M12) chips.push({ value: 'M12', label: 'M12+', count: counts.M12 });
+  const chips = [{ value: 'ALL', label: 'Semua', count: items.length }];
+  const sortedDiams = Array.from(counts.keys()).sort((a, b) => a - b);
+  for (const d of sortedDiams) {
+    chips.push({ value: `M${d}`, label: `M${d}`, count: counts.get(d) });
+  }
   return chips;
 });
 
@@ -467,9 +467,8 @@ const filteredBolts = computed(() => {
   const q = boltSearch.value.trim().toLowerCase();
   return items.filter((item) => {
     if (selectedSizeTier.value !== 'ALL') {
-      const tierKey = getDiameterTier(item.diameterMm).key;
-      const normalized = tierKey === 'M5' ? 'M6' : tierKey;
-      if (normalized !== selectedSizeTier.value) return false;
+      const diamKey = `M${Number(item.diameterMm)}`;
+      if (diamKey !== selectedSizeTier.value) return false;
     }
     if (!q) return true;
     return (
@@ -601,6 +600,8 @@ const clearSelection = () => {
 
 const handleCreateAnnotation = async ({
   boltPositionId,
+  customAreaName,
+  customAreaCategory,
   x,
   y,
   z = 0,
@@ -617,6 +618,8 @@ const handleCreateAnnotation = async ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         boltPositionId,
+        customAreaName,
+        customAreaCategory,
         motorcycleTypeId: locationData.value.motorcycle.id,
         modelId: locationData.value.model?.id || null,
         x,
@@ -632,6 +635,9 @@ const handleCreateAnnotation = async ({
     if (!res.ok) throw new Error(created.error || 'Gagal menyimpan penanda lokasi.');
 
     locationData.value.annotations.push(created);
+    if (created.boltPosition && !locationData.value.allPositions.some((p) => p.id === created.boltPosition.id)) {
+      locationData.value.allPositions.push(created.boltPosition);
+    }
     onSelectAnnotation(created);
     toast.success('Titik lokasi baut berhasil disimpan');
   } catch (err) {

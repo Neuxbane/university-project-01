@@ -5,6 +5,7 @@ const prisma = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { createUploader } = require('../middleware/upload');
+const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
 const router = express.Router();
 const uploadCloseup = createUploader('closeups');
@@ -72,24 +73,30 @@ router.post('/motorcycles/:motorId/closeups', requireAuth, requireAdmin, (req, r
 }, async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.motorId, 10);
-    const boltPositionId = parseInt(req.body.boltPositionId, 10);
-    if (!Number.isInteger(motorcycleTypeId) || !Number.isInteger(boltPositionId)) {
+    if (!Number.isInteger(motorcycleTypeId)) {
       safeUnlink(req.file?.path);
-      return res.status(400).json({ error: 'Motor dan posisi baut wajib dipilih.' });
+      return res.status(400).json({ error: 'ID motor tidak valid.' });
     }
 
-    const [motorExists, posExists] = await Promise.all([
-      prisma.motorcycleType.findUnique({ where: { id: motorcycleTypeId }, select: { id: true, displayName: true } }),
-      prisma.boltPosition.findUnique({ where: { id: boltPositionId }, select: { id: true, name: true } }),
-    ]);
-
+    const motorExists = await prisma.motorcycleType.findUnique({
+      where: { id: motorcycleTypeId },
+      select: { id: true, displayName: true },
+    });
     if (!motorExists) {
       safeUnlink(req.file?.path);
       return res.status(404).json({ error: 'Tipe motor tidak ditemukan.' });
     }
-    if (!posExists) {
+
+    let posExists;
+    try {
+      posExists = await resolveOrCreatePosition(prisma, {
+        boltPositionId: req.body.boltPositionId,
+        customAreaName: req.body.customAreaName,
+        customAreaCategory: req.body.customAreaCategory,
+      });
+    } catch (posErr) {
       safeUnlink(req.file?.path);
-      return res.status(400).json({ error: 'Posisi baut tidak ditemukan.' });
+      return res.status(posErr.status || 400).json({ error: posErr.message });
     }
 
     let imageUrl = null;
@@ -104,7 +111,7 @@ router.post('/motorcycles/:motorId/closeups', requireAuth, requireAdmin, (req, r
     const created = await prisma.closeUpPhoto.create({
       data: {
         motorcycleTypeId,
-        boltPositionId,
+        boltPositionId: posExists.id,
         imageUrl,
         caption: req.body.caption ? String(req.body.caption).trim() : null,
       },

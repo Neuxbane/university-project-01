@@ -112,20 +112,16 @@
           </p>
           <form @submit.prevent="handleAddRequirement" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
             <div class="sm:col-span-4">
-              <label for="req-pos" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-                Posisi / Area Motor
-              </label>
-              <select
-                id="req-pos"
-                v-model="newReq.boltPositionId"
-                required
-                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-              >
-                <option value="">-- Pilih Posisi --</option>
-                <option v-for="p in allPositions" :key="p.id" :value="p.id">
-                  {{ p.name }} ({{ p.category }})
-                </option>
-              </select>
+              <AreaLabelInput
+                input-id="req-pos"
+                label="Posisi / Area Motor"
+                v-model:position-id="newReq.boltPositionId"
+                v-model:custom-name="newReq.customAreaName"
+                v-model:custom-category="newReq.customAreaCategory"
+                :motor-positions="locationPositions"
+                :all-positions="allPositions"
+                :required="true"
+              />
             </div>
 
             <div class="sm:col-span-4">
@@ -346,27 +342,16 @@
 
           <form @submit.prevent="handleUploadCloseup" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
             <div class="sm:col-span-4">
-              <label for="cu-upload-pos" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-                Pilih Area / Posisi
-              </label>
-              <select
-                id="cu-upload-pos"
-                v-model="closeupUpload.boltPositionId"
-                required
-                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
-              >
-                <option value="">-- Pilih Area Motor --</option>
-                <optgroup v-if="locationPositions.length" label="Area pada Motor Ini">
-                  <option v-for="p in locationPositions" :key="`m-${p.id}`" :value="p.id">
-                    {{ p.name }}
-                  </option>
-                </optgroup>
-                <optgroup label="Semua Area Lainnya">
-                  <option v-for="p in allPositions" :key="`all-${p.id}`" :value="p.id">
-                    {{ p.name }} ({{ p.category }})
-                  </option>
-                </optgroup>
-              </select>
+              <AreaLabelInput
+                input-id="cu-upload-pos"
+                label="Area / Posisi Motor"
+                v-model:position-id="closeupUpload.boltPositionId"
+                v-model:custom-name="closeupUpload.customAreaName"
+                v-model:custom-category="closeupUpload.customAreaCategory"
+                :motor-positions="locationPositions"
+                :all-positions="allPositions"
+                :required="true"
+              />
             </div>
 
             <div class="sm:col-span-3">
@@ -399,7 +384,7 @@
             <div class="sm:col-span-2">
               <button
                 type="submit"
-                :disabled="isUploadingCloseup || !closeupUpload.boltPositionId || !closeupFile"
+                :disabled="isUploadingCloseup || (!closeupUpload.boltPositionId && !closeupUpload.customAreaName.trim()) || !closeupFile"
                 class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
               >
                 {{ isUploadingCloseup ? 'Mengunggah...' : 'Unggah Foto' }}
@@ -592,6 +577,7 @@ import AppShell from '../components/ui/AppShell.vue';
 import SegmentedControl from '../components/ui/SegmentedControl.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
 import FilterChip from '../components/ui/FilterChip.vue';
+import AreaLabelInput from '../components/ui/AreaLabelInput.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
@@ -622,7 +608,14 @@ const activeTab = ref('matrix');
 const matrixSearch = ref('');
 
 // Matrix add/delete
-const newReq = ref({ boltPositionId: '', boltSpecId: '', side: 'NONE', quantity: 1 });
+const newReq = ref({
+  boltPositionId: '',
+  customAreaName: '',
+  customAreaCategory: '',
+  boltSpecId: '',
+  side: 'NONE',
+  quantity: 1,
+});
 const isSubmittingReq = ref(false);
 const confirmDeleteReq = ref(null);
 
@@ -636,7 +629,12 @@ const isDeletingAnnotation = ref(false);
 // Close-up state
 const selectedCloseupPositionId = ref(null);
 const selectedCloseupPhotoId = ref(null);
-const closeupUpload = ref({ boltPositionId: '', caption: '' });
+const closeupUpload = ref({
+  boltPositionId: '',
+  customAreaName: '',
+  customAreaCategory: '',
+  caption: '',
+});
 const closeupFile = ref(null);
 const closeupFileInput = ref(null);
 const isUploadingCloseup = ref(false);
@@ -730,7 +728,14 @@ const handleAddRequirement = async () => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gagal menambahkan baut.');
-    newReq.value = { boltPositionId: '', boltSpecId: '', side: 'NONE', quantity: 1 };
+    newReq.value = {
+      boltPositionId: '',
+      customAreaName: '',
+      customAreaCategory: '',
+      boltSpecId: '',
+      side: 'NONE',
+      quantity: 1,
+    };
     toast.success('Baut ditambahkan ke matriks');
     await loadAll();
   } catch (err) {
@@ -799,6 +804,9 @@ const handleCreateAnnotation = async (payload) => {
     const created = await res.json();
     if (!res.ok) throw new Error(created.error || 'Gagal menandai lokasi.');
     annotations.value.push(created);
+    if (created.boltPosition && !allPositions.value.some((p) => p.id === created.boltPosition.id)) {
+      allPositions.value.push(created.boltPosition);
+    }
     onSelectAnnotation(created);
     toast.success('Titik lokasi disimpan');
   } catch (err) {
@@ -851,12 +859,21 @@ const onCloseupFileSelected = (e) => {
 };
 
 const handleUploadCloseup = async () => {
-  if (!motor.value || !closeupFile.value || !closeupUpload.value.boltPositionId || isUploadingCloseup.value) return;
+  const hasPos = Boolean(closeupUpload.value.boltPositionId || closeupUpload.value.customAreaName.trim());
+  if (!motor.value || !closeupFile.value || !hasPos || isUploadingCloseup.value) return;
   isUploadingCloseup.value = true;
   try {
     const fd = new FormData();
     fd.append('photo', closeupFile.value);
-    fd.append('boltPositionId', String(closeupUpload.value.boltPositionId));
+    if (closeupUpload.value.boltPositionId) {
+      fd.append('boltPositionId', String(closeupUpload.value.boltPositionId));
+    }
+    if (closeupUpload.value.customAreaName.trim()) {
+      fd.append('customAreaName', closeupUpload.value.customAreaName.trim());
+    }
+    if (closeupUpload.value.customAreaCategory.trim()) {
+      fd.append('customAreaCategory', closeupUpload.value.customAreaCategory.trim());
+    }
     if (closeupUpload.value.caption.trim()) {
       fd.append('caption', closeupUpload.value.caption.trim());
     }
@@ -868,10 +885,16 @@ const handleUploadCloseup = async () => {
     if (!res.ok) throw new Error(created.error || 'Gagal mengunggah foto close-up.');
 
     closeUpPhotos.value.unshift(created);
+    if (created.boltPosition && !allPositions.value.some((p) => p.id === created.boltPosition.id)) {
+      allPositions.value.push(created.boltPosition);
+    }
     selectedCloseupPositionId.value = created.boltPositionId;
     selectedCloseupPhotoId.value = created.id;
     closeupFile.value = null;
     closeupUpload.value.caption = '';
+    closeupUpload.value.customAreaName = '';
+    closeupUpload.value.customAreaCategory = '';
+    closeupUpload.value.boltPositionId = created.boltPositionId;
     if (closeupFileInput.value) closeupFileInput.value.value = '';
     toast.success('Foto close-up diunggah. Sekarang ketuk lubang baut untuk menandai ukurannya!');
   } catch (err) {

@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
+const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
 const router = express.Router();
 
@@ -10,6 +11,8 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const {
       boltPositionId,
+      customAreaName,
+      customAreaCategory,
       motorcycleTypeId,
       modelId,
       x,
@@ -21,29 +24,24 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       label,
     } = req.body;
 
-    if (!boltPositionId || !motorcycleTypeId || x === undefined || y === undefined) {
-      return res.status(400).json({ error: 'Posisi baut, tipe motor, dan koordinat (x, y) wajib diisi.' });
+    if ((!boltPositionId && !customAreaName) || !motorcycleTypeId || x === undefined || y === undefined) {
+      return res.status(400).json({ error: 'Area/posisi baut, tipe motor, dan koordinat (x, y) wajib diisi.' });
     }
 
-    const posId = parseInt(boltPositionId, 10);
     const motorId = parseInt(motorcycleTypeId, 10);
     const parsedModelId = modelId ? parseInt(modelId, 10) : null;
 
-    if (!Number.isInteger(posId) || !Number.isInteger(motorId)) {
-      return res.status(400).json({ error: 'ID posisi baut dan tipe motor harus berupa angka.' });
+    if (!Number.isInteger(motorId)) {
+      return res.status(400).json({ error: 'ID tipe motor harus berupa angka.' });
     }
 
-    const [positionExists, motorExists, modelExists] = await Promise.all([
-      prisma.boltPosition.findUnique({ where: { id: posId }, select: { id: true } }),
+    const [motorExists, modelExists] = await Promise.all([
       prisma.motorcycleType.findUnique({ where: { id: motorId }, select: { id: true } }),
       parsedModelId
         ? prisma.motorcycleModel.findUnique({ where: { id: parsedModelId }, select: { id: true } })
         : Promise.resolve(true),
     ]);
 
-    if (!positionExists) {
-      return res.status(400).json({ error: 'Posisi baut yang dipilih tidak ditemukan.' });
-    }
     if (!motorExists) {
       return res.status(400).json({ error: 'Tipe motor yang dipilih tidak ditemukan.' });
     }
@@ -51,9 +49,20 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Model 3D yang dipilih tidak ditemukan.' });
     }
 
+    let positionExists;
+    try {
+      positionExists = await resolveOrCreatePosition(prisma, {
+        boltPositionId,
+        customAreaName,
+        customAreaCategory,
+      });
+    } catch (posErr) {
+      return res.status(posErr.status || 400).json({ error: posErr.message });
+    }
+
     const created = await prisma.positionAnnotation.create({
       data: {
-        boltPositionId: posId,
+        boltPositionId: positionExists.id,
         motorcycleTypeId: motorId,
         modelId: parsedModelId,
         x: Number(x),

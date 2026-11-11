@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
+const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
 const router = express.Router();
 
@@ -39,10 +40,31 @@ router.get('/motorcycles/:id/requirements', requireAuth, async (req, res) => {
 router.post('/motorcycles/:id/requirements', requireAuth, requireAdmin, async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
-    const { boltPositionId, boltSpecId, quantity, side, isOptional, sortOrder, notes } = req.body;
+    const {
+      boltPositionId,
+      customAreaName,
+      customAreaCategory,
+      boltSpecId,
+      quantity,
+      side,
+      isOptional,
+      sortOrder,
+      notes,
+    } = req.body;
 
-    if (!boltPositionId || !boltSpecId || !quantity || quantity <= 0) {
-      return res.status(400).json({ error: 'Posisi, spesifikasi baut, dan jumlah (> 0) wajib diisi.' });
+    if ((!boltPositionId && !customAreaName) || !boltSpecId || !quantity || quantity <= 0) {
+      return res.status(400).json({ error: 'Area/posisi, spesifikasi baut, dan jumlah (> 0) wajib diisi.' });
+    }
+
+    let resolvedPos;
+    try {
+      resolvedPos = await resolveOrCreatePosition(prisma, {
+        boltPositionId,
+        customAreaName,
+        customAreaCategory,
+      });
+    } catch (posErr) {
+      return res.status(posErr.status || 400).json({ error: posErr.message });
     }
 
     const bSide = side ? side.toUpperCase() : 'NONE';
@@ -51,7 +73,7 @@ router.post('/motorcycles/:id/requirements', requireAuth, requireAdmin, async (r
     const existing = await prisma.motorBoltRequirement.findFirst({
       where: {
         motorcycleTypeId,
-        boltPositionId: parseInt(boltPositionId, 10),
+        boltPositionId: resolvedPos.id,
         boltSpecId: parseInt(boltSpecId, 10),
         side: bSide,
       },
@@ -64,7 +86,7 @@ router.post('/motorcycles/:id/requirements', requireAuth, requireAdmin, async (r
     const requirement = await prisma.motorBoltRequirement.create({
       data: {
         motorcycleTypeId,
-        boltPositionId: parseInt(boltPositionId, 10),
+        boltPositionId: resolvedPos.id,
         boltSpecId: parseInt(boltSpecId, 10),
         quantity: parseInt(quantity, 10),
         side: bSide,
