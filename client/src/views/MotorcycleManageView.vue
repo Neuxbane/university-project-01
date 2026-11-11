@@ -302,6 +302,7 @@
               @update-annotation="handleUpdateAnnotation"
               @delete-annotation="handleDeleteAnnotation"
               @enable-annotation="annotationMode = true"
+              @disable-annotation="annotationMode = false"
             />
           </section>
         </div>

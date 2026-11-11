@@ -346,6 +346,7 @@
               @update-annotation="handleUpdateAnnotation"
               @delete-annotation="handleDeleteAnnotation"
               @enable-annotation="annotationMode = true"
+              @disable-annotation="annotationMode = false"
             />
           </section>
         </div>
@@ -647,14 +648,20 @@ const handleCreateAnnotation = async ({
   }
 };
 
-const handleUpdateAnnotation = async ({ id, boltPositionId, label }) => {
+const handleUpdateAnnotation = async ({
+  id,
+  boltPositionId,
+  customAreaName,
+  customAreaCategory,
+  label,
+}) => {
   if (!locationData.value || isSavingAnnotation.value) return;
   isSavingAnnotation.value = true;
   try {
     const res = await auth.apiFetch(`/api/position-annotations/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ boltPositionId, label }),
+      body: JSON.stringify({ boltPositionId, customAreaName, customAreaCategory, label }),
     });
     const updated = await res.json();
     if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui penanda lokasi.');
@@ -662,6 +669,9 @@ const handleUpdateAnnotation = async ({ id, boltPositionId, label }) => {
     const idx = locationData.value.annotations.findIndex((a) => a.id === id);
     if (idx !== -1) {
       locationData.value.annotations[idx] = updated;
+    }
+    if (updated.boltPosition && !locationData.value.allPositions.some((p) => p.id === updated.boltPosition.id)) {
+      locationData.value.allPositions.push(updated.boltPosition);
     }
     if (activeAnnotation.value?.id === id) {
       activeAnnotation.value = updated;

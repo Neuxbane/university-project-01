@@ -58,9 +58,18 @@
     </div>
 
     <!-- Guidance prompt when no draft point active -->
-    <p v-else class="text-xs text-zinc-600 dark:text-zinc-400">
-      Ketuk permukaan model 3D di atas (jangan digeser) untuk menempatkan penanda baut baru.
-    </p>
+    <div v-else class="flex flex-wrap items-center justify-between gap-2">
+      <p class="text-xs text-zinc-600 dark:text-zinc-400">
+        Ketuk permukaan model 3D di atas (jangan digeser) untuk menempatkan penanda baut baru.
+      </p>
+      <button
+        type="button"
+        @click="$emit('close-editor')"
+        class="min-h-[36px] px-3 py-1.5 rounded-lg border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-[#121215] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer shrink-0"
+      >
+        Selesai Tandai
+      </button>
+    </div>
 
     <!-- Existing 3D Annotations List with inline edit & delete -->
     <div v-if="annotations.length > 0" class="space-y-2">
@@ -200,6 +209,7 @@ const emit = defineEmits([
   'create-annotation',
   'update-annotation',
   'delete-annotation',
+  'close-editor',
 ]);
 
 const draftPositionId = ref('');
@@ -211,12 +221,13 @@ const editForm = ref({ boltPositionId: '', customName: '', customCategory: '', l
 const confirmDeleteTarget = ref(null);
 
 watch(
-  () => props.draftPoint,
-  (val) => {
-    if (val && props.initialPositionId) {
-      draftPositionId.value = props.initialPositionId;
+  [() => props.draftPoint, () => props.initialPositionId],
+  ([val, initPosId]) => {
+    if (val && initPosId) {
+      draftPositionId.value = initPosId;
     }
-  }
+  },
+  { immediate: true }
 );
 
 const submitCreate = () => {

@@ -278,26 +278,34 @@
         </span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <button
+        <component
+          :is="canAnnotate ? 'button' : 'div'"
           v-for="p in positions"
           :key="`pos-${p.id}`"
-          type="button"
-          @click="startAnnotatePosition(p)"
-          class="min-h-[44px] px-3 py-2 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer"
-          :class="hasAnnotation(p.id)
-            ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30'
-            : 'bg-zinc-50 dark:bg-[#18181c] border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'"
+          :type="canAnnotate ? 'button' : undefined"
+          @click="canAnnotate ? startAnnotatePosition(p) : undefined"
+          class="min-h-[44px] px-3 py-2 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors"
+          :class="[
+            canAnnotate ? 'cursor-pointer' : '',
+            hasAnnotation(p.id)
+              ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30'
+              : canAnnotate
+                ? 'bg-zinc-50 dark:bg-[#18181c] border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'
+                : 'bg-zinc-50 dark:bg-[#18181c] border-zinc-200 dark:border-zinc-800'
+          ]"
         >
           <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ p.name }}</span>
           <span
             class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
             :class="hasAnnotation(p.id)
               ? 'bg-emerald-600 text-white'
-              : 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'"
+              : canAnnotate
+                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'"
           >
-            {{ hasAnnotation(p.id) ? 'SUDAH' : 'TANDAI' }}
+            {{ hasAnnotation(p.id) ? 'SUDAH' : canAnnotate ? 'TANDAI' : 'BELUM' }}
           </span>
-        </button>
+        </component>
       </div>
     </div>
 
@@ -317,6 +325,7 @@
       @create-annotation="onCreateFromEditor"
       @update-annotation="$emit('update-annotation', $event)"
       @delete-annotation="$emit('delete-annotation', $event)"
+      @close-editor="$emit('disable-annotation')"
     />
   </div>
 </template>
@@ -374,6 +383,7 @@ const emit = defineEmits([
   'update-annotation',
   'delete-annotation',
   'enable-annotation',
+  'disable-annotation',
 ]);
 
 const { isDark } = useTheme();
@@ -885,9 +895,9 @@ function advanceCinematicShot({ initial = false } = {}) {
   }
 
   if (initial) {
-    // Opening cinematic glide cleanly from elevated intro pose
+    // Opening cinematic glide cleanly from a side/3-quarter hero pose so bike & engine fill the frame
     const pose0 = evaluatePresetPose(nextPreset, 0, modelCenter, modelMaxDim, baseFitDist);
-    camera.position.set(pose0.camPos[0] * 1.18, pose0.camPos[1] + modelMaxDim * 0.45, pose0.camPos[2] * 1.18);
+    camera.position.set(pose0.camPos[0] * 1.08, pose0.camPos[1] + modelMaxDim * 0.16, pose0.camPos[2] * 1.08);
     controls.target.copy(defaultTarget);
     if (pose0.fov) {
       camera.fov = pose0.fov;
@@ -1033,7 +1043,7 @@ function loadGLBModel() {
       modelMaxDim = Math.max(size.x, size.y, size.z, 0.5);
 
       const fovRad = (camera.fov * Math.PI) / 180;
-      const fitDist = Math.abs(modelMaxDim / (2 * Math.tan(fovRad / 2))) * 1.45;
+      const fitDist = Math.abs(modelMaxDim / (2 * Math.tan(fovRad / 2))) * 1.22;
       modelCenter.copy(center);
       baseFitDist = fitDist;
       defaultTarget.copy(center);
