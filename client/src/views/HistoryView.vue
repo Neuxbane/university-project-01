@@ -8,7 +8,7 @@
           class="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-colors"
         >
           <ArrowLeft class="w-3.5 h-3.5" aria-hidden="true" />
-          Ringkasan
+          Dashboard
         </router-link>
         <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">
           Riwayat Sesi

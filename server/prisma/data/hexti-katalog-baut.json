@@ -1,0 +1,5508 @@
+{
+  "meta": {
+    "source": "docs/Hex_Ti_Spesifikasi_Baut.xlsx",
+    "generatedBy": "scripts/xlsx_to_seed_json.py",
+    "generatedAt": "2026-11-17",
+    "packages": "Paket Default = baris Scope DEFAULT (README xlsx); Body (Halus) / Mekanis (Kasar) = baris DEFAULT per Zona."
+  },
+  "boltPhotos": {
+    "appliesTo": "Ukuran baut yang di katalog dipakai dengan kepala flange",
+    "specCodes": [
+      "M10x30",
+      "M10x40",
+      "M10x45",
+      "M10x48",
+      "M10x50",
+      "M10x60",
+      "M10x65",
+      "M6x10",
+      "M6x12",
+      "M6x14",
+      "M6x16",
+      "M6x18",
+      "M6x20",
+      "M6x22",
+      "M6x25",
+      "M6x28",
+      "M6x30",
+      "M6x32",
+      "M6x35",
+      "M6x40",
+      "M6x50",
+      "M6x65",
+      "M6x8",
+      "M6x85",
+      "M8x20",
+      "M8x22",
+      "M8x25",
+      "M8x26",
+      "M8x28",
+      "M8x35",
+      "M8x55",
+      "M8x60"
+    ],
+    "images": [
+      {
+        "url": "/uploads/bolts/hexti-flange-blue-relaxa.jpeg",
+        "caption": "Blue Relaxa",
+        "isPrimary": true,
+        "sourceFile": "WhatsApp Image 2026-11-16 at 6.10.52 PM (1).jpeg"
+      },
+      {
+        "url": "/uploads/bolts/hexti-flange-pink.jpeg",
+        "caption": "Pink",
+        "isPrimary": false,
+        "sourceFile": "WhatsApp Image 2026-11-16 at 6.10.52 PM.jpeg"
+      },
+      {
+        "url": "/uploads/bolts/hexti-flange-rosegold.jpeg",
+        "caption": "Rosegold",
+        "isPrimary": false,
+        "sourceFile": "WhatsApp Image 2026-11-16 at 6.10.53 PM.jpeg"
+      },
+      {
+        "url": "/uploads/bolts/hexti-flange-green.jpeg",
+        "caption": "Green",
+        "isPrimary": false,
+        "sourceFile": "WhatsApp Image 2026-11-16 at 6.10.53 PM (1).jpeg"
+      }
+    ]
+  },
+  "specs": [
+    {
+      "code": "M3x14",
+      "diameterMm": 3,
+      "lengthMm": 14,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Self tapping screw. Kepala: Tidak tercetak. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 97707-30014."
+    },
+    {
+      "code": "M3x16",
+      "diameterMm": 3,
+      "lengthMm": 16,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Self tapping screw. Kepala: Tidak tercetak. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 97702-30016."
+    },
+    {
+      "code": "M4x12",
+      "diameterMm": 4,
+      "lengthMm": 12,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Sekrup. Kepala: Flat, Pan + washer. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 93600-04012-1G, 93893-04012-17, 98707-04012."
+    },
+    {
+      "code": "M4x16",
+      "diameterMm": 4,
+      "lengthMm": 16,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Flat. Kepastian ukuran: pasti. Nomor part OEM: 93600-04016-1G."
+    },
+    {
+      "code": "M5x6",
+      "diameterMm": 5,
+      "lengthMm": 6,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Truss. Kepastian ukuran: pasti. Nomor part OEM: 90109-K01-900."
+    },
+    {
+      "code": "M5x8",
+      "diameterMm": 5,
+      "lengthMm": 8,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Pan. Kepastian ukuran: pasti. Nomor part OEM: 90104-K81-N30."
+    },
+    {
+      "code": "M5x10",
+      "diameterMm": 5,
+      "lengthMm": 10,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Hex socket (cap). Kepastian ukuran: perlu cek fisik. Nomor part OEM: 91312-05010."
+    },
+    {
+      "code": "M5x11.5",
+      "diameterMm": 5,
+      "lengthMm": 11.5,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Pan. Kepastian ukuran: pasti. Nomor part OEM: 91509-GE2-760."
+    },
+    {
+      "code": "M5x12",
+      "diameterMm": 5,
+      "lengthMm": 12,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Self tapping screw. Kepala: Tidak tercetak, Truss (tapping). Kepastian ukuran: perlu cek fisik. Nomor part OEM: 97702-50012, 97707-50012."
+    },
+    {
+      "code": "M5x13",
+      "diameterMm": 5,
+      "lengthMm": 13,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Pan. Kepastian ukuran: pasti. Nomor part OEM: 90117-KVG-A20."
+    },
+    {
+      "code": "M5x14",
+      "diameterMm": 5,
+      "lengthMm": 14,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Sekrup, Self tapping screw. Kepala: Pan, Tidak tercetak. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90134-K97-T00, 97702-50014."
+    },
+    {
+      "code": "M5x15",
+      "diameterMm": 5,
+      "lengthMm": 15,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Pan. Kepastian ukuran: pasti. Nomor part OEM: 90115-K77-V00."
+    },
+    {
+      "code": "M5x16",
+      "diameterMm": 5,
+      "lengthMm": 16,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut, Sekrup, Self tapping screw. Kepala: Button, Pan, Tidak tercetak, Truss (tapping). Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90107-K93-N00, 92017-05016, 97702-50016, 97707-50016."
+    },
+    {
+      "code": "M5x20",
+      "diameterMm": 5,
+      "lengthMm": 20,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Sekrup, Self tapping screw. Kepala: Pan + washer, Tidak tercetak. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 93892-05020-00, 93892-05020-07, 97707-50020."
+    },
+    {
+      "code": "M5x25",
+      "diameterMm": 5,
+      "lengthMm": 25,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut, Sekrup. Kepala: Hex + washer, Pan, Pan + washer. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 93411-05025-00, 93892-05025-00, 98507-05025."
+    },
+    {
+      "code": "M5x30",
+      "diameterMm": 5,
+      "lengthMm": 30,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Sekrup. Kepala: Pan. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 98507-05030."
+    },
+    {
+      "code": "M6x8",
+      "diameterMm": 6,
+      "lengthMm": 8,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 96001-06008-00."
+    },
+    {
+      "code": "M6x10",
+      "diameterMm": 6,
+      "lengthMm": 10,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 95022-06010, 95701-06010-02, 95701-06010-08, 96001-06010-00."
+    },
+    {
+      "code": "M6x12",
+      "diameterMm": 6,
+      "lengthMm": 12,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut, Sekrup. Kepala: Flange, Flange (deep recess), Hex + washer, Tidak tercetak. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90107-KGH-600, 93404-06012-00, 93404-06012-07, 93404-06012-08, 95022-06012, 95701-06012-00, 95701-06012-07, 95701-06012-08, 95802-06012, 95D02-06012, 95E32-06012, 96001-06012-00."
+    },
+    {
+      "code": "M6x14",
+      "diameterMm": 6,
+      "lengthMm": 14,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut, Sekrup. Kepala: Flange, Pan. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90113-K15-920, 95701-06014-00, 95812-06014."
+    },
+    {
+      "code": "M6x15",
+      "diameterMm": 6,
+      "lengthMm": 15,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Suzuki. Jenis: Baut. Kepala: Tidak tercetak. Kepastian ukuran: pasti. Nomor part OEM: 09106B06069N000."
+    },
+    {
+      "code": "M6x16",
+      "diameterMm": 6,
+      "lengthMm": 16,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange, Hex + washer, Khusus, Tidak tercetak. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90101-KVY-900, 90107-K26-900, 90132-KYJ-960, 90147-KVB-900, 93404-06016-00, 95027-06016, 95701-06016-00, 95701-06016-02, 95701-06016-07, 95701-06016-08, 95801-06016-02, 95827-06016."
+    },
+    {
+      "code": "M6x17",
+      "diameterMm": 6,
+      "lengthMm": 17,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Hex socket. Kepastian ukuran: pasti. Nomor part OEM: 90107-K97-T00."
+    },
+    {
+      "code": "M6x18",
+      "diameterMm": 6,
+      "lengthMm": 18,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange, Hex + washer, Hex socket. Kepastian ukuran: pasti. Nomor part OEM: 90001-KWR-000, 90101-K29-900, 93404-06018-00, 96001-06018-07."
+    },
+    {
+      "code": "M6x20",
+      "diameterMm": 6,
+      "lengthMm": 20,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange, Hex + washer, Hex socket, Tidak tercetak. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 91317-06020, 93404-06020-00, 95022-06020, 95701-06020-07, 96700-06020-00."
+    },
+    {
+      "code": "M6x22",
+      "diameterMm": 6,
+      "lengthMm": 22,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange, Socket flange. Kepastian ukuran: pasti. Nomor part OEM: 90101-KWN-900, 95701-06022-00, 96001-06022-07."
+    },
+    {
+      "code": "M6x25",
+      "diameterMm": 6,
+      "lengthMm": 25,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange, Flange (deep recess), Hex socket. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 95D32-06025, 96001-06025-07, 96700-06025-00."
+    },
+    {
+      "code": "M6x28",
+      "diameterMm": 6,
+      "lengthMm": 28,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange, Hex + washer. Kepastian ukuran: pasti. Nomor part OEM: 93404-06028-07, 96001-06028-00."
+    },
+    {
+      "code": "M6x30",
+      "diameterMm": 6,
+      "lengthMm": 30,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 95701-06030-00."
+    },
+    {
+      "code": "M6x32",
+      "diameterMm": 6,
+      "lengthMm": 32,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 95701-06032-00."
+    },
+    {
+      "code": "M6x35",
+      "diameterMm": 6,
+      "lengthMm": 35,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange, Flange (deep recess). Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 95022-06035, 95E32-06035, 96001-06035-00."
+    },
+    {
+      "code": "M6x40",
+      "diameterMm": 6,
+      "lengthMm": 40,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 96001-06040-00."
+    },
+    {
+      "code": "M6x45",
+      "diameterMm": 6,
+      "lengthMm": 45,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Sekrup. Kepala: Oval. Kepastian ukuran: pasti. Nomor part OEM: 90191-K47-N41, 90191-KWB-600."
+    },
+    {
+      "code": "M6x50",
+      "diameterMm": 6,
+      "lengthMm": 50,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Flange. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95022-06050."
+    },
+    {
+      "code": "M6x65",
+      "diameterMm": 6,
+      "lengthMm": 65,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 96001-06065-00."
+    },
+    {
+      "code": "M6x85",
+      "diameterMm": 6,
+      "lengthMm": 85,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 96001-06085-00."
+    },
+    {
+      "code": "M8x20",
+      "diameterMm": 8,
+      "lengthMm": 20,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange, Flange (deep recess), Flange khusus. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90103-KEZ-900, 95701-08020-02, 95812-08020, 95E32-08020."
+    },
+    {
+      "code": "M8x22",
+      "diameterMm": 8,
+      "lengthMm": 22,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 95701-08022-00."
+    },
+    {
+      "code": "M8x25",
+      "diameterMm": 8,
+      "lengthMm": 25,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda, Yamaha. Jenis: Baut. Kepala: Flange, Torx. Kepastian ukuran: pasti, perlu cek fisik. Nomor part OEM: 90131-KPH-880, 95701-08025-07, 95822-08025, 95827-08025."
+    },
+    {
+      "code": "M8x26",
+      "diameterMm": 8,
+      "lengthMm": 26,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 43240-KSV-J01."
+    },
+    {
+      "code": "M8x28",
+      "diameterMm": 8,
+      "lengthMm": 28,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange, Torx. Kepastian ukuran: pasti. Nomor part OEM: 90131-K97-N00, 95701-08028-08."
+    },
+    {
+      "code": "M8x32",
+      "diameterMm": 8,
+      "lengthMm": 32,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Hex socket. Kepastian ukuran: pasti. Nomor part OEM: 96600-08032-00."
+    },
+    {
+      "code": "M8x33",
+      "diameterMm": 8,
+      "lengthMm": 33,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Suzuki. Jenis: Baut. Kepala: Tidak tercetak. Kepastian ukuran: pasti. Nomor part OEM: 09103-08107-000."
+    },
+    {
+      "code": "M8x35",
+      "diameterMm": 8,
+      "lengthMm": 35,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Flange (deep recess). Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95D32-08035."
+    },
+    {
+      "code": "M8x40",
+      "diameterMm": 8,
+      "lengthMm": 40,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Torx. Kepastian ukuran: pasti. Nomor part OEM: 90132-K97-N00."
+    },
+    {
+      "code": "M8x55",
+      "diameterMm": 8,
+      "lengthMm": 55,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Flange. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95022-08055."
+    },
+    {
+      "code": "M8x60",
+      "diameterMm": 8,
+      "lengthMm": 60,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange khusus. Kepastian ukuran: pasti. Nomor part OEM: 90161-KZR-600."
+    },
+    {
+      "code": "M10x22",
+      "diameterMm": 10,
+      "lengthMm": 22,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Banjo/union. Kepastian ukuran: pasti. Nomor part OEM: 90145-GAZ-981, 90145-KPH-B30."
+    },
+    {
+      "code": "M10x30",
+      "diameterMm": 10,
+      "lengthMm": 30,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Flange. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95812-10030."
+    },
+    {
+      "code": "M10x40",
+      "diameterMm": 10,
+      "lengthMm": 40,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 95701-10040-07."
+    },
+    {
+      "code": "M10x45",
+      "diameterMm": 10,
+      "lengthMm": 45,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Flange, Flange (deep recess). Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95812-10045, 95D32-10045."
+    },
+    {
+      "code": "M10x48",
+      "diameterMm": 10,
+      "lengthMm": 48,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 90102-KZL-930."
+    },
+    {
+      "code": "M10x50",
+      "diameterMm": 10,
+      "lengthMm": 50,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 90106-GN5-900, 90120-HC4-000."
+    },
+    {
+      "code": "M10x60",
+      "diameterMm": 10,
+      "lengthMm": 60,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Baut. Kepala: Flange, Flange (deep recess). Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95812-10060, 95D32-10060."
+    },
+    {
+      "code": "M10x65",
+      "diameterMm": 10,
+      "lengthMm": 65,
+      "headType": "Baut",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Honda. Jenis: Baut. Kepala: Flange. Kepastian ukuran: pasti. Nomor part OEM: 95701-10065-07."
+    },
+    {
+      "code": "MUR-PEGAS-M5",
+      "diameterMm": 5,
+      "lengthMm": 0,
+      "headType": "Mur pegas (klip)",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Mur pegas (klip). Kepala: -. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 90183-05801, 90183-05807."
+    },
+    {
+      "code": "MUR-M6",
+      "diameterMm": 6,
+      "lengthMm": 0,
+      "headType": "Mur",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Mur. Kepala: -. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95602-06100, 95702-06500."
+    },
+    {
+      "code": "MUR-PEGAS-M6",
+      "diameterMm": 6,
+      "lengthMm": 0,
+      "headType": "Mur pegas (klip)",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Mur pegas (klip). Kepala: -. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 90183-06815, 90183-06818."
+    },
+    {
+      "code": "MUR-M8",
+      "diameterMm": 8,
+      "lengthMm": 0,
+      "headType": "Mur",
+      "threadPitch": null,
+      "material": "",
+      "finish": "",
+      "notes": "Dipakai: Yamaha. Jenis: Mur. Kepala: -. Kepastian ukuran: perlu cek fisik. Nomor part OEM: 95602-08200, 95702-08500."
+    }
+  ],
+  "motorcycles": [
+    {
+      "catalogKey": "ACJ110",
+      "brand": "Honda",
+      "model": "Genio",
+      "variant": "CBS / CBS-ISS",
+      "yearStart": 2019,
+      "yearEnd": null,
+      "displayName": "Honda Genio CBS / CBS-ISS",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Cover kipas / shroud (mesin)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "ACG / starter (cover magnet)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Cover samping kiri (CVT)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Handel / saklar / kabel (stang)",
+          "category": "Steering/Stang",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan",
+          "category": "Rem",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Stang / handle cover",
+          "category": "Steering/Stang",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Cover depan",
+          "category": "Body",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Floor step / pijakan kaki",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Body cover (cover bodi)",
+          "category": "Body",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Bagasi / grab rail",
+          "category": "Body",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem depan",
+          "category": "Rem",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Jok / bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Standar / engkol starter",
+          "category": "Rangka",
+          "sortOrder": 15,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang / lampu plat",
+          "category": "Lampu & Meter",
+          "sortOrder": 16,
+          "notes": null
+        },
+        {
+          "name": "Spakbor belakang",
+          "category": "Body",
+          "sortOrder": 17,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Cover kipas / shroud (mesin)",
+          "specCode": "M6x20",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 93404-06020-00 Hex + washer x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover kipas / shroud (mesin)",
+          "specCode": "M6x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06025-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x18",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x14",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06014-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x16",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 95701-06016-00 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x20",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96700-06020-00 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 90101-K29-900 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x35",
+          "quantity": 13,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "KASAR": 13
+          },
+          "notes": "OEM: 96001-06035-00 Flange x13 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M5x11.5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x8",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90104-K81-N30 Pan x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 93892-05020-07 Pan + washer x4 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 12,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06012-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06022-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M10x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 14,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-GAZ-981 Banjo/union x2 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 93600-04016-1G Flat x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 16,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 93893-04012-17 Pan + washer x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06012-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06022-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M10x48",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90102-KZL-930 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95701-06012-08 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x32",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95701-06032-00 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M6x20",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95701-06020-07 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Body cover (cover bodi)",
+          "specCode": "M5x11.5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Bagasi / grab rail",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06018-00 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Bagasi / grab rail",
+          "specCode": "M8x25",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95701-08025-07 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem depan",
+          "specCode": "M8x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90131-KPH-880 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x10",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95701-06010-08 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90107-K26-900 Khusus x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x10",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06010-02 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M8x20",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-08020-02 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x40",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-10040-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Standar / engkol starter",
+          "specCode": "M6x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90147-KVB-900 Khusus x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Standar / engkol starter",
+          "specCode": "M8x25",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-08025-07 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Lampu belakang / lampu plat",
+          "specCode": "M5x11.5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        }
+      ]
+    },
+    {
+      "catalogKey": "ACF110",
+      "brand": "Honda",
+      "model": "Scoopy",
+      "variant": "eSP CBS-ISS",
+      "yearStart": 2018,
+      "yearEnd": null,
+      "displayName": "Honda Scoopy eSP CBS-ISS",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Cover kipas / shroud (mesin)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "ACG / starter (cover magnet)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Cover samping kiri (CVT)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Speedometer / panel meter",
+          "category": "Lampu & Meter",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Handel / saklar / kabel (stang)",
+          "category": "Steering/Stang",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan",
+          "category": "Rem",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Stang / handle cover",
+          "category": "Steering/Stang",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Cover depan",
+          "category": "Body",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Floor step / pijakan kaki",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Body cover (cover bodi)",
+          "category": "Body",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem depan",
+          "category": "Rem",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Jok / bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Standar / engkol starter",
+          "category": "Rangka",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang / lampu plat",
+          "category": "Lampu & Meter",
+          "sortOrder": 15,
+          "notes": null
+        },
+        {
+          "name": "Spakbor belakang",
+          "category": "Body",
+          "sortOrder": 16,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Cover kipas / shroud (mesin)",
+          "specCode": "M6x20",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 93404-06020-00 Hex + washer x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover kipas / shroud (mesin)",
+          "specCode": "M6x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06025-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x18",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x14",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06014-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x16",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 95701-06016-00 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x20",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96700-06020-00 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 90101-K29-900 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x35",
+          "quantity": 13,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "KASAR": 13
+          },
+          "notes": "OEM: 96001-06035-00 Flange x13 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x85",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 96001-06085-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Speedometer / panel meter",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90107-K93-N00 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x8",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90104-K81-N30 Pan x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x20",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 12,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 93892-05020-00 Pan + washer x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x25",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 93892-05025-00 Pan + washer x3 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x30",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-06030-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06022-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 16,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 93600-04012-1G Flat x2; 93893-04012-17 Pan + washer x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M10x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 17,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-KPH-B30 Banjo/union x2 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-06012-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x14",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-06014-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06022-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M10x50",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90106-GN5-900 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M6x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90191-K47-N41 Oval x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06016-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x32",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95701-06032-00 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M5x11.5",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x1 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Body cover (cover bodi)",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90107-KGH-600 Tidak tercetak x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Body cover (cover bodi)",
+          "specCode": "M5x11.5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x6 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem depan",
+          "specCode": "M8x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90131-KPH-880 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06018-00 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x22",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 95701-06022-00 Flange x1 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M8x22",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95701-08022-00 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x10",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 96001-06010-00 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x40",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-10040-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95801-06016-02 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Standar / engkol starter",
+          "specCode": "M6x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90147-KVB-900 Khusus x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Standar / engkol starter",
+          "specCode": "M8x25",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 36,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-08025-07 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Lampu belakang / lampu plat",
+          "specCode": "M5x11.5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 37,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 38,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        }
+      ]
+    },
+    {
+      "catalogKey": "ACB125",
+      "brand": "Honda",
+      "model": "Vario",
+      "variant": "125 eSP CBS / CBS-ISS",
+      "yearStart": 2019,
+      "yearEnd": null,
+      "displayName": "Honda Vario 125 eSP CBS / CBS-ISS",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "ACG / starter (cover magnet)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "Cover samping kiri (CVT)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Handel / saklar / kabel (stang)",
+          "category": "Steering/Stang",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan",
+          "category": "Rem",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Stang / handle cover",
+          "category": "Steering/Stang",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Cover depan",
+          "category": "Body",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Floor step / pijakan kaki",
+          "category": "Body",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Body cover (cover bodi)",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem depan",
+          "category": "Rem",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Jok / bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Lampu sein",
+          "category": "Lampu & Meter",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang / lampu plat",
+          "category": "Lampu & Meter",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Spakbor belakang",
+          "category": "Body",
+          "sortOrder": 15,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x18",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x25",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96700-06025-00 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x28",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96001-06028-00 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x40",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "KASAR": 5
+          },
+          "notes": "OEM: 96001-06040-00 Flange x5 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x65",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06065-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M5x13",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "HALUS": 8
+          },
+          "notes": "OEM: 90117-KVG-A20 Pan x8 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06016-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x8",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90104-K81-N30 Pan x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 93892-05020-07 Pan + washer x4 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95701-06012-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 12,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06022-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M10x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 13,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-GAZ-981 Banjo/union x2 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 93600-04016-1G Flat x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 93893-04012-17 Pan + washer x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 16,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06012-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06022-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M10x48",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90102-KZL-930 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M6x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90191-KWB-600 Oval x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M5x11.5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M6x12",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "HALUS": 8
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x4; 95701-06012-00 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Body cover (cover bodi)",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90107-KGH-600 Tidak tercetak x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem depan",
+          "specCode": "M8x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90131-KPH-880 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M8x20",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 90103-KEZ-900 Flange khusus x1 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M8x60",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90161-KZR-600 Flange khusus x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x1; 95701-06012-00 Flange x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x14",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 90113-K15-920 Pan x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x65",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-10065-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95801-06016-02 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x8",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 96001-06008-00 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu sein",
+          "specCode": "M5x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93411-05025-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu belakang / lampu plat",
+          "specCode": "M5x11.5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x18",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M5x13",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 90117-KVG-A20 Pan x1 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M5x11.5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x12",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 36,
+          "defaultQtyByZona": {
+            "HALUS": 5
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x2; 95701-06012-07 Flange x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        }
+      ]
+    },
+    {
+      "catalogKey": "WW150A",
+      "brand": "Honda",
+      "model": "PCX",
+      "variant": "150 ABS",
+      "yearStart": 2017,
+      "yearEnd": null,
+      "displayName": "Honda PCX 150 ABS",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Tutup kepala silinder",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "ACG / starter (cover magnet)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Cover samping kiri (CVT)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Handel / saklar / kabel (stang)",
+          "category": "Steering/Stang",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan",
+          "category": "Rem",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Master rem belakang",
+          "category": "Rem",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Stang / handle cover",
+          "category": "Steering/Stang",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Spakbor depan",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Cover depan",
+          "category": "Body",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Inner cover",
+          "category": "Body",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Floor step / pijakan kaki",
+          "category": "Body",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Pijakan boncenger",
+          "category": "Rangka",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Body cover (cover bodi)",
+          "category": "Body",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Bagasi / grab rail",
+          "category": "Body",
+          "sortOrder": 15,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem depan",
+          "category": "Rem",
+          "sortOrder": 16,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem belakang",
+          "category": "Rem",
+          "sortOrder": 17,
+          "notes": null
+        },
+        {
+          "name": "Jok / bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 18,
+          "notes": null
+        },
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 19,
+          "notes": null
+        },
+        {
+          "name": "Standar / engkol starter",
+          "category": "Rangka",
+          "sortOrder": 20,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang / lampu plat",
+          "category": "Lampu & Meter",
+          "sortOrder": 21,
+          "notes": null
+        },
+        {
+          "name": "Spakbor belakang",
+          "category": "Body",
+          "sortOrder": 22,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Tutup kepala silinder",
+          "specCode": "M6x22",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95701-06022-00 Flange x4 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x18",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x25",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96700-06025-00 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x18",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 5
+          },
+          "notes": "OEM: 96001-06018-07 Flange x5 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x28",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "KASAR": 6
+          },
+          "notes": "OEM: 96001-06028-00 Flange x6 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x40",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96001-06040-00 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x65",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 96001-06065-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 93892-05020-07 Pan + washer x4 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06016-08 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90101-KWN-900 Socket flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M10x22",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 12,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-KPH-B30 Banjo/union x4 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 93600-04012-1G Flat x2; 93893-04012-17 Pan + washer x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06012-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90101-KWN-900 Socket flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M10x22",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 16,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-KPH-B30 Banjo/union x1 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M4x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 93600-04012-1G Flat x2; 93893-04012-17 Pan + washer x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 96001-06012-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M6x17",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90107-K97-T00 Hex socket x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M10x50",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90120-HC4-000 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M6x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90191-K47-N41 Oval x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M8x32",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 96600-08032-00 Hex socket x4 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Spakbor depan",
+          "specCode": "M6x16",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 90101-KVY-900 Tidak tercetak x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M5x14",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90134-K97-T00 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06012-08 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x28",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06028-07 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Inner cover",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 93404-06012-08 Hex + washer x1 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M5x11.5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M6x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06012-07 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Pijakan boncenger",
+          "specCode": "M5x6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90109-K01-900 Truss x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Body cover (cover bodi)",
+          "specCode": "M5x11.5",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Bagasi / grab rail",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 93404-06012-07 Hex + washer x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem depan",
+          "specCode": "M8x28",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90131-K97-N00 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Kaliper rem belakang",
+          "specCode": "M8x26",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 43240-KSV-J01 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Kaliper rem belakang",
+          "specCode": "M8x40",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90132-K97-N00 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 36,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95701-06012-08 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M8x28",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 37,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95701-08028-08 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M5x15",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 38,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 90115-K77-V00 Pan x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 39,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06016-02 Flange x1; 95701-06016-07 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x65",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 40,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 95701-10065-07 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Standar / engkol starter",
+          "specCode": "M6x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 41,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90132-KYJ-960 Khusus x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Lampu belakang / lampu plat",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 42,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 43,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 90101-K29-900 Hex socket x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x12",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 44,
+          "defaultQtyByZona": {
+            "HALUS": 5
+          },
+          "notes": "OEM: 93404-06012-07 Hex + washer x2; 93404-06012-08 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        }
+      ]
+    },
+    {
+      "catalogKey": "WW150",
+      "brand": "Honda",
+      "model": "PCX",
+      "variant": "150 CBS",
+      "yearStart": 2017,
+      "yearEnd": null,
+      "displayName": "Honda PCX 150 CBS",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Tutup kepala silinder",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "ACG / starter (cover magnet)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Cover samping kiri (CVT)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Handel / saklar / kabel (stang)",
+          "category": "Steering/Stang",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan",
+          "category": "Rem",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Master rem belakang",
+          "category": "Rem",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Stang / handle cover",
+          "category": "Steering/Stang",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Spakbor depan",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Cover depan",
+          "category": "Body",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Inner cover",
+          "category": "Body",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Floor step / pijakan kaki",
+          "category": "Body",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Pijakan boncenger",
+          "category": "Rangka",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Body cover (cover bodi)",
+          "category": "Body",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Bagasi / grab rail",
+          "category": "Body",
+          "sortOrder": 15,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem depan",
+          "category": "Rem",
+          "sortOrder": 16,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem belakang",
+          "category": "Rem",
+          "sortOrder": 17,
+          "notes": null
+        },
+        {
+          "name": "Jok / bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 18,
+          "notes": null
+        },
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 19,
+          "notes": null
+        },
+        {
+          "name": "Standar / engkol starter",
+          "category": "Rangka",
+          "sortOrder": 20,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang / lampu plat",
+          "category": "Lampu & Meter",
+          "sortOrder": 21,
+          "notes": null
+        },
+        {
+          "name": "Spakbor belakang",
+          "category": "Body",
+          "sortOrder": 22,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Tutup kepala silinder",
+          "specCode": "M6x22",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95701-06022-00 Flange x4 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x18",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90001-KWR-000 Hex socket x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "ACG / starter (cover magnet)",
+          "specCode": "M6x25",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96700-06025-00 Hex socket x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x18",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 5
+          },
+          "notes": "OEM: 96001-06018-07 Flange x5 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x28",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "KASAR": 6
+          },
+          "notes": "OEM: 96001-06028-00 Flange x6 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x40",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 96001-06040-00 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover samping kiri (CVT)",
+          "specCode": "M6x65",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 96001-06065-00 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M5x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 93892-05020-07 Pan + washer x4 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Handel / saklar / kabel (stang)",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06016-08 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90101-KWN-900 Socket flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M10x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 12,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-KPH-B30 Banjo/union x2 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M4x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 93600-04012-1G Flat x2; 93893-04012-17 Pan + washer x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06012-07 Flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M6x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90101-KWN-900 Socket flange x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M10x22",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": true,
+          "sortOrder": 16,
+          "defaultQtyByZona": {},
+          "notes": "OEM: 90145-KPH-B30 Banjo/union x2 [OPSIONAL] · Zona: KASAR · Rekomendasi Ti: HATI-HATI"
+        },
+        {
+          "position": "Master rem belakang",
+          "specCode": "M4x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 93600-04012-1G Flat x2; 93893-04012-17 Pan + washer x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M6x17",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90107-K97-T00 Hex socket x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M10x50",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90120-HC4-000 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M6x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90191-K47-N41 Oval x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang / handle cover",
+          "specCode": "M8x32",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 96600-08032-00 Hex socket x4 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Spakbor depan",
+          "specCode": "M6x16",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 90101-KVY-900 Tidak tercetak x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M5x14",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90134-K97-T00 Pan x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06012-08 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover depan",
+          "specCode": "M6x28",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06028-07 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Inner cover",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 93404-06012-08 Hex + washer x1 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M5x11.5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Floor step / pijakan kaki",
+          "specCode": "M6x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 93404-06012-07 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Pijakan boncenger",
+          "specCode": "M5x6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90109-K01-900 Truss x2 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Body cover (cover bodi)",
+          "specCode": "M5x11.5",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 91509-GE2-760 Pan x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Bagasi / grab rail",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 93404-06012-07 Hex + washer x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem depan",
+          "specCode": "M8x28",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90131-K97-N00 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Kaliper rem belakang",
+          "specCode": "M8x26",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 43240-KSV-J01 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Kaliper rem belakang",
+          "specCode": "M8x40",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90132-K97-N00 Torx x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95701-06012-08 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok / bagasi",
+          "specCode": "M8x28",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 36,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95701-08028-08 Flange x4 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M5x15",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 37,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 90115-K77-V00 Pan x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 38,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95701-06016-02 Flange x1; 95701-06016-07 Flange x1 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x65",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 39,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 95701-10065-07 Flange x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Standar / engkol starter",
+          "specCode": "M6x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 40,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90132-KYJ-960 Khusus x1 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Lampu belakang / lampu plat",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 41,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 93404-06012-00 Hex + washer x2 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x18",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 42,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 90101-K29-900 Hex socket x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor belakang",
+          "specCode": "M6x12",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 43,
+          "defaultQtyByZona": {
+            "HALUS": 5
+          },
+          "notes": "OEM: 93404-06012-07 Hex + washer x2; 93404-06012-08 Hex + washer x3 · Zona: HALUS · Rekomendasi Ti: YA"
+        }
+      ]
+    },
+    {
+      "catalogKey": "BC11",
+      "brand": "Yamaha",
+      "model": "NMAX",
+      "variant": "155 GPD150 (BC11)",
+      "yearStart": 2016,
+      "yearEnd": null,
+      "displayName": "Yamaha NMAX 155 GPD150 (BC11)",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "Cover crankcase 1 (kanan/kiri)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Jok & bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Stang, grip & kabel",
+          "category": "Steering/Stang",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan & tuas",
+          "category": "Rem",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Standar & pijakan kaki",
+          "category": "Rangka",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Cover generator / magnet",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Saklar stang & tuas",
+          "category": "Steering/Stang",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Spakbor",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Cover samping",
+          "category": "Body",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Leg shield",
+          "category": "Body",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Windshield / visor",
+          "category": "Body",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Lampu sein",
+          "category": "Lampu & Meter",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Speedometer",
+          "category": "Lampu & Meter",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 15,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang",
+          "category": "Lampu & Meter",
+          "sortOrder": 16,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Knalpot",
+          "specCode": "MUR-M8",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95702-08500 Mur x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95812-10045 Flange x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x60",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95812-10060 Flange x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover crankcase 1 (kanan/kiri)",
+          "specCode": "M6x35",
+          "quantity": 10,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 10
+          },
+          "notes": "OEM: 95022-06035 Flange x10 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover crankcase 1 (kanan/kiri)",
+          "specCode": "M6x50",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95022-06050 Flange x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "MUR-M6",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 95702-06500 Mur x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M6x14",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95812-06014 Flange x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95022-06012 Flange x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M8x25",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95822-08025 Flange x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M8x55",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95022-08055 Flange x4 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M6x20",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 91317-06020 Tidak tercetak x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M5x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 12,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 92017-05016 Button x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M6x10",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95022-06010 Flange x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95022-06012 Flange x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "M4x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 98707-04012 Flat x2 [cek fisik]; 98707-04012 Flat x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "MUR-M6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 16,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95602-06100 Mur x1 [cek fisik]; 95602-06100 Mur x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "M6x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95802-06012 Flange x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "MUR-M8",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95602-08200 Mur x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "M8x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95812-08020 Flange x2 [cek fisik]; 95812-08020 Flange x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Cover generator / magnet",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95027-06016 Flange x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Saklar stang & tuas",
+          "specCode": "M5x30",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 98507-05030 Pan x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Saklar stang & tuas",
+          "specCode": "M5x25",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 98507-05025 Pan x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor",
+          "specCode": "M5x20",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97707-50020 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x1 [cek fisik]; 90183-05807 Mur pegas (klip) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "HALUS": 8
+          },
+          "notes": "OEM: 90183-06815 Mur pegas (klip) x4 [cek fisik]; 90183-06815 Mur pegas (klip) x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90183-06815 Mur pegas (klip) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "M5x16",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "KASAR": 6
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x3 [cek fisik]; 97702-50016 Self tapping screw x3 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "KASAR": 6
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x3 [cek fisik]; 90183-05807 Mur pegas (klip) x3 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 90183-06815 Mur pegas (klip) x1 [cek fisik]; 90183-06815 Mur pegas (klip) x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 20,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "HALUS": 20
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x5 [cek fisik]; 90183-05807 Mur pegas (klip) x5 [cek fisik]; 90183-05807 Mur pegas (klip) x4 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M5x16",
+          "quantity": 14,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "HALUS": 14
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 90183-06815 Mur pegas (klip) x2 [cek fisik]; 90183-06815 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Windshield / visor",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 9,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 36,
+          "defaultQtyByZona": {
+            "HALUS": 9
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x3 [cek fisik]; 90183-05807 Mur pegas (klip) x6 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Windshield / visor",
+          "specCode": "M5x16",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 37,
+          "defaultQtyByZona": {
+            "HALUS": 8
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x6 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu sein",
+          "specCode": "M5x16",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 38,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x6 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Speedometer",
+          "specCode": "M3x16",
+          "quantity": 7,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 39,
+          "defaultQtyByZona": {
+            "HALUS": 7
+          },
+          "notes": "OEM: 97702-30016 Self tapping screw x7 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Speedometer",
+          "specCode": "M5x16",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 40,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 41,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu belakang",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 42,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu belakang",
+          "specCode": "M5x20",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 43,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97707-50020 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        }
+      ]
+    },
+    {
+      "catalogKey": "BBM1",
+      "brand": "Yamaha",
+      "model": "NMAX",
+      "variant": "155 GPD155 (BBM1)",
+      "yearStart": 2020,
+      "yearEnd": null,
+      "displayName": "Yamaha NMAX 155 GPD155 (BBM1)",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "Cover crankcase 1 (kanan/kiri)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Jok & bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem belakang",
+          "category": "Rem",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Stang, grip & kabel",
+          "category": "Steering/Stang",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan & tuas",
+          "category": "Rem",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Standar & pijakan kaki",
+          "category": "Rangka",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Leg shield",
+          "category": "Body",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang",
+          "category": "Lampu & Meter",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Saklar stang & tuas",
+          "category": "Steering/Stang",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Spakbor",
+          "category": "Body",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Cover samping",
+          "category": "Body",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Windshield / visor",
+          "category": "Body",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Lampu sein",
+          "category": "Lampu & Meter",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Speedometer",
+          "category": "Lampu & Meter",
+          "sortOrder": 15,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 16,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Knalpot",
+          "specCode": "MUR-M8",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95702-08500 Mur x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95D32-10045 Flange (deep recess) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x60",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95D32-10060 Flange (deep recess) x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover crankcase 1 (kanan/kiri)",
+          "specCode": "M6x35",
+          "quantity": 10,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 10
+          },
+          "notes": "OEM: 95E32-06035 Flange (deep recess) x10 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "MUR-M6",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 95702-06500 Mur x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95E32-06012 Flange (deep recess) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M8x35",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95D32-08035 Flange (deep recess) x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem belakang",
+          "specCode": "M10x30",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95812-10030 Flange x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M5x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 92017-05016 Button x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M5x10",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 91312-05010 Hex socket (cap) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "M4x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 98707-04012 Flat x2 [cek fisik]; 98707-04012 Flat x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 12,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95D02-06012 Flange (deep recess) x1 [cek fisik]; 95E32-06012 Flange (deep recess) x2 [cek fisik]; 95E32-06012 Flange (deep recess) x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "M8x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95E32-08020 Flange (deep recess) x2 [cek fisik]; 95E32-08020 Flange (deep recess) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M6x25",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 95D32-06025 Flange (deep recess) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Lampu belakang",
+          "specCode": "M6x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95827-06016 Flange x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Saklar stang & tuas",
+          "specCode": "M5x25",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 16,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 98507-05025 Pan x2 [cek fisik]; 98507-05025 Pan x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor",
+          "specCode": "M5x16",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x1 [cek fisik]; 90183-05807 Mur pegas (klip) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90183-06815 Mur pegas (klip) x1 [cek fisik]; 90183-06815 Mur pegas (klip) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "M5x16",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 97707-50016 Self tapping screw, kepala Truss (tapping) x2 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M5x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97707-50012 Self tapping screw, kepala Truss (tapping) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 90183-06818 Mur pegas (klip) x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "M5x16",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "KASAR": 8
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x3 [cek fisik]; 97702-50016 Self tapping screw x3 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "KASAR": 6
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x3 [cek fisik]; 90183-05807 Mur pegas (klip) x3 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 27,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "HALUS": 27
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x1 [cek fisik]; 90183-05807 Mur pegas (klip) x1 [cek fisik]; 90183-05807 Mur pegas (klip) x7 [cek fisik]; 90183-05807 Mur pegas (klip) x7 [cek fisik]; 90183-05807 Mur pegas (klip) x8 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M5x16",
+          "quantity": 18,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "HALUS": 18
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M5x12",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 97707-50012 Self tapping screw, kepala Truss (tapping) x2 [cek fisik]; 97707-50012 Self tapping screw, kepala Truss (tapping) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Windshield / visor",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Windshield / visor",
+          "specCode": "M5x16",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "HALUS": 8
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x6 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu sein",
+          "specCode": "M5x14",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 97702-50014 Self tapping screw x3 [cek fisik]; 97702-50014 Self tapping screw x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu sein",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97707-50016 Self tapping screw, kepala Truss (tapping) x1 [cek fisik]; 97707-50016 Self tapping screw, kepala Truss (tapping) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Speedometer",
+          "specCode": "M3x14",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 97707-30014 Self tapping screw x6 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Speedometer",
+          "specCode": "M3x16",
+          "quantity": 5,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "HALUS": 5
+          },
+          "notes": "OEM: 97702-30016 Self tapping screw x5 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Speedometer",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 36,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M5x16",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 37,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x6 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu belakang",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 38,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu belakang",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 39,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 90183-06818 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        }
+      ]
+    },
+    {
+      "catalogKey": "BTP2",
+      "brand": "Yamaha",
+      "model": "N-MAX",
+      "variant": "155 GPD155-A (BTP2)",
+      "yearStart": 2025,
+      "yearEnd": null,
+      "displayName": "Yamaha N-MAX 155 GPD155-A (BTP2)",
+      "notes": null,
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 1,
+          "notes": null
+        },
+        {
+          "name": "Cover crankcase 1 (kanan/kiri)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 2,
+          "notes": null
+        },
+        {
+          "name": "Spakbor",
+          "category": "Body",
+          "sortOrder": 3,
+          "notes": null
+        },
+        {
+          "name": "Jok & bagasi",
+          "category": "Jok/Bracket",
+          "sortOrder": 4,
+          "notes": null
+        },
+        {
+          "name": "Kaliper rem belakang",
+          "category": "Rem",
+          "sortOrder": 5,
+          "notes": null
+        },
+        {
+          "name": "Stang, grip & kabel",
+          "category": "Steering/Stang",
+          "sortOrder": 6,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan & tuas",
+          "category": "Rem",
+          "sortOrder": 7,
+          "notes": null
+        },
+        {
+          "name": "Standar & pijakan kaki",
+          "category": "Rangka",
+          "sortOrder": 8,
+          "notes": null
+        },
+        {
+          "name": "Leg shield",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": null
+        },
+        {
+          "name": "Saklar stang & tuas",
+          "category": "Steering/Stang",
+          "sortOrder": 10,
+          "notes": null
+        },
+        {
+          "name": "Cover samping",
+          "category": "Body",
+          "sortOrder": 11,
+          "notes": null
+        },
+        {
+          "name": "Windshield / visor",
+          "category": "Body",
+          "sortOrder": 12,
+          "notes": null
+        },
+        {
+          "name": "Speedometer",
+          "category": "Lampu & Meter",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 14,
+          "notes": null
+        },
+        {
+          "name": "Lampu belakang",
+          "category": "Lampu & Meter",
+          "sortOrder": 15,
+          "notes": null
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Knalpot",
+          "specCode": "MUR-M8",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95702-08500 Mur x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x45",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95D32-10045 Flange (deep recess) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Knalpot",
+          "specCode": "M10x60",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 3,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 95D32-10060 Flange (deep recess) x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Cover crankcase 1 (kanan/kiri)",
+          "specCode": "M6x35",
+          "quantity": 10,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 4,
+          "defaultQtyByZona": {
+            "KASAR": 10
+          },
+          "notes": "OEM: 95E32-06035 Flange (deep recess) x10 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor",
+          "specCode": "M6x20",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 5,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 95022-06020 Flange x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "MUR-M6",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 6,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 95702-06500 Mur x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M6x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 7,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 95E32-06012 Flange (deep recess) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M8x25",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 8,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 95827-08025 Flange x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem belakang",
+          "specCode": "M10x30",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 9,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 95812-10030 Flange x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M5x16",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 10,
+          "defaultQtyByZona": {
+            "KASAR": 1
+          },
+          "notes": "OEM: 92017-05016 Button x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "M5x10",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 11,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 91312-05010 Hex socket (cap) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "M4x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 12,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 98707-04012 Flat x2 [cek fisik]; 98707-04012 Flat x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Master rem depan & tuas",
+          "specCode": "M6x12",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 13,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95D02-06012 Flange (deep recess) x1 [cek fisik]; 95E32-06012 Flange (deep recess) x2 [cek fisik]; 95E32-06012 Flange (deep recess) x1 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "M8x20",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 14,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 95E32-08020 Flange (deep recess) x2 [cek fisik]; 95E32-08020 Flange (deep recess) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M6x25",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 15,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 95D32-06025 Flange (deep recess) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Saklar stang & tuas",
+          "specCode": "M5x25",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 16,
+          "defaultQtyByZona": {
+            "HALUS": 4
+          },
+          "notes": "OEM: 98507-05025 Pan x2 [cek fisik]; 98507-05025 Pan x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Spakbor",
+          "specCode": "M5x16",
+          "quantity": 7,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 17,
+          "defaultQtyByZona": {
+            "HALUS": 7
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Spakbor",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 18,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Spakbor",
+          "specCode": "MUR-PEGAS-M6",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 19,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 90183-06818 Mur pegas (klip) x2 [cek fisik]; 90183-06818 Mur pegas (klip) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "M5x16",
+          "quantity": 9,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 20,
+          "defaultQtyByZona": {
+            "HALUS": 9
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik]; 97707-50016 Self tapping screw, kepala Truss (tapping) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 21,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x1 [cek fisik]; 90183-05807 Mur pegas (klip) x1 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Cover samping",
+          "specCode": "M5x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 22,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97702-50012 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 6,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 23,
+          "defaultQtyByZona": {
+            "HALUS": 6
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x6 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Jok & bagasi",
+          "specCode": "M5x12",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 24,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97707-50012 Self tapping screw, kepala Truss (tapping) x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Stang, grip & kabel",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 4,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 25,
+          "defaultQtyByZona": {
+            "KASAR": 4
+          },
+          "notes": "OEM: 90183-05801 Mur pegas (klip) x2 [cek fisik]; 90183-05801 Mur pegas (klip) x2 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "M5x16",
+          "quantity": 10,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 26,
+          "defaultQtyByZona": {
+            "KASAR": 10
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x3 [cek fisik]; 97702-50016 Self tapping screw x3 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Standar & pijakan kaki",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 12,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 27,
+          "defaultQtyByZona": {
+            "KASAR": 12
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x6 [cek fisik]; 90183-05807 Mur pegas (klip) x6 [cek fisik] · Zona: KASAR · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 11,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 28,
+          "defaultQtyByZona": {
+            "HALUS": 11
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x8 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M5x16",
+          "quantity": 19,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 29,
+          "defaultQtyByZona": {
+            "HALUS": 19
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x3 [cek fisik]; 97707-50016 Self tapping screw, kepala Truss (tapping) x2 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Leg shield",
+          "specCode": "M5x12",
+          "quantity": 1,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 30,
+          "defaultQtyByZona": {
+            "HALUS": 1
+          },
+          "notes": "OEM: 97707-50012 Self tapping screw, kepala Truss (tapping) x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Windshield / visor",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 12,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 31,
+          "defaultQtyByZona": {
+            "HALUS": 12
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x2 [cek fisik]; 90183-05807 Mur pegas (klip) x3 [cek fisik]; 90183-05807 Mur pegas (klip) x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Windshield / visor",
+          "specCode": "M5x16",
+          "quantity": 8,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 32,
+          "defaultQtyByZona": {
+            "HALUS": 8
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik]; 97702-50016 Self tapping screw x4 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik]; 97702-50016 Self tapping screw x1 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Speedometer",
+          "specCode": "M5x16",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 33,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu depan",
+          "specCode": "M5x16",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 34,
+          "defaultQtyByZona": {
+            "HALUS": 2
+          },
+          "notes": "OEM: 97702-50016 Self tapping screw x2 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        },
+        {
+          "position": "Lampu belakang",
+          "specCode": "MUR-PEGAS-M5",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 35,
+          "defaultQtyByZona": {
+            "HALUS": 3
+          },
+          "notes": "OEM: 90183-05807 Mur pegas (klip) x3 [cek fisik] · Zona: HALUS · Rekomendasi Ti: OPSIONAL"
+        }
+      ]
+    },
+    {
+      "catalogKey": "FU150SCD",
+      "brand": "Suzuki",
+      "model": "FU150SCD",
+      "variant": "Belang R",
+      "yearStart": 2009,
+      "yearEnd": null,
+      "displayName": "Suzuki FU150SCD Belang R",
+      "notes": "Sebagian besar ukuran baut belum diukur: titik/posisi tetap dicatat, ukurannya dikosongkan sampai diukur.",
+      "hasSizeData": true,
+      "positions": [
+        {
+          "name": "Speedometer",
+          "category": "Lampu & Meter",
+          "sortOrder": 1,
+          "notes": "12 pcs (Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Lampu depan",
+          "category": "Lampu & Meter",
+          "sortOrder": 2,
+          "notes": "6 pcs (Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Lampu belakang",
+          "category": "Lampu & Meter",
+          "sortOrder": 3,
+          "notes": "10 pcs (Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Knalpot",
+          "category": "Knalpot",
+          "sortOrder": 4,
+          "notes": "10 pcs (Baut, Mur), ukuran belum diukur"
+        },
+        {
+          "name": "Cover rangka",
+          "category": "Body",
+          "sortOrder": 5,
+          "notes": "11 pcs (Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Leg shield / cowling",
+          "category": "Body",
+          "sortOrder": 6,
+          "notes": "9 pcs (Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Rumah lampu depan / windscreen",
+          "category": "Body",
+          "sortOrder": 7,
+          "notes": "18 pcs (Baut, Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Spakbor depan",
+          "category": "Body",
+          "sortOrder": 8,
+          "notes": "4 pcs (Baut, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Spakbor belakang",
+          "category": "Body",
+          "sortOrder": 9,
+          "notes": "12 pcs (Baut, Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Jok",
+          "category": "Jok/Bracket",
+          "sortOrder": 10,
+          "notes": "4 pcs (Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Stang",
+          "category": "Steering/Stang",
+          "sortOrder": 11,
+          "notes": "9 pcs (Baut, Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Tuas stang",
+          "category": "Steering/Stang",
+          "sortOrder": 12,
+          "notes": "7 pcs (Baut, Mur), ukuran belum diukur"
+        },
+        {
+          "name": "Kaliper rem depan",
+          "category": "Rem",
+          "sortOrder": 13,
+          "notes": null
+        },
+        {
+          "name": "Master rem depan",
+          "category": "Rem",
+          "sortOrder": 14,
+          "notes": "7 pcs (Baut, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Master rem belakang",
+          "category": "Rem",
+          "sortOrder": 15,
+          "notes": "6 pcs (Baut, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Standar",
+          "category": "Rangka",
+          "sortOrder": 16,
+          "notes": "2 pcs (Baut, Mur), ukuran belum diukur"
+        },
+        {
+          "name": "Pijakan kaki",
+          "category": "Rangka",
+          "sortOrder": 17,
+          "notes": "13 pcs (Baut, Mur, Sekrup), ukuran belum diukur"
+        },
+        {
+          "name": "Cover mesin (label dari ringkasan fetch, belum terverifikasi)",
+          "category": "Cover Mesin & CVT",
+          "sortOrder": 18,
+          "notes": "21 pcs (Baut), ukuran belum diukur"
+        }
+      ],
+      "requirements": [
+        {
+          "position": "Knalpot",
+          "specCode": "M6x15",
+          "quantity": 3,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 1,
+          "defaultQtyByZona": {
+            "KASAR": 3
+          },
+          "notes": "OEM: 09106B06069N000 Tidak tercetak x3 · Zona: KASAR · Rekomendasi Ti: YA"
+        },
+        {
+          "position": "Kaliper rem depan",
+          "specCode": "M8x33",
+          "quantity": 2,
+          "side": "NONE",
+          "isOptional": false,
+          "sortOrder": 2,
+          "defaultQtyByZona": {
+            "KASAR": 2
+          },
+          "notes": "OEM: 09103-08107-000 Tidak tercetak x2 · Zona: KASAR · Rekomendasi Ti: YA-KRITIS"
+        }
+      ]
+    }
+  ]
+}

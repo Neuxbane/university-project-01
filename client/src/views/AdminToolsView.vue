@@ -429,7 +429,7 @@
           </div>
           <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
             <span class="text-zinc-900 dark:text-zinc-100 font-bold">model, variant</span>
-            <span class="text-zinc-600 dark:text-zinc-400 ml-2">Nama model (misal: NMAX) &amp; varian (155 Connected)</span>
+            <span class="text-zinc-600 dark:text-zinc-400 ml-2">Nama model (misal: Genio) &amp; varian (CBS / CBS-ISS)</span>
           </div>
           <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
             <span class="text-zinc-900 dark:text-zinc-100 font-bold">year_start, year_end</span>
@@ -441,7 +441,7 @@
           </div>
           <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
             <span class="text-zinc-900 dark:text-zinc-100 font-bold">bolt_code, quantity</span>
-            <span class="text-zinc-600 dark:text-zinc-400 ml-2">Kode baut (HEX-M6-25-FL) &amp; jumlah pcs</span>
+            <span class="text-zinc-600 dark:text-zinc-400 ml-2">Kode ukuran baut (M6x25) &amp; jumlah pcs</span>
           </div>
         </div>
       </div>
@@ -1392,8 +1392,8 @@ const uploadCsv = async () => {
 
 const downloadTemplate = () => {
   const csvContent = "brand,model,variant,year_start,year_end,position,bolt_code,quantity,side,is_optional,notes\n" +
-    "Honda,Vario,160 CBS/ABS,2022,2026,Cover Crankcase Kiri / CVT,HEX-M6-25-FL,8,LEFT,false,Bak CVT luar\n" +
-    "Yamaha,NMAX,155 Connected,2020,2024,Kaliper Cakram Depan,HEX-M8-30-FL,2,FRONT,false,Baut bracket kaliper\n";
+    "Honda,Genio,CBS / CBS-ISS,2019,,Cover kipas / shroud (mesin),M6x25,2,NONE,false,OEM 96001-06025-07 Flange\n" +
+    "Yamaha,NMAX,155 GPD155 (BBM1),2020,,Knalpot,M10x45,2,NONE,false,OEM 95D32-10045 Flange (deep recess)\n";
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

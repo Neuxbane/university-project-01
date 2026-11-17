@@ -16,7 +16,7 @@ import HistoryView from '../views/HistoryView.vue';
 
 const routes = [
   { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
-  { path: '/', redirect: '/pick-list' },
+  { path: '/', redirect: '/dashboard' },
   { path: '/pick-list', name: 'pick-list', component: PickListView },
   { path: '/pick-list/:motorId/lokasi', name: 'bolt-location', component: BoltLocationView },
   { path: '/pick-list/:sessionId', name: 'pick-session', component: PickSessionView },
@@ -28,7 +28,7 @@ const routes = [
   { path: '/packages', name: 'packages', component: PackagesView },
   { path: '/admin/import', name: 'admin-tools', component: AdminToolsView, meta: { requiresAdmin: true } },
   { path: '/help/manual', name: 'manual-book', component: ManualBookView },
-  { path: '/:pathMatch(.*)*', redirect: '/pick-list' },
+  { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ];
 
 const router = createRouter({
@@ -42,10 +42,10 @@ router.beforeEach((to, from, next) => {
     return next({ name: 'login' });
   }
   if (to.meta.requiresAdmin && !auth.isAdmin) {
-    return next({ name: 'pick-list' });
+    return next({ name: 'dashboard' });
   }
   if (to.name === 'login' && auth.isAuthenticated) {
-    return next({ name: 'pick-list' });
+    return next({ name: 'dashboard' });
   }
   next();
 });

@@ -215,7 +215,7 @@
                   >
                     <Nut class="w-9 h-9 text-zinc-300 mb-1" aria-hidden="true" />
                     <span class="font-mono font-bold text-sm text-zinc-200">
-                      M{{ Number(item.boltSpec.diameterMm) }} × {{ Number(item.boltSpec.lengthMm) }}
+                      M{{ Number(item.boltSpec.diameterMm) }} × {{ formatLength(item.boltSpec.lengthMm) }}
                     </span>
                   </div>
 
@@ -255,7 +255,7 @@
                       ? 'line-through text-zinc-500 dark:text-zinc-500'
                       : 'text-zinc-900 dark:text-zinc-100'"
                   >
-                    M{{ Number(item.boltSpec.diameterMm) }}×{{ Number(item.boltSpec.lengthMm) }} &bull; {{ item.boltSpec.code }}
+                    M{{ Number(item.boltSpec.diameterMm) }}×{{ formatLength(item.boltSpec.lengthMm) }} &bull; {{ item.boltSpec.code }}
                   </p>
                   <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate leading-tight">
                     {{ item.positionSummary || 'Seluruh motor' }}
@@ -399,6 +399,7 @@
 </template>
 
 <script setup>
+import { formatLength, formatOptional } from '../utils/boltSize';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {
@@ -512,7 +513,7 @@ const openBoltPhoto = (boltSpec) => {
     isOpen: true,
     categoryTitle: 'Foto Spesifikasi Baut Titanium',
     itemTitle: boltSpec.code,
-    itemSubtitle: `${boltSpec.headType || ''} M${Number(boltSpec.diameterMm)} × ${Number(boltSpec.lengthMm)}mm • ${boltSpec.finish || ''}`,
+    itemSubtitle: `${boltSpec.headType || ''} M${Number(boltSpec.diameterMm)} × ${formatLength(boltSpec.lengthMm, 'mm')} • ${formatOptional(boltSpec.finish)}`,
     images: boltSpec.images || [],
   };
 };

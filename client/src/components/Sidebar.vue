@@ -102,17 +102,6 @@
         <!-- Navigation Links -->
         <nav v-if="auth.isAuthenticated" class="space-y-1.5" aria-label="Navigasi Halaman">
           <router-link
-            to="/pick-list"
-            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/pick-list') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
-          >
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-            </svg>
-            <span>Ambil Baut</span>
-          </router-link>
-
-          <router-link
             to="/dashboard"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
             :class="[$route.path === '/dashboard' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
@@ -120,19 +109,10 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
             </svg>
-            <span>Ringkasan</span>
+            <span>Dashboard</span>
           </router-link>
 
-          <router-link
-            to="/history"
-            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/history' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
-          >
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>Riwayat</span>
-          </router-link>
+          <p class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Basis Data Baut</p>
 
           <router-link
             to="/motorcycles"
@@ -158,6 +138,7 @@
           </router-link>
 
           <router-link
+            v-if="auth.isAdmin"
             to="/packages"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
             :class="[$route.path === '/packages' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
@@ -165,8 +146,34 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
             </svg>
-            <span>Paket</span>
+            <span>Komposisi Paket</span>
           </router-link>
+
+          <p class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Operasional</p>
+
+          <router-link
+            to="/pick-list"
+            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
+            :class="[$route.path.startsWith('/pick-list') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+          >
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+            </svg>
+            <span>Ambil Baut</span>
+          </router-link>
+
+          <router-link
+            to="/history"
+            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
+            :class="[$route.path === '/history' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+          >
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Riwayat</span>
+          </router-link>
+
+          <p class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Sistem</p>
 
           <router-link
             v-if="auth.isAdmin"

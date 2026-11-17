@@ -8,7 +8,7 @@
           <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Paket Baut</span>
         </div>
         <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Daftar Paket Baut Titanium
+          Komposisi Paket Baut
         </h1>
         <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
           {{ auth.isAdmin
@@ -528,7 +528,7 @@
                       {{ item.boltSpec?.code }}
                     </p>
                     <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
-                      M{{ Number(item.boltSpec?.diameterMm) }} &times; {{ Number(item.boltSpec?.lengthMm) }} mm
+                      M{{ Number(item.boltSpec?.diameterMm) }} &times; {{ formatLength(item.boltSpec?.lengthMm, ' mm') }}
                       <span v-if="item.emblemNote"> &bull; {{ item.emblemNote }}</span>
                     </p>
                   </div>
@@ -633,6 +633,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../utils/boltSize';
 import { ref, reactive, computed, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {

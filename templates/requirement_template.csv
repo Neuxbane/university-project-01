@@ -1,27 +1,5 @@
 brand,model,variant,year_start,year_end,position,bolt_code,quantity,side,is_optional,notes
-Honda,Vario,160 CBS/ABS,2022,2026,Cover Crankcase Kiri / CVT,HEX-M6-25-FL,8,LEFT,false,Bak CVT luar
-Honda,Vario,160 CBS/ABS,2022,2026,Cover Crankcase Kiri / CVT,HEX-M6-35-FL,3,LEFT,false,Baut panjang CVT tengah
-Honda,Vario,160 CBS/ABS,2022,2026,Cover Radiator & Kipas,HEX-M6-20-FL,3,RIGHT,false,Cover pelindung radiator
-Honda,Vario,160 CBS/ABS,2022,2026,Kaliper Cakram Depan,HEX-M8-30-FL,2,FRONT,false,Baut kaliper depan
-Honda,Vario,160 CBS/ABS,2022,2026,Piringan Cakram Depan,HEX-M8-20-FL,4,FRONT,false,Baut piringan disc depan
-Honda,Vario,160 CBS/ABS,2022,2026,Master Rem & Klem Stang,HEX-M6-20-FL,2,NONE,false,Klem master rem stang
-Honda,Vario,160 CBS/ABS,2022,2026,Cover Knalpot & Silencer,HEX-M6-12-FL,2,RIGHT,false,Pelindung knalpot
-Honda,Vario,160 CBS/ABS,2022,2026,Cover Knalpot & Silencer,HEX-M8-40-FL,2,RIGHT,false,Silencer utama knalpot
-Honda,Vario,160 CBS/ABS,2022,2026,Behel Jok Belakang,HEX-M8-25-FL,4,REAR,false,Pegangan jok belakang
-Yamaha,NMAX,155 Connected,2020,2024,Cover Crankcase Kiri / CVT,HEX-M6-25-FL,6,LEFT,false,Bak CVT
-Yamaha,NMAX,155 Connected,2020,2024,Cover Crankcase Kiri / CVT,HEX-M6-35-FL,4,LEFT,false,CVT panjang
-Yamaha,NMAX,155 Connected,2020,2024,Cover Crankcase Kiri / CVT,HEX-M6-40-FL,2,LEFT,false,CVT tengah
-Yamaha,NMAX,155 Connected,2020,2024,Cover Crankcase Kanan,HEX-M6-25-FL,5,RIGHT,false,Bak magnet
-Yamaha,NMAX,155 Connected,2020,2024,Cover Crankcase Kanan,HEX-M6-30-FL,3,RIGHT,false,Bak kopling
-Yamaha,NMAX,155 Connected,2020,2024,Cover Radiator & Kipas,HEX-M6-20-FL,4,RIGHT,false,Radiator
-Yamaha,NMAX,155 Connected,2020,2024,Kaliper Cakram Depan,HEX-M8-30-FL,2,FRONT,false,Kaliper depan
-Yamaha,NMAX,155 Connected,2020,2024,Kaliper Cakram Belakang,HEX-M8-25-FL,2,REAR,false,Kaliper belakang
-Yamaha,NMAX,155 Connected,2020,2024,Piringan Cakram Depan,HEX-M8-20-FL,3,FRONT,false,Disc rotor depan
-Yamaha,NMAX,155 Connected,2020,2024,Piringan Cakram Belakang,HEX-M8-20-FL,3,REAR,false,Disc rotor belakang
-Yamaha,NMAX,155 Connected,2020,2024,Master Rem & Klem Stang,HEX-M6-20-FL,4,NONE,false,Master rem kiri kanan
-Yamaha,NMAX,155 Connected,2020,2024,Windshield & Visor,BTN-M6-16-DO,4,FRONT,false,Visor depan doff
-Yamaha,NMAX,155 Connected,2020,2024,Behel Jok Belakang,HEX-M8-25-FL,4,REAR,false,Behel belakang
-Yamaha,NMAX,155 Connected,2020,2024,Cover Knalpot & Silencer,HEX-M6-12-FL,3,RIGHT,false,Cover knalpot
-Yamaha,NMAX,155 Connected,2020,2024,Cover Knalpot & Silencer,HEX-M8-35-FL,2,RIGHT,false,Silencer knalpot
-Yamaha,NMAX,155 Connected,2020,2024,Footstep Belakang,HEX-M8-30-FL,4,NONE,false,Footstep penumpang
-
+Honda,Genio,CBS / CBS-ISS,2019,,Cover kipas / shroud (mesin),M6x20,1,NONE,false,OEM 93404-06020-00 Hex + washer
+Honda,Genio,CBS / CBS-ISS,2019,,Cover kipas / shroud (mesin),M6x25,2,NONE,false,OEM 96001-06025-07 Flange
+Yamaha,NMAX,155 GPD155 (BBM1),2020,,Knalpot,MUR-M8,2,NONE,false,OEM 95702-08500 Mur
+Yamaha,NMAX,155 GPD155 (BBM1),2020,,Knalpot,M10x45,2,NONE,false,OEM 95D32-10045 Flange (deep recess)

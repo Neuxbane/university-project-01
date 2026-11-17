@@ -22,7 +22,7 @@
       >
         <Nut class="w-10 h-10 text-zinc-200 mb-1" aria-hidden="true" />
         <span class="font-mono text-xs font-bold text-zinc-100">
-          M{{ Number(bolt.diameterMm) }} &times; {{ Number(bolt.lengthMm) }}
+          M{{ Number(bolt.diameterMm) }} &times; {{ formatLength(bolt.lengthMm) }}
         </span>
       </div>
 
@@ -35,7 +35,7 @@
         class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[11px] font-mono font-bold border backdrop-blur-sm"
         :class="tier.badge"
       >
-        M{{ Number(bolt.diameterMm) }} &times; {{ Number(bolt.lengthMm) }}
+        M{{ Number(bolt.diameterMm) }} &times; {{ formatLength(bolt.lengthMm) }}
       </span>
 
       <!-- Top-Right Close Button (44x44 touch target) -->
@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../../utils/boltSize';
 import { computed } from 'vue';
 import { Check, Nut, X } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';

@@ -337,7 +337,7 @@
       :is-open="Boolean(selectedSpecForGallery)"
       category-title="Foto Spesifikasi Baut Titanium"
       :item-title="selectedSpecForGallery.code"
-      :item-subtitle="`${selectedSpecForGallery.headType} M${Number(selectedSpecForGallery.diameterMm)} × ${Number(selectedSpecForGallery.lengthMm)}mm • ${selectedSpecForGallery.material} (${selectedSpecForGallery.finish})`"
+      :item-subtitle="`${selectedSpecForGallery.headType} M${Number(selectedSpecForGallery.diameterMm)} × ${formatLength(selectedSpecForGallery.lengthMm, 'mm')} • ${formatMaterialFinish(selectedSpecForGallery)}`"
       :images="selectedSpecForGallery.images || []"
       :can-manage="auth.isAdmin"
       :upload-endpoint="`/api/bolt-specs/${selectedSpecForGallery.id}/images`"
@@ -351,6 +351,7 @@
 </template>
 
 <script setup>
+import { formatLength, formatMaterialFinish } from '../utils/boltSize';
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { Check, Nut, Pencil, Plus, Trash2, Wrench } from 'lucide-vue-next';

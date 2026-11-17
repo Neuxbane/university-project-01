@@ -82,28 +82,39 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.ok(data.length >= 20, `Expected at least 20 motorcycles, got ${data.length}`);
   });
 
-  test('4. POST /api/pick-lists/generate produces grouped and consolidated totals for NMAX 155', async () => {
-    // Find NMAX 155
+  test('4. POST /api/pick-lists/generate matches the catalog workbook (Honda Genio)', async () => {
+    // Expected values come from the seed data converted from docs/Hex_Ti_Spesifikasi_Baut.xlsx
+    const katalog = require('../prisma/data/hexti-katalog-baut.json');
+    const source = katalog.motorcycles.find((m) => m.model === 'Genio');
     const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
-    const nmax = motorcycles.find((m) => m.displayName.includes('NMAX 155'));
-    assert.ok(nmax, 'NMAX 155 should be in seeded data');
+    const genio = motorcycles.find((m) => m.displayName === source.displayName);
+    assert.ok(genio, `${source.displayName} should be in seeded data`);
 
     const { status, data } = await apiRequest('/api/pick-lists/generate', {
       method: 'POST',
       token: staffToken,
-      body: { motorcycleTypeId: nmax.id },
+      body: { motorcycleTypeId: genio.id },
     });
 
     assert.equal(status, 200);
-    assert.equal(data.motorcycle.id, nmax.id);
-    assert.ok(data.summary.totalQuantity > 0, 'Total quantity should be greater than 0');
-    assert.ok(data.consolidatedTotals.length > 0, 'Consolidated totals should not be empty');
+    assert.equal(data.motorcycle.id, genio.id);
     assert.ok(data.positionBreakdown.length > 0, 'Position breakdown should not be empty');
 
-    // Check aggregation: HEX-M6-25-FL appears in both CVT (6) and Right Crankcase (5) -> Total should be 11
-    const m6_25 = data.consolidatedTotals.find((item) => item.code === 'HEX-M6-25-FL');
-    assert.ok(m6_25, 'HEX-M6-25-FL should be present in consolidated totals');
-    assert.equal(m6_25.totalQuantity, 11, 'HEX-M6-25-FL should aggregate to 11');
+    // Total pcs must equal the workbook total for this catalog
+    const expectedTotal = source.requirements.reduce((sum, r) => sum + r.quantity, 0);
+    assert.equal(data.summary.totalQuantity, expectedTotal);
+
+    // A spec used in more than one position must be summed across those positions
+    const bySpec = {};
+    for (const r of source.requirements) {
+      bySpec[r.specCode] = bySpec[r.specCode] || { qty: 0, positions: new Set() };
+      bySpec[r.specCode].qty += r.quantity;
+      bySpec[r.specCode].positions.add(r.position);
+    }
+    const [code, expected] = Object.entries(bySpec).find(([, v]) => v.positions.size > 1);
+    const line = data.consolidatedTotals.find((item) => item.code === code);
+    assert.ok(line, `${code} should be present in consolidated totals`);
+    assert.equal(line.totalQuantity, expected.qty, `${code} should aggregate across positions`);
   });
 
   test('5. Role authorization: staff cannot create motorcycle, admin can', async () => {
@@ -378,7 +389,10 @@ describe('Hex Titanium Bolt System API Tests', () => {
 
   test('10. Location map and position annotation CRUD (admin-marked, zero pre-seeded anchors)', async () => {
     const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
-    const nmax = motorcycles.find((m) => m.displayName.includes('NMAX 155'));
+    // Catalog NMAX (BBM1) from docs/Hex_Ti_Spesifikasi_Baut.xlsx has bolt data; legacy rows are empty
+    const katalog = require('../prisma/data/hexti-katalog-baut.json');
+    const bbm1Name = katalog.motorcycles.find((m) => m.catalogKey === 'BBM1').displayName;
+    const nmax = motorcycles.find((m) => m.displayName === bbm1Name);
     assert.ok(nmax);
 
     const mapRes = await apiRequest(`/api/motorcycles/${nmax.id}/location-map`, { token: staffToken });
@@ -560,13 +574,16 @@ describe('Hex Titanium Bolt System API Tests', () => {
 
   test('12. Close-up area photos and multi-bolt pin CRUD', async () => {
     const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
-    const beat = motorcycles.find((m) => m.displayName.includes('Beat Deluxe'));
-    const { data: positions } = await apiRequest('/api/positions', { token: staffToken });
+    // Positions are scoped per motorcycle: use a catalog motorcycle and one of its own positions
+    const katalog = require('../prisma/data/hexti-katalog-baut.json');
+    const genioName = katalog.motorcycles.find((m) => m.model === 'Genio').displayName;
+    const moto = motorcycles.find((m) => m.displayName === genioName);
+    const { data: positions } = await apiRequest(`/api/positions?motorcycleTypeId=${moto.id}`, { token: staffToken });
     const { data: specs } = await apiRequest('/api/bolt-specs', { token: staffToken });
-    assert.ok(beat && positions.length > 0 && specs.length >= 2);
+    assert.ok(moto && positions.length > 0 && specs.length >= 2);
 
     // 1. Staff denied creating close-up photo
-    const staffDenied = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+    const staffDenied = await apiRequest(`/api/motorcycles/${moto.id}/closeups`, {
       method: 'POST',
       token: staffToken,
       body: { boltPositionId: positions[0].id, imageUrl: '/uploads/closeups/cvt-kiri-closeup.svg' },
@@ -574,7 +591,7 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(staffDenied.status, 403);
 
     // 2. Admin creates close-up photo
-    const createdPhoto = await apiRequest(`/api/motorcycles/${beat.id}/closeups`, {
+    const createdPhoto = await apiRequest(`/api/motorcycles/${moto.id}/closeups`, {
       method: 'POST',
       token: adminToken,
       body: {
@@ -601,7 +618,7 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(pin2.status, 201);
 
     // 4. Verify location-map returns closeUpPhotos with pins
-    const mapRes = await apiRequest(`/api/motorcycles/${beat.id}/location-map`, { token: staffToken });
+    const mapRes = await apiRequest(`/api/motorcycles/${moto.id}/location-map`, { token: staffToken });
     assert.equal(mapRes.status, 200);
     const matchingCu = mapRes.data.closeUpPhotos.find((c) => c.id === createdPhoto.data.id);
     assert.ok(matchingCu);
@@ -977,5 +994,29 @@ describe('Hex Titanium Bolt System API Tests', () => {
 
     const afterDelete = await apiRequest(`/api/packages/${pkgId}`, { token: adminToken });
     assert.equal(afterDelete.status, 404);
+  });
+
+  test('19. Dashboard overview aggregates are consistent with the data', async () => {
+    const anonymous = await apiRequest('/api/dashboard/overview');
+    assert.equal(anonymous.status, 401);
+
+    const [{ status, data }, { data: specs }] = await Promise.all([
+      apiRequest('/api/dashboard/overview', { token: staffToken }),
+      apiRequest('/api/bolt-specs', { token: staffToken }),
+    ]);
+    assert.equal(status, 200);
+    const { totals } = data;
+    const sum = (rows, key) => rows.reduce((acc, r) => acc + r[key], 0);
+
+    assert.equal(totals.specs, specs.length);
+    assert.ok(totals.totalPcs > 0);
+    assert.equal(sum(data.pcsByMotorcycle, 'pcs'), totals.totalPcs, 'per-motorcycle pcs add up to the total');
+    assert.equal(sum(data.pcsByCategory, 'pcs'), totals.totalPcs, 'per-area pcs add up to the total');
+    assert.equal(sum(data.specsByDiameter, 'count'), totals.specs);
+    assert.equal(sum(data.specsByBrandCount, 'count'), totals.specsInUse, 'every used size is counted once');
+    const { productPhoto, illustrationOnly, none } = data.imageCoverage;
+    assert.equal(productPhoto + illustrationOnly + none, totals.specs);
+    assert.ok(data.topSpecs.length <= 10);
+    data.topSpecs.slice(1).forEach((s, i) => assert.ok(s.pcs <= data.topSpecs[i].pcs, 'top sizes sorted by pcs'));
   });
 });
