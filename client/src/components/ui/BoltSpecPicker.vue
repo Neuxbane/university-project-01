@@ -28,7 +28,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-              M{{ Number(selectedSpec.diameterMm) }}&times;{{ formatLength(selectedSpec.lengthMm) }}
+              {{ itemLabel(selectedSpec) }}
             </span>
             <span class="text-[11px] font-mono text-zinc-500 ml-1.5 truncate">
               {{ selectedSpec.code }}
@@ -110,7 +110,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <p class="font-mono text-xs font-bold leading-tight">
-              M{{ Number(spec.diameterMm) }}&times;{{ formatLength(spec.lengthMm) }}
+              {{ itemLabel(spec) }}
               <span class="font-normal opacity-75 ml-1">{{ spec.headType }}</span>
             </p>
             <p class="font-mono text-[10px] opacity-75 truncate">{{ spec.code }}</p>
@@ -129,6 +129,11 @@
 import { formatLength } from '../../utils/boltSize';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ChevronDown, Nut, X } from 'lucide-vue-next';
+
+// Master Barang item: bolts/nuts by size, emblems (and other goods) by name
+const itemLabel = (spec) => (spec.itemType && spec.itemType !== 'BAUT'
+  ? spec.name || spec.code
+  : `M${Number(spec.diameterMm)}×${formatLength(spec.lengthMm)}`);
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: '' },
@@ -172,6 +177,7 @@ const filteredSpecs = computed(() => {
   if (q) {
     list = list.filter((s) =>
       s.code?.toLowerCase().includes(q)
+      || s.name?.toLowerCase().includes(q)
       || s.headType?.toLowerCase().includes(q)
       || `m${Number(s.diameterMm)}x${Number(s.lengthMm)}`.includes(q)
       || `m${Number(s.diameterMm)}×${Number(s.lengthMm)}`.includes(q)

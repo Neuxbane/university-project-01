@@ -5,24 +5,78 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <span class="w-2 h-2 rounded-full bg-zinc-500" aria-hidden="true"></span>
-          <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Master Baut</span>
+          <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Basis Data</span>
         </div>
         <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Koleksi Baut Titanium
+          Master Barang
         </h1>
         <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
-          Kenali baut dari foto dan warna ukuran. Ketuk kartu untuk melihat detail dan mengelola foto.
+          Semua barang toko: baut dan mur (satu kartu satu ukuran, dipakai semua merek motor) serta emblem. Ketuk kartu untuk melihat foto{{ auth.can('BOLTS_MANAGE') ? ' atau mengubah ukurannya' : '' }}.
         </p>
       </div>
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <StatPill :icon="Ruler" label="Barang" :value="String(specs.length)" />
+        <button
+          v-if="auth.can('BOLTS_MANAGE')"
+          type="button"
+          @click="toggleAddForm"
+          class="min-h-[44px] px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <X v-if="showAddForm" class="w-4 h-4" aria-hidden="true" />
+          <Plus v-else class="w-4 h-4" aria-hidden="true" />
+          {{ showAddForm ? 'Tutup Form' : 'Tambah Barang' }}
+        </button>
+      </div>
+    </section>
 
-      <SegmentedControl
-        v-model="activeTab"
-        :options="[
-          { value: 'specs', label: 'Baut', count: specs.length },
-          { value: 'positions', label: 'Posisi', count: positions.length },
-        ]"
-        class="shrink-0"
-      />
+    <!-- Tambah Barang (admin): checks the size/name against Master Barang before saving -->
+    <section
+      v-if="auth.can('BOLTS_MANAGE') && showAddForm"
+      aria-labelledby="add-item-title"
+      class="bg-white dark:bg-[#121215] p-5 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm space-y-4"
+    >
+      <div>
+        <h2 id="add-item-title" class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Tambah Barang</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-400">Untuk melengkapi ukuran baut yang belum ada, atau menambah emblem. Sistem mengecek dulu apakah barangnya sudah tersedia.</p>
+      </div>
+      <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Jenis barang">
+        <FilterChip v-for="k in ITEM_KINDS" :key="k.value" :label="k.label" :active="addForm.kind === k.value" @click="addForm.kind = k.value" />
+      </div>
+      <form @submit.prevent="submitAddItem" class="flex flex-wrap items-end gap-3">
+        <template v-if="addForm.kind === 'EMBLEM'">
+          <div class="flex-1 min-w-[220px]">
+            <label for="add-name" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Nama emblem</label>
+            <input id="add-name" v-model="addForm.name" type="text" required placeholder="Misal: Emblem Honda Wing Titanium" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100" />
+          </div>
+          <div class="flex-1 min-w-[220px]">
+            <label for="add-notes" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Catatan (opsional)</label>
+            <input id="add-notes" v-model="addForm.notes" type="text" placeholder="Misal: warna biru, ukuran 6 cm" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100" />
+          </div>
+        </template>
+        <template v-else>
+          <div>
+            <label for="add-diameter" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Diameter Ø (mm)</label>
+            <input id="add-diameter" v-model.number="addForm.diameterMm" type="number" min="1" max="30" step="0.5" required class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100" />
+          </div>
+          <div v-if="addForm.kind === 'BAUT'">
+            <label for="add-length" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Panjang (mm)</label>
+            <input id="add-length" v-model.number="addForm.lengthMm" type="number" min="1" max="300" step="0.5" required class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100" />
+          </div>
+        </template>
+        <button
+          type="submit"
+          :disabled="!addCode || Boolean(existingItem) || isAdding"
+          class="min-h-[44px] px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-default"
+        >
+          {{ isAdding ? 'Menyimpan...' : addCode ? `Simpan ${addCode}` : 'Simpan' }}
+        </button>
+        <p v-if="existingItem" role="status" class="basis-full text-sm text-amber-800 dark:text-amber-300">
+          <strong>{{ existingItem.code }}</strong> sudah ada di Master Barang.
+          <button type="button" @click="openGallery(existingItem)" class="underline font-semibold cursor-pointer">Buka barangnya</button>
+        </p>
+        <p v-else-if="addCode" class="basis-full text-xs text-emerald-700 dark:text-emerald-400">{{ addCode }} belum ada, bisa ditambahkan.</p>
+        <p v-if="addError" role="alert" class="basis-full text-xs font-medium text-rose-700 dark:text-rose-400">{{ addError }}</p>
+      </form>
     </section>
 
     <!-- Error -->
@@ -47,511 +101,248 @@
       <span class="sr-only">Memuat koleksi baut...</span>
     </div>
 
-    <template v-else>
-      <!-- Specs Grid -->
-      <div v-if="activeTab === 'specs'" class="space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="w-full sm:max-w-sm">
-            <SearchInput v-model="specSearch" placeholder="Cari kode, kepala, atau warna..." aria-label="Cari spesifikasi baut" />
-          </div>
-          <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-            {{ filteredSpecs.length }} dari {{ specs.length }} ukuran baut
-          </p>
+    <!-- Specs Grid -->
+    <div v-else class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="w-full sm:max-w-sm">
+          <SearchInput v-model="specSearch" placeholder="Cari ukuran (M6x16) atau nama emblem..." aria-label="Cari barang" />
         </div>
-
-        <EmptyState
-          v-if="filteredSpecs.length === 0"
-          :icon="Nut"
-          title="Baut tidak ditemukan"
-          :description="`Tidak ada baut yang cocok dengan “${specSearch}”.`"
-          action-label="Hapus Pencarian"
-          @action="specSearch = ''"
-        />
-
-        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          <ItemCard
-            v-for="s in filteredSpecs"
-            :key="s.id"
-            :item="{ ...s, quantity: s._count?.requirements || 0 }"
-            quantity-label="titik"
-            @select="openGallery"
-          />
-        </div>
+        <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
+          {{ filteredSpecs.length }} dari {{ specs.length }} barang
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2" aria-label="Jenis barang">
+        <FilterChip v-for="c in typeChips" :key="c.value" :label="c.label" :count="c.count" :active="typeFilter === c.value" @click="typeFilter = c.value" />
       </div>
 
-      <!-- Positions Grid (Dynamic Custom Areas & Inline CRUD) -->
-      <div v-else-if="activeTab === 'positions'" class="space-y-4">
-        <!-- Inline Add Custom Area Form (Admin only) -->
-        <form
-          v-if="auth.isAdmin"
-          @submit.prevent="handleCreatePosition"
-          class="bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 rounded-xl p-4 space-y-3"
-        >
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h2 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Buat Label Area / Titik Pasang Baru</h2>
-              <p class="text-xs text-zinc-600 dark:text-zinc-400">Bebas memberi nama dan kelompok area motor sendiri tanpa daftar kaku.</p>
-            </div>
-          </div>
+      <EmptyState
+        v-if="filteredSpecs.length === 0"
+        :icon="Nut"
+        title="Barang tidak ditemukan"
+        :description="specSearch ? `Tidak ada barang yang cocok dengan “${specSearch}”.` : 'Belum ada barang di jenis ini.'"
+        action-label="Tampilkan semua"
+        @action="specSearch = ''; typeFilter = 'all'"
+      />
 
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
-            <div class="sm:col-span-5">
-              <label for="new-pos-name" class="block text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                Nama Area / Titik Pasang
-              </label>
-              <input
-                id="new-pos-name"
-                v-model="newPosition.name"
-                type="text"
-                required
-                placeholder="Misal: Cover Kipas Bawah / Dudukan Plat"
-                class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-              />
-            </div>
-
-            <div class="sm:col-span-3">
-              <label for="new-pos-cat" class="block text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                Kelompok Area
-              </label>
-              <input
-                id="new-pos-cat"
-                v-model="newPosition.category"
-                type="text"
-                list="position-categories-list"
-                placeholder="Misal: Mesin / Area Kustom"
-                class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-              />
-            </div>
-
-            <div class="sm:col-span-2">
-              <label for="new-pos-notes" class="block text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                Catatan (Opsional)
-              </label>
-              <input
-                id="new-pos-notes"
-                v-model="newPosition.notes"
-                type="text"
-                placeholder="Keterangan singkat"
-                class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-              />
-            </div>
-
-            <div class="sm:col-span-2">
-              <button
-                type="submit"
-                :disabled="isSubmittingPosition || !newPosition.name.trim()"
-                class="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer transition-colors"
-              >
-                <Plus class="w-4 h-4" />
-                {{ isSubmittingPosition ? 'Menyimpan...' : 'Tambah Area' }}
-              </button>
-            </div>
-          </div>
-
-          <datalist id="position-categories-list">
-            <option v-for="cat in availableCategories" :key="cat" :value="cat" />
-          </datalist>
-        </form>
-
-        <!-- Inline status feedback -->
-        <div
-          v-if="positionFeedback"
-          class="p-3 rounded-xl text-xs font-medium flex items-center justify-between gap-2 border"
-          :class="positionFeedbackType === 'error'
-            ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 text-rose-800 dark:text-rose-300'
-            : 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'"
-        >
-          <span>{{ positionFeedback }}</span>
-          <button type="button" @click="positionFeedback = ''" class="min-w-[36px] min-h-[36px] px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer">
-            Tutup
-          </button>
-        </div>
-
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <SearchInput
-            v-model="positionSearch"
-            placeholder="Cari label area atau kelompok..."
-            class="w-full sm:w-80"
-          />
-          <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-            {{ filteredPositions.length }} dari {{ positions.length }} area terdaftar
-          </p>
-        </div>
-
-        <EmptyState
-          v-if="filteredPositions.length === 0"
-          :icon="Wrench"
-          :title="positionSearch ? 'Area tidak ditemukan' : 'Belum ada label area'"
-          :description="positionSearch ? 'Coba kata kunci lain atau hapus pencarian.' : 'Tambahkan label area motor baru menggunakan formulir di atas.'"
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <ItemCard
+          v-for="s in filteredSpecs"
+          :key="s.id"
+          :item="{ ...s, quantity: s.itemType === 'EMBLEM' ? s._count?.packageItems || 0 : s._count?.requirements || 0 }"
+          :quantity-label="s.itemType === 'EMBLEM' ? 'bundling' : 'posisi'"
+          @select="openGallery"
         />
-
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div
-            v-for="p in filteredPositions"
-            :key="p.id"
-            class="bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 rounded-xl p-4 flex flex-col justify-between gap-3"
-          >
-            <!-- Inline Edit Mode -->
-            <form
-              v-if="editingPositionId === p.id"
-              @submit.prevent="saveEditPosition(p.id)"
-              class="space-y-2.5"
-            >
-              <div>
-                <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Nama Area</label>
-                <input
-                  v-model="editForm.name"
-                  type="text"
-                  required
-                  class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-zinc-100"
-                />
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Kelompok</label>
-                  <input
-                    v-model="editForm.category"
-                    type="text"
-                    list="position-categories-list"
-                    class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100"
-                  />
-                </div>
-                <div>
-                  <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Urutan</label>
-                  <input
-                    v-model.number="editForm.sortOrder"
-                    type="number"
-                    class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block text-[10px] font-mono uppercase text-zinc-500 mb-1">Catatan</label>
-                <input
-                  v-model="editForm.notes"
-                  type="text"
-                  placeholder="Catatan area (opsional)"
-                  class="w-full min-h-[44px] px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100"
-                />
-              </div>
-              <div class="flex items-center justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  @click="cancelEditPosition"
-                  class="min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  :disabled="isSubmittingPosition"
-                  class="min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <Check class="w-3.5 h-3.5" />
-                  Simpan
-                </button>
-              </div>
-            </form>
-
-            <!-- Read Mode (Inline — No Modal Popup) -->
-            <template v-else>
-              <div class="space-y-2">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-1 mb-1">
-                      <span class="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                        {{ p.category || 'Area Kustom' }}
-                      </span>
-                      <span
-                        v-if="p.motorcycleType?.displayName"
-                        class="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 truncate max-w-[180px]"
-                      >
-                        {{ p.motorcycleType.displayName }}
-                      </span>
-                    </div>
-                    <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug break-words">
-                      {{ p.name }}
-                    </h3>
-                  </div>
-                  <span class="text-[11px] font-mono text-zinc-500 shrink-0">#{{ p.sortOrder }}</span>
-                </div>
-
-                <p v-if="p.notes" class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  {{ p.notes }}
-                </p>
-              </div>
-
-              <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-                <div class="flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
-                  <span class="px-2 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                    {{ p._count?.requirements || 0 }} matriks
-                  </span>
-                  <span class="px-2 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                    {{ p._count?.annotations || 0 }} titik 2D/3D
-                  </span>
-                  <span class="px-2 py-0.5 rounded bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                    {{ p._count?.closeUpPhotos || 0 }} foto
-                  </span>
-                </div>
-
-                <div v-if="auth.isAdmin" class="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    @click="startEditPosition(p)"
-                    class="min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Pencil class="w-3.5 h-3.5" />
-                    Ubah
-                  </button>
-                  <button
-                    type="button"
-                    @click="requestDeletePosition(p)"
-                    class="min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 inline-flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Trash2 class="w-3.5 h-3.5" />
-                    Hapus
-                  </button>
-                </div>
-              </div>
-            </template>
-          </div>
-        </div>
       </div>
-    </template>
+    </div>
 
-    <!-- Delete Position Confirmation (Popup hanya untuk konfirmasi) -->
-    <ConfirmDialog
-      :open="Boolean(positionToDelete)"
-      title="Hapus Label Area?"
-      :message="positionToDelete ? `Area '${positionToDelete.name}' (${positionToDelete.category}) akan dihapus permanen jika belum dipakai di motor mana pun.` : ''"
-      confirm-text="Ya, Hapus Area"
-      :danger="true"
-      :loading="isSubmittingPosition"
-      @confirm="confirmDeletePosition"
-      @cancel="positionToDelete = null"
-    />
-
-    <!-- Photo Gallery -->
     <PhotoGalleryModal
       v-if="selectedSpecForGallery"
       :is-open="Boolean(selectedSpecForGallery)"
-      category-title="Foto Spesifikasi Baut Titanium"
-      :item-title="selectedSpecForGallery.code"
-      :item-subtitle="`${selectedSpecForGallery.headType} M${Number(selectedSpecForGallery.diameterMm)} × ${formatLength(selectedSpecForGallery.lengthMm, 'mm')} • ${formatMaterialFinish(selectedSpecForGallery)}`"
+      category-title="Foto Barang"
+      :item-title="selectedSpecForGallery.itemType === 'EMBLEM' ? selectedSpecForGallery.name || selectedSpecForGallery.code : selectedSpecForGallery.code"
+      :item-subtitle="selectedSpecForGallery.itemType === 'EMBLEM'
+        ? `Emblem • ${selectedSpecForGallery.notes || selectedSpecForGallery.code}`
+        : `${selectedSpecForGallery.headType} M${Number(selectedSpecForGallery.diameterMm)} × ${formatLength(selectedSpecForGallery.lengthMm, 'mm')} • ${formatMaterialFinish(selectedSpecForGallery)}`"
       :images="selectedSpecForGallery.images || []"
-      :can-manage="auth.isAdmin"
+      :can-manage="auth.can('BOLTS_MANAGE')"
       :upload-endpoint="`/api/bolt-specs/${selectedSpecForGallery.id}/images`"
       :delete-endpoint-base="`/api/bolt-specs/${selectedSpecForGallery.id}/images`"
       :primary-endpoint-base="`/api/bolt-specs/${selectedSpecForGallery.id}/images`"
       :auth-headers="auth.authHeaders"
       @close="selectedSpecForGallery = null"
       @updated="onGalleryUpdated"
-    />
+    >
+      <!-- Admin: edit the size right here; the code and the size illustration follow it -->
+      <template v-if="auth.can('BOLTS_MANAGE') && selectedSpecForGallery.itemType !== 'EMBLEM'" #details>
+        <form
+          @submit.prevent="saveSize"
+          class="p-3 sm:p-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-end gap-3"
+        >
+          <p class="basis-full flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <Ruler class="w-4 h-4" aria-hidden="true" />
+            Ubah ukuran
+          </p>
+          <div>
+            <label for="size-diameter" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Diameter Ø (mm)</label>
+            <input
+              id="size-diameter"
+              v-model.number="sizeForm.diameterMm"
+              type="number"
+              min="1"
+              max="30"
+              step="0.5"
+              required
+              class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
+            />
+          </div>
+          <div v-if="!isNut">
+            <label for="size-length" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Panjang (mm)</label>
+            <input
+              id="size-length"
+              v-model.number="sizeForm.lengthMm"
+              type="number"
+              min="1"
+              max="300"
+              step="0.5"
+              required
+              class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
+            />
+          </div>
+          <p v-else class="text-xs text-zinc-600 dark:text-zinc-400 pb-3">Mur tidak punya panjang.</p>
+          <button
+            type="submit"
+            :disabled="!sizeChanged || isSavingSize"
+            class="min-h-[44px] px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-default"
+          >
+            {{ isSavingSize ? 'Menyimpan...' : sizeChanged ? `Simpan jadi ${previewCode}` : 'Simpan ukuran' }}
+          </button>
+          <p v-if="sizeError" role="alert" class="basis-full text-xs font-medium text-rose-700 dark:text-rose-400">{{ sizeError }}</p>
+          <p v-else class="basis-full text-[11px] text-zinc-500 dark:text-zinc-400">
+            Dipakai di {{ selectedSpecForGallery._count?.requirements || 0 }} posisi motor; kode dan gambar ilustrasi ikut berubah.
+          </p>
+        </form>
+      </template>
+    </PhotoGalleryModal>
   </div>
 </template>
 
 <script setup>
 import { formatLength, formatMaterialFinish } from '../utils/boltSize';
-import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { Check, Nut, Pencil, Plus, Trash2, Wrench } from 'lucide-vue-next';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { Nut, Plus, Ruler, X } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
+import { useToast } from '../composables/useToast';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
-import SegmentedControl from '../components/ui/SegmentedControl.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
+import StatPill from '../components/ui/StatPill.vue';
+import FilterChip from '../components/ui/FilterChip.vue';
 import ItemCard from '../components/ui/ItemCard.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
-import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 
-const route = useRoute();
 const auth = useAuthStore();
-const activeTab = ref(route.query.tab === 'positions' ? 'positions' : 'specs');
+const toast = useToast();
 
-watch(
-  () => route.query.tab,
-  (tab) => {
-    if (tab === 'positions' || tab === 'specs') {
-      activeTab.value = tab;
-    }
-  }
-);
 const specs = ref([]);
-const positions = ref([]);
 const specSearch = ref('');
-const positionSearch = ref('');
 const selectedSpecForGallery = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
 
-// Inline Position CRUD State
-const newPosition = reactive({ name: '', category: '', notes: '' });
-const editingPositionId = ref(null);
-const editForm = reactive({ name: '', category: '', notes: '', sortOrder: 0 });
-const positionToDelete = ref(null);
-const isSubmittingPosition = ref(false);
-const positionFeedback = ref('');
-const positionFeedbackType = ref('success');
+const typeFilter = ref('all');
+const typeChips = computed(() => [
+  { value: 'all', label: 'Semua', count: specs.value.length },
+  { value: 'BAUT', label: 'Baut & mur', count: specs.value.filter((s) => s.itemType !== 'EMBLEM').length },
+  { value: 'EMBLEM', label: 'Emblem', count: specs.value.filter((s) => s.itemType === 'EMBLEM').length },
+]);
 
-const filteredSpecs = computed(() => {
-  if (!specSearch.value.trim()) return specs.value;
-  const q = specSearch.value.toLowerCase();
-  return specs.value.filter((s) =>
-    s.code?.toLowerCase().includes(q) ||
-    s.headType?.toLowerCase().includes(q) ||
-    s.notes?.toLowerCase().includes(q) ||
-    s.finish?.toLowerCase().includes(q) ||
-    s.material?.toLowerCase().includes(q)
-  );
-});
-
-const availableCategories = computed(() => {
-  const set = new Set();
-  for (const p of positions.value) {
-    if (p.category?.trim()) set.add(p.category.trim());
+// Tambah Barang: the code is derived the same way as on the server, so duplicates show up while typing
+const ITEM_KINDS = [
+  { value: 'BAUT', label: 'Baut' },
+  { value: 'MUR', label: 'Mur' },
+  { value: 'MUR_PEGAS', label: 'Mur pegas (klip)' },
+  { value: 'EMBLEM', label: 'Emblem' },
+];
+const showAddForm = ref(false);
+const isAdding = ref(false);
+const addError = ref('');
+const addForm = reactive({ kind: 'BAUT', diameterMm: null, lengthMm: null, name: '', notes: '' });
+const addCode = computed(() => {
+  if (addForm.kind === 'EMBLEM') {
+    const slug = addForm.name.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return slug ? `EMB-${slug}` : '';
   }
-  return Array.from(set).sort((a, b) => a.localeCompare(b, 'id'));
+  const d = Number(addForm.diameterMm);
+  if (!d) return '';
+  if (addForm.kind === 'BAUT') return Number(addForm.lengthMm) ? `M${d}x${Number(addForm.lengthMm)}` : '';
+  return `${addForm.kind === 'MUR_PEGAS' ? 'MUR-PEGAS' : 'MUR'}-M${d}`;
 });
+const existingItem = computed(() => (addCode.value ? specs.value.find((s) => s.code === addCode.value) || null : null));
 
-const filteredPositions = computed(() => {
-  if (!positionSearch.value.trim()) return positions.value;
-  const q = positionSearch.value.trim().toLowerCase();
-  return positions.value.filter((p) =>
-    p.name?.toLowerCase().includes(q) ||
-    p.category?.toLowerCase().includes(q) ||
-    p.notes?.toLowerCase().includes(q)
-  );
-});
-
-const setFeedback = (msg, type = 'success') => {
-  positionFeedback.value = msg;
-  positionFeedbackType.value = type;
+const toggleAddForm = () => {
+  showAddForm.value = !showAddForm.value;
+  addError.value = '';
 };
 
-const refreshPositions = async () => {
-  const res = await auth.apiFetch('/api/positions');
-  if (res.ok) {
-    const data = await res.json();
-    positions.value = Array.isArray(data) ? data : [];
-  }
-};
+const sortSpecs = () => specs.value.sort((a, b) =>
+  Number(a.itemType === 'EMBLEM') - Number(b.itemType === 'EMBLEM')
+  || Number(a.diameterMm) - Number(b.diameterMm)
+  || Number(a.lengthMm) - Number(b.lengthMm)
+  || String(a.code).localeCompare(String(b.code)));
 
-const handleCreatePosition = async () => {
-  const name = newPosition.name.trim();
-  if (!name) return;
-  isSubmittingPosition.value = true;
-  positionFeedback.value = '';
+const submitAddItem = async () => {
+  if (!addCode.value || existingItem.value) return;
+  isAdding.value = true;
+  addError.value = '';
   try {
-    const res = await auth.apiFetch('/api/positions', {
+    const res = await auth.apiFetch('/api/bolt-specs/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        category: newPosition.category.trim() || 'Area Kustom',
-        notes: newPosition.notes.trim() || null,
-      }),
+      body: JSON.stringify({ itemType: addForm.kind, diameterMm: addForm.diameterMm, lengthMm: addForm.lengthMm, name: addForm.name, notes: addForm.notes }),
     });
     const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Gagal menambahkan area baru.');
+    if (res.status === 409) {
+      addError.value = data.error;
+      const existing = specs.value.find((s) => s.id === data.existingId);
+      if (existing) openGallery(existing);
+      return;
     }
-    newPosition.name = '';
-    newPosition.category = '';
-    newPosition.notes = '';
-    await refreshPositions();
-    setFeedback(`Area "${data.name}" berhasil ditambahkan.`, 'success');
+    if (!res.ok) throw new Error(data.error || 'Gagal menambah barang.');
+    specs.value.push(data);
+    sortSpecs();
+    toast.success(`${data.code} ditambahkan ke Master Barang`);
+    Object.assign(addForm, { diameterMm: null, lengthMm: null, name: '', notes: '' });
+    openGallery(specs.value.find((s) => s.id === data.id));
   } catch (err) {
-    setFeedback(err.message, 'error');
+    addError.value = err.message;
   } finally {
-    isSubmittingPosition.value = false;
+    isAdding.value = false;
   }
 };
 
-const startEditPosition = (pos) => {
-  editingPositionId.value = pos.id;
-  editForm.name = pos.name || '';
-  editForm.category = pos.category || '';
-  editForm.notes = pos.notes || '';
-  editForm.sortOrder = pos.sortOrder ?? 0;
-  positionFeedback.value = '';
-};
+const sizeForm = reactive({ diameterMm: null, lengthMm: null });
+const isSavingSize = ref(false);
+const sizeError = ref('');
 
-const cancelEditPosition = () => {
-  editingPositionId.value = null;
-};
+const filteredSpecs = computed(() => {
+  // "M6x16", "m6 x 16" and "6x16" all find the same size
+  const q = specSearch.value.trim().toLowerCase().replace(/\s+/g, '').replace('×', 'x');
+  const byType = typeFilter.value === 'all'
+    ? specs.value
+    : specs.value.filter((s) => (typeFilter.value === 'EMBLEM' ? s.itemType === 'EMBLEM' : s.itemType !== 'EMBLEM'));
+  if (!q) return byType;
+  return byType.filter((s) =>
+    s.code?.toLowerCase().includes(q) ||
+    s.name?.toLowerCase().replace(/\s+/g, '').includes(q) ||
+    s.headType?.toLowerCase().includes(q) ||
+    s.notes?.toLowerCase().includes(q) ||
+    s.finish?.toLowerCase().includes(q)
+  );
+});
 
-const saveEditPosition = async (posId) => {
-  if (!editForm.name.trim()) return;
-  isSubmittingPosition.value = true;
-  positionFeedback.value = '';
-  try {
-    const res = await auth.apiFetch(`/api/positions/${posId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: editForm.name.trim(),
-        category: editForm.category.trim() || 'Area Kustom',
-        notes: editForm.notes.trim() || null,
-        sortOrder: Number.isFinite(Number(editForm.sortOrder)) ? Number(editForm.sortOrder) : 0,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Gagal memperbarui area.');
-    }
-    editingPositionId.value = null;
-    await refreshPositions();
-    setFeedback(`Area "${data.name}" berhasil diperbarui.`, 'success');
-  } catch (err) {
-    setFeedback(err.message, 'error');
-  } finally {
-    isSubmittingPosition.value = false;
-  }
-};
-
-const requestDeletePosition = (pos) => {
-  positionFeedback.value = '';
-  positionToDelete.value = pos;
-};
-
-const confirmDeletePosition = async () => {
-  if (!positionToDelete.value) return;
-  const target = positionToDelete.value;
-  isSubmittingPosition.value = true;
-  try {
-    const res = await auth.apiFetch(`/api/positions/${target.id}`, {
-      method: 'DELETE',
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Gagal menghapus area.');
-    }
-    positionToDelete.value = null;
-    await refreshPositions();
-    setFeedback(`Area "${target.name}" berhasil dihapus.`, 'success');
-  } catch (err) {
-    positionToDelete.value = null;
-    setFeedback(err.message, 'error');
-  } finally {
-    isSubmittingPosition.value = false;
-  }
-};
+const isNut = computed(() => Number(selectedSpecForGallery.value?.lengthMm) <= 0);
+const sizeChanged = computed(() => {
+  const spec = selectedSpecForGallery.value;
+  if (!spec) return false;
+  return Number(sizeForm.diameterMm) !== Number(spec.diameterMm)
+    || (!isNut.value && Number(sizeForm.lengthMm) !== Number(spec.lengthMm));
+});
+// mirrors sizeCode() on the server (M6x16, MUR-M8, MUR-PEGAS-M5)
+const previewCode = computed(() => {
+  const spec = selectedSpecForGallery.value;
+  if (!spec) return '';
+  if (!isNut.value) return `M${Number(sizeForm.diameterMm)}x${Number(sizeForm.lengthMm)}`;
+  return `${String(spec.headType).toLowerCase().includes('pegas') ? 'MUR-PEGAS' : 'MUR'}-M${Number(sizeForm.diameterMm)}`;
+});
 
 const loadData = async () => {
   errorMsg.value = '';
   isLoading.value = true;
   try {
-    const [resSpecs, resPos] = await Promise.all([
-      auth.apiFetch('/api/bolt-specs'),
-      auth.apiFetch('/api/positions'),
-    ]);
-    if (!resSpecs.ok || !resPos.ok) {
-      throw new Error('Gagal memuat daftar spesifikasi baut.');
-    }
-    const specsData = await resSpecs.json();
-    const posData = await resPos.json();
-    specs.value = Array.isArray(specsData) ? specsData : [];
-    positions.value = Array.isArray(posData) ? posData : [];
+    const res = await auth.apiFetch('/api/bolt-specs');
+    if (!res.ok) throw new Error('Gagal memuat Master Barang.');
+    const data = await res.json();
+    specs.value = Array.isArray(data) ? data : [];
   } catch (err) {
     console.error(err);
     errorMsg.value = err.message === 'Failed to fetch'
@@ -563,16 +354,39 @@ const loadData = async () => {
 };
 
 const openGallery = (spec) => {
-  selectedSpecForGallery.value = spec;
+  selectedSpecForGallery.value = specs.value.find((s) => s.id === spec.id) || spec;
+  sizeForm.diameterMm = Number(spec.diameterMm);
+  sizeForm.lengthMm = Number(spec.lengthMm);
+  sizeError.value = '';
 };
 
 const onGalleryUpdated = (updatedImages) => {
   if (selectedSpecForGallery.value) {
     selectedSpecForGallery.value.images = updatedImages;
-    const target = specs.value.find((s) => s.id === selectedSpecForGallery.value.id);
-    if (target) {
-      target.images = updatedImages;
-    }
+  }
+};
+
+const saveSize = async () => {
+  const spec = selectedSpecForGallery.value;
+  if (!spec || !sizeChanged.value) return;
+  isSavingSize.value = true;
+  sizeError.value = '';
+  try {
+    const res = await auth.apiFetch(`/api/bolt-specs/${spec.id}/size`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ diameterMm: sizeForm.diameterMm, lengthMm: sizeForm.lengthMm }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal mengubah ukuran baut.');
+    const oldCode = spec.code;
+    Object.assign(spec, data);
+    sortSpecs();
+    toast.success(oldCode === data.code ? `Ukuran ${data.code} disimpan` : `${oldCode} diubah menjadi ${data.code}`);
+  } catch (err) {
+    sizeError.value = err.message;
+  } finally {
+    isSavingSize.value = false;
   }
 };
 

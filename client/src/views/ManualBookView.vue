@@ -24,7 +24,7 @@
           <span aria-hidden="true">&bull;</span> <span>1. Alur Layanan Gerai</span>
         </a>
         <a href="#sop-picklist" class="min-h-[44px] px-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-zinc-800 flex items-center gap-2 transition-colors">
-          <span aria-hidden="true">&bull;</span> <span>2. Daftar Ambil Baut</span>
+          <span aria-hidden="true">&bull;</span> <span>2. Daftar Paket Full Bike</span>
         </a>
         <a href="#sop-checklist" class="min-h-[44px] px-2.5 rounded-xl text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-zinc-800 flex items-center gap-2 transition-colors">
           <span aria-hidden="true">&bull;</span> <span>3. Prosedur Checklist</span>
@@ -53,9 +53,12 @@
       <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-800 dark:text-zinc-200 font-medium">
         <li><strong>Sapa Pelanggan:</strong> Tanyakan tipe motor, tahun pembuatan, dan kebutuhan variasi (satuan, paket mesin, pengereman, atau lengkap satu motor).</li>
         <li><strong>Lihat Dashboard:</strong> Halaman pertama setelah login. Berisi diagram gambaran isi sistem: jumlah baut per motor, per area, ukuran yang paling banyak dipakai, dan kelengkapan gambar baut.</li>
-        <li><strong>Buka Sistem di Komputer / Ponsel:</strong> Akses menu <em>Ambil Baut</em> pada browser kasir atau ponsel staf via Wi-Fi gerai.</li>
+        <li><strong>Buka Sistem di Komputer / Ponsel:</strong> Akses menu <em>Paket Full Bike</em> pada browser kasir atau ponsel staf via Wi-Fi gerai.</li>
         <li><strong>Pilih Tipe Motor:</strong> Pilih motor dari daftar. Data baut sudah tersedia untuk Honda Genio, Scoopy eSP, Vario 125 eSP, PCX 150 (CBS &amp; ABS) dan Yamaha NMAX 155 (BC11, BBM1, BTP2); motor lain masih menunggu pengukuran.</li>
-        <li><strong>Pilih Paket (opsional):</strong> Di halaman Ambil Baut, buka tab <em>Paket</em> untuk memilih paket (misalnya Body Halus atau Mekanis Kasar); daftar baut langsung menyesuaikan isi paket. Isi paket diatur admin di menu <em>Komposisi Paket</em>.</li>
+        <li><strong>Pilih Bundling (opsional):</strong> Di halaman Paket Full Bike, buka tab <em>Bundling</em> untuk memilih bundling motor itu (misalnya Bodi Halus atau Bodi Kasar); daftar baut langsung menyesuaikan isinya.</li>
+        <li><strong>Bundling &amp; checklist pembeli:</strong> Menu <em>Bundling</em> berisi paket jualan dari Master Barang (baut, mur, emblem) lengkap dengan bonus dan harga. <em>Lihat isi</em> menampilkan barangnya. Saat pembeli mengambil bundling, tekan <em>Mulai Checklist</em>: muncul pop-up untuk membuat riwayat checklist (isi nama pembeli atau no. nota), lalu halaman checklist di menu <em>Riwayat</em> terbuka. Centang setiap barang yang sudah diterima atau dipasang. Kalau baru sebagian (misalnya Paket Full Bike dipasang bertahap), sisanya tetap tersimpan di Riwayat dan bisa dilanjutkan kapan saja.</li>
+        <li><strong>Barang belum ada:</strong> Admin (atau peran yang diberi akses <em>Kelola Master Barang</em>) menekan <em>Tambah Barang</em> di <em>Master Barang</em>. Bila ukuran atau nama sudah ada, sistem menolak dan menunjukkan barang yang sudah tersedia.</li>
+        <li><strong>Panduan Pasang:</strong> Setelah baut diambil, buka tab <em>Panduan Pasang</em> di halaman motornya pada menu <em>Paket Full Bike</em> (atau tombol <em>Lanjut ke Panduan Pasang</em> di checklist). Posisi yang sedang dipasang disorot di model 3D. Sistem memandu posisi demi posisi: ukuran, jumlah, serta tanda <strong>KRITIS</strong> (pakai titanium Gr5 bersertifikat dan torsi OEM) atau <strong>CEK FISIK</strong> (ukur baut asli dulu). Tekan <em>Selesai, lanjut</em> setiap satu posisi terpasang. Admin dapat menekan <em>Atur Posisi</em> di tab itu untuk mengubah urutan langkah, nama posisi, dan catatan pemasangan (misal kunci dan torsi).</li>
         <li><strong>Tampilkan Daftar Baut:</strong> Sistem langsung menampilkan jumlah dan kode ukuran baut tanpa perlu mengukur fisik motor.</li>
         <li><strong>Catat Transaksi:</strong> Catat pembayaran di aplikasi kasir <em>Kelola</em> (sistem ini khusus untuk spesifikasi dan penyiapan baut).</li>
       </ol>
@@ -64,16 +67,16 @@
     <!-- Section 2 -->
     <section id="sop-picklist" class="scroll-mt-20 bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-5 sm:p-6 shadow-sm transition-colors space-y-3">
       <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
-        2. Penggunaan Fitur Daftar Ambil Baut
+        2. Penggunaan Fitur Daftar Paket Full Bike
       </h2>
       <div class="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
         <p>Sistem menyediakan dua tampilan pengelompokan yang saling melengkapi:</p>
         <ul class="list-disc list-inside space-y-1.5 pl-2 text-zinc-800 dark:text-zinc-200">
           <li>
-            <strong>Ringkasan Rak:</strong> Menghitung total baut per ukuran di seluruh titik motor. Contoh: Jika baut M6×25 digunakan 6 pcs di CVT dan 5 pcs di bak mesin kanan, sistem langsung menampilkan total 11 pcs agar staf cukup mengambilnya 1 kali dari rak penyimpanan.
+            <strong>Ringkasan Rak:</strong> Menghitung total baut per ukuran di seluruh posisi motor. Contoh: Jika baut M6×25 digunakan 6 pcs di CVT dan 5 pcs di bak mesin kanan, sistem langsung menampilkan total 11 pcs agar staf cukup mengambilnya 1 kali dari rak penyimpanan.
           </li>
           <li>
-            <strong>Titik Pasang:</strong> Memberikan panduan posisi (Kiri, Kanan, Depan, Belakang) untuk teknisi saat memasang baut ke motor pelanggan.
+            <strong>Posisi Pasang:</strong> Memberikan panduan posisi (Kiri, Kanan, Depan, Belakang) untuk teknisi saat memasang baut ke motor pelanggan.
           </li>
         </ul>
       </div>
@@ -87,7 +90,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm pt-1">
         <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
           <p class="font-bold text-zinc-900 dark:text-zinc-100 mb-1">1. Buka Sesi</p>
-          <p class="text-zinc-600 dark:text-zinc-400 text-xs">Ketuk "Mulai Checklist" pada halaman Ambil Baut.</p>
+          <p class="text-zinc-600 dark:text-zinc-400 text-xs">Ketuk "Mulai Checklist" pada halaman motor di Paket Full Bike, isi nama pembeli di pop-up, lalu tekan "Buat Riwayat &amp; Mulai Checklist". Catatannya tersimpan di Riwayat; centang setiap barang yang sudah diambil atau dipasang, dan lanjutkan kapan saja bila baru sebagian.</p>
         </div>
         <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
           <p class="font-bold text-zinc-900 dark:text-zinc-100 mb-1">2. Ambil &amp; Centang</p>
@@ -110,9 +113,11 @@
         <ol class="list-decimal list-inside space-y-1 text-xs">
           <li>Ukur baut bagian yang diminta menggunakan jangka sorong.</li>
           <li>Catat ukuran (Diameter × Panjang, tipe kepala, jumlah, dan posisi).</li>
-          <li>Admin memasukkan data tersebut ke menu <em>Tipe Motor &rarr; Matriks Baut</em>.</li>
+          <li>Admin memasukkan data tersebut ke menu <em>Paket Full Bike &rarr; pilih motor &rarr; Kelola Data &rarr; Matriks Baut</em>.</li>
           <li>Data tersimpan permanen sehingga pelanggan berikutnya tidak perlu diukur manual lagi.</li>
         </ol>
+        <p class="font-bold text-zinc-900 dark:text-zinc-100 pt-2">Ukuran bertanda CEK FISIK:</p>
+        <p class="text-xs">Buka menu <em>Verifikasi Full Bike</em> (admin atau peran yang diberi aksesnya). Ukur baut asli di motornya; bila ukuran sama, tekan <em>Ukuran benar</em>. Bila berbeda, tekan <em>Ubah di Kelola Data</em> lalu ganti ukurannya di matriks baut. Menu <em>Waktu Layanan</em> mencatat lama persiapan baut tiap sesi checklist untuk dibandingkan dengan baseline cara lama.</p>
       </div>
     </section>
 
@@ -128,6 +133,7 @@
         <li><strong>Rutin Setiap Sore:</strong> Masuk sebagai Admin &rarr; menu <em>Kelola Sistem &rarr; Cadangan &amp; Pulihkan</em> &rarr; ketuk <strong>Unduh Berkas Cadangan (.json)</strong>.</li>
         <li><strong>Simpan ke Flashdisk USB:</strong> Salin file cadangan ke flashdisk gerai Hex Titanium.</li>
         <li><strong>Pemulihan:</strong> Buka menu Pulihkan Data, pilih file cadangan, ketik <code>RESTORE_HEXTITANIUM</code>, lalu konfirmasi.</li>
+        <li><strong>Fitur per peran:</strong> Super admin membuka <em>Kelola Sistem &rarr; Pengguna &amp; Akses &rarr; Fitur per Peran</em>, lalu mencentang menu dan tombol yang tampil untuk tiap peran (misal Staf Gerai, Teknisi, atau peran baru). Contoh: buka <em>Kelola Data Paket Full Bike</em> untuk montir senior agar ia bisa mengubah data motor. Perubahan langsung tersimpan dan berlaku saat pengguna membuka halaman berikutnya.</li>
       </ul>
     </section>
 

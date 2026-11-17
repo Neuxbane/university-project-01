@@ -42,6 +42,9 @@
         {{ tier.label }}
       </span>
 
+      <!-- Top-right safety flags (pick list only) -->
+      <BoltFlags class="absolute top-2 right-2 justify-end" :critical="Boolean(item.isCritical)" :check="Boolean(item.needsCheck)" />
+
       <!-- Bottom-right Dominant Quantity Badge -->
       <div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-xl bg-zinc-950/90 border border-white/20 text-white backdrop-blur-sm flex items-baseline gap-1 shadow-md">
         <span class="text-2xl font-mono font-bold leading-none">{{ quantity }}</span>
@@ -68,6 +71,7 @@ import { formatLength } from '../../utils/boltSize';
 import { computed } from 'vue';
 import { Nut } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';
+import BoltFlags from './BoltFlags.vue';
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -85,6 +89,18 @@ const headType = computed(() => spec.value.headType || props.item.headType || ''
 const quantity = computed(() => props.item.totalQuantity ?? props.item.quantity ?? 0);
 const primaryImage = computed(() => props.item.images?.[0]?.url || spec.value.images?.[0]?.url || null);
 const positionLabel = computed(() => props.item.positionsSummary || props.item.positionName || 'Semua posisi');
-const dimensionText = computed(() => `M${diameter.value} × ${formatLength(length.value)}`);
-const tier = computed(() => getDiameterTier(diameter.value));
+// Master Barang also holds non-bolt goods (emblem): named instead of sized, with their own colour
+const isEmblem = computed(() => (spec.value.itemType || props.item.itemType) === 'EMBLEM');
+const dimensionText = computed(() => (isEmblem.value
+  ? spec.value.name || props.item.name || code.value
+  : `M${diameter.value} × ${formatLength(length.value)}`));
+const EMBLEM_TIER = {
+  key: 'EMBLEM',
+  label: 'Emblem',
+  band: 'bg-emerald-600 dark:bg-emerald-500',
+  badge: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
+  cardTint: 'from-emerald-500/10 to-transparent',
+  ring: 'ring-emerald-500',
+};
+const tier = computed(() => (isEmblem.value ? EMBLEM_TIER : getDiameterTier(diameter.value)));
 </script>

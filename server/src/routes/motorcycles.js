@@ -1,8 +1,9 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { UPLOADS_DIR, uploadPath } = require('../utils/uploadPaths');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { createUploader, createModelUploader } = require('../middleware/upload');
 const { buildPickListData } = require('../utils/pickListAggregator');
@@ -12,7 +13,7 @@ const upload = createUploader('motorcycles');
 const uploadModel = createModelUploader();
 
 // GET /api/motorcycles
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE', 'PACKAGES_MANAGE'), async (req, res) => {
   try {
     const { q, brand, status } = req.query;
 
@@ -59,13 +60,12 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // GET /api/motorcycles/:id/location-map
-router.get('/:id/location-map', requireAuth, async (req, res) => {
+router.get('/:id/location-map', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE', 'MENU_RIWAYAT'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const packageId = req.query.packageId ? parseInt(req.query.packageId, 10) : undefined;
 
     const isManager = req.user?.role === 'ADMIN'
-      || req.user?.roleRel?.name === 'ADMIN'
       || (req.user?.permissionCodes || []).includes('*')
       || (req.user?.permissionCodes || []).includes('MOTORCYCLES_MANAGE');
 
@@ -205,7 +205,7 @@ async function unlinkModelFileIfUnused(modelUrl) {
   if (!modelUrl || !modelUrl.startsWith('/uploads/models/')) return;
   const refs = await prisma.motorcycleModel.count({ where: { modelUrl } });
   if (refs === 0) {
-    safeUnlinkFile(path.join(__dirname, '../..', modelUrl));
+    safeUnlinkFile(uploadPath(modelUrl));
   }
 }
 
@@ -297,7 +297,7 @@ function validateUploadedModelFile(file) {
 }
 
 // POST /api/motorcycles/:id/model (Admin only, multipart .glb/.gltf/.off OR JSON { offText })
-router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
+router.post('/:id/model', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), (req, res, next) => {
   uploadModel.single('model')(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err.message || 'Gagal mengunggah model 3D.' });
@@ -326,7 +326,7 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
       if (!check.valid) {
         return res.status(400).json({ error: check.error });
       }
-      const modelsDir = path.join(__dirname, '../../uploads/models');
+      const modelsDir = path.join(UPLOADS_DIR, 'models');
       fs.mkdirSync(modelsDir, { recursive: true });
       const filename = `${Date.now()}_pasted_motor_${motorcycleTypeId}.off`;
       savedPastedPath = path.join(modelsDir, filename);
@@ -377,7 +377,7 @@ router.post('/:id/model', requireAuth, requireAdmin, (req, res, next) => {
 });
 
 // PATCH /api/motorcycles/:id/model (Admin only, adjust scale / rotationY)
-router.patch('/:id/model', requireAuth, requireAdmin, async (req, res) => {
+router.patch('/:id/model', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     if (Number.isNaN(motorcycleTypeId)) {
@@ -429,7 +429,7 @@ router.patch('/:id/model', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/motorcycles/:id/model (Admin only, remove active 3D model(s) & revert to 2D)
-router.delete('/:id/model', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id/model', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     if (Number.isNaN(motorcycleTypeId)) {
@@ -475,7 +475,7 @@ router.delete('/:id/model', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // GET /api/motorcycles/:id
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE', 'MENU_RIWAYAT', 'PACKAGES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const motorcycle = await prisma.motorcycleType.findUnique({
@@ -533,7 +533,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/motorcycles (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const { brand, model, variant, yearStart, yearEnd, notes } = req.body;
     if (!brand || !model || !variant || !yearStart) {
@@ -590,14 +590,31 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/motorcycles/:id (Admin only)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { brand, model, variant, yearStart, yearEnd, notes, isActive } = req.body;
+    if (![brand, model, variant].every((v) => String(v || '').trim())) {
+      return res.status(400).json({ error: 'Merek, model, dan varian wajib diisi.' });
+    }
 
     const yStart = parseInt(yearStart, 10);
     const yEnd = yearEnd ? parseInt(yearEnd, 10) : null;
-    const displayName = `${brand.trim()} ${model.trim()} ${variant.trim()} (${yStart}${yEnd ? `-${yEnd}` : ''})`;
+    if (!Number.isInteger(yStart) || yStart < 1980 || yStart > 2100 || (yEnd !== null && (!Number.isInteger(yEnd) || yEnd < yStart))) {
+      return res.status(400).json({ error: 'Tahun tidak valid (tahun akhir tidak boleh sebelum tahun mulai).' });
+    }
+    // Edit Profil Paket may set its own display name; otherwise it is built from the fields
+    const displayName = String(req.body.displayName || '').trim()
+      || `${String(brand).trim()} ${String(model).trim()} ${String(variant).trim()} (${yStart}${yEnd ? `-${yEnd}` : ''})`;
+
+    // the unique index treats an empty yearEnd as always different, so check like create does
+    const duplicate = await prisma.motorcycleType.findFirst({
+      where: { id: { not: id }, brand: String(brand).trim(), model: String(model).trim(), variant: String(variant).trim(), yearStart: yStart, yearEnd: yEnd },
+      select: { id: true },
+    });
+    if (duplicate) {
+      return res.status(409).json({ error: 'Sudah ada motor dengan merek, model, varian, dan tahun yang sama.' });
+    }
 
     const updated = await prisma.motorcycleType.update({
       where: { id },
@@ -628,13 +645,16 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 
     res.json(updated);
   } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Sudah ada motor dengan merek, model, varian, dan tahun yang sama.' });
+    }
     console.error('Error updating motorcycle:', error);
     res.status(500).json({ error: 'Gagal memperbarui data motor.' });
   }
 });
 
 // PATCH /api/motorcycles/:id/deactivate (Admin only)
-router.patch('/:id/deactivate', requireAuth, requireAdmin, async (req, res) => {
+router.patch('/:id/deactivate', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const motorcycle = await prisma.motorcycleType.findUnique({ where: { id } });
@@ -664,7 +684,7 @@ router.patch('/:id/deactivate', requireAuth, requireAdmin, async (req, res) => {
 
 // POST /api/motorcycles/:id/images (Admin only)
 // Supports multi-file upload via multipart/form-data or JSON with { url, caption, isPrimary }
-router.post('/:id/images', requireAuth, requireAdmin, (req, res, next) => {
+router.post('/:id/images', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), (req, res, next) => {
   upload.array('images', 10)(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err.message || 'Gagal mengunggah foto.' });
@@ -689,10 +709,14 @@ router.post('/:id/images', requireAuth, requireAdmin, (req, res, next) => {
     // 1. If files were uploaded via multipart/form-data
     if (req.files && req.files.length > 0) {
       const caption = req.body.caption || null;
+      // Uploading from Kelola Data means "change the motor's picture": the first new file becomes the main photo
+      if (hasExistingImages) {
+        await prisma.motorcycleImage.updateMany({ where: { motorcycleTypeId }, data: { isPrimary: false } });
+      }
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
         const url = `/uploads/motorcycles/${file.filename}`;
-        const isPrimary = !hasExistingImages && i === 0;
+        const isPrimary = i === 0;
 
         const img = await prisma.motorcycleImage.create({
           data: {
@@ -750,7 +774,7 @@ router.post('/:id/images', requireAuth, requireAdmin, (req, res, next) => {
 });
 
 // DELETE /api/motorcycles/:id/images/:imageId (Admin only)
-router.delete('/:id/images/:imageId', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id/images/:imageId', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const imageId = parseInt(req.params.imageId, 10);
@@ -767,7 +791,7 @@ router.delete('/:id/images/:imageId', requireAuth, requireAdmin, async (req, res
 
     // If local file in uploads, unlink it
     if (image.url.startsWith('/uploads/')) {
-      const localFilePath = path.join(__dirname, '../..', image.url);
+      const localFilePath = uploadPath(image.url);
       if (fs.existsSync(localFilePath)) {
         try {
           fs.unlinkSync(localFilePath);
@@ -812,7 +836,7 @@ router.delete('/:id/images/:imageId', requireAuth, requireAdmin, async (req, res
 });
 
 // PATCH /api/motorcycles/:id/images/:imageId/primary (Admin only)
-router.patch('/:id/images/:imageId/primary', requireAuth, requireAdmin, async (req, res) => {
+router.patch('/:id/images/:imageId/primary', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const imageId = parseInt(req.params.imageId, 10);
@@ -843,7 +867,7 @@ router.patch('/:id/images/:imageId/primary', requireAuth, requireAdmin, async (r
 // DELETE /api/motorcycles/:id/positions/:positionId (Admin only)
 // Removes all requirements, annotations, and close-up photos for this area on this motorcycle,
 // and deletes the BoltPosition row too if it is owned by this motorcycle or now completely unused.
-router.delete('/:id/positions/:positionId', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id/positions/:positionId', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const boltPositionId = parseInt(req.params.positionId, 10);

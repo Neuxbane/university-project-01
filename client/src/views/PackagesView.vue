@@ -5,54 +5,45 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <span class="w-2 h-2 rounded-full bg-zinc-500" aria-hidden="true"></span>
-          <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Paket Baut</span>
+          <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Operasional</span>
         </div>
         <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Komposisi Paket Baut
+          Bundling
         </h1>
         <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
-          {{ auth.isAdmin
-            ? 'Kelola formula paket siap pakai (Mesin, Pengereman, Bodi, Full Bike) per tipe motor.'
-            : 'Pilih paket siap pakai per motor, cek rincian bautnya, lalu langsung mulai checklist.' }}
+          Paket jualan berisi barang dari Master Barang (baut, mur, emblem) dengan bonus dan harga bundling.
+          Lihat isinya, atau tekan Mulai Checklist untuk mencatat barang yang diambil pembeli di Riwayat.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5 shrink-0">
         <button
-          v-if="auth.isAdmin"
+          v-if="auth.can('PACKAGES_MANAGE')"
           type="button"
           @click="toggleCreateEditor"
           class="min-h-[44px] px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
         >
           <Plus v-if="!isEditorOpen || editingPackageId" class="w-4 h-4" aria-hidden="true" />
           <X v-else class="w-4 h-4" aria-hidden="true" />
-          <span>{{ isEditorOpen && !editingPackageId ? 'Tutup Form' : 'Tambah Paket' }}</span>
+          <span>{{ isEditorOpen && !editingPackageId ? 'Tutup Form' : 'Tambah Bundling' }}</span>
         </button>
-
-        <router-link
-          to="/pick-list"
-          class="min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-sm transition-all inline-flex items-center justify-center gap-2"
-        >
-          <Play class="w-4 h-4" aria-hidden="true" />
-          <span>Buka Ambil Baut</span>
-        </router-link>
       </div>
     </section>
 
     <!-- Inline Create / Edit Package Panel (No Data Modal) -->
     <section
-      v-if="auth.isAdmin && isEditorOpen"
+      v-if="auth.can('PACKAGES_MANAGE') && isEditorOpen"
       ref="editorSectionRef"
-      aria-label="Formulir paket baut"
+      aria-label="Formulir bundling"
       class="bg-white dark:bg-[#121215] p-5 sm:p-6 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm space-y-5"
     >
       <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <span class="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            {{ editingPackageId ? 'Mode Ubah Paket' : 'Paket Baru' }}
+            {{ editingPackageId ? 'Ubah Bundling' : 'Bundling Baru' }}
           </span>
           <h2 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            {{ editingPackageId ? `Ubah Paket: ${editorForm.name || ''}` : 'Buat Paket Baut Baru' }}
+            {{ editingPackageId ? `Ubah: ${editorForm.name || ''}` : 'Buat Bundling Baru' }}
           </h2>
         </div>
 
@@ -78,15 +69,14 @@
         <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5">
           <div class="md:col-span-5">
             <label for="pkg-motor-select" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Tipe Motor <span class="text-rose-600">*</span>
+              Tipe Motor (opsional)
             </label>
             <select
               id="pkg-motor-select"
               v-model="editorForm.motorcycleTypeId"
-              required
               class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
             >
-              <option value="" disabled>-- Pilih Tipe Motor --</option>
+              <option value="">Semua motor (bundling umum)</option>
               <option
                 v-for="m in selectableMotorcycles"
                 :key="m.id"
@@ -99,21 +89,21 @@
 
           <div class="md:col-span-4">
             <label for="pkg-name-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Nama Paket <span class="text-rose-600">*</span>
+              Nama Bundling <span class="text-rose-600">*</span>
             </label>
             <input
               id="pkg-name-input"
               v-model="editorForm.name"
               type="text"
               required
-              placeholder="Misal: Paket Area Mesin & CVT Vario 160"
+              placeholder="Misal: Bundling Baut Cover CVT + Emblem"
               class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
             />
           </div>
 
           <div class="md:col-span-3">
             <label for="pkg-type-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Jenis Paket <span class="text-rose-600">*</span>
+              Jenis Bundling <span class="text-rose-600">*</span>
             </label>
             <input
               id="pkg-type-input"
@@ -121,7 +111,7 @@
               type="text"
               required
               list="package-type-suggestions"
-              placeholder="Mesin / Pengereman / Full Bike"
+              placeholder="Bundling Full Bike / Bodi Halus / Bodi Kasar"
               class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
             />
             <datalist id="package-type-suggestions">
@@ -146,22 +136,37 @@
             </button>
           </div>
 
-          <div class="md:col-span-9">
+          <div class="md:col-span-3">
+            <label for="pkg-price-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
+              Harga Bundling (Rp)
+            </label>
+            <input
+              id="pkg-price-input"
+              v-model.number="editorForm.price"
+              type="number"
+              min="0"
+              step="1000"
+              placeholder="Misal: 350000"
+              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 font-mono text-sm text-zinc-900 dark:text-zinc-100"
+            />
+          </div>
+
+          <div class="md:col-span-6">
             <label for="pkg-desc-input" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Deskripsi Paket (Opsional)
+              Deskripsi (Opsional)
             </label>
             <input
               id="pkg-desc-input"
               v-model="editorForm.description"
               type="text"
-              placeholder="Misal: Set baut titanium untuk cover CVT, crankcase kanan, dan radiator."
+              placeholder="Misal: Beli 2 set baut cover, bonus 1 emblem."
               class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
             />
           </div>
 
           <div class="md:col-span-3">
             <label for="pkg-status-select" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-              Status Paket
+              Status
             </label>
             <select
               id="pkg-status-select"
@@ -179,10 +184,10 @@
           <div class="flex flex-wrap items-center justify-between gap-2.5">
             <div>
               <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Rincian Baut dalam Paket
+                Isi Bundling
               </h3>
               <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-                {{ editorForm.items.length }} baris item &bull; {{ editorTotalPcs }} pcs total
+                {{ editorForm.items.length }} barang &bull; {{ editorTotalPcs }} pcs &bull; {{ editorForm.items.filter((i) => i.isBonus).length }} bonus
               </p>
             </div>
 
@@ -204,7 +209,7 @@
                 class="min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Tambah Item Baut</span>
+                <span>Tambah Barang</span>
               </button>
             </div>
           </div>
@@ -220,7 +225,7 @@
                   v-model="item.boltSpecId"
                   :specs="boltSpecs"
                   :input-id="`pkg-item-spec-${idx}`"
-                  :label="`Baut #${idx + 1}`"
+                  :label="`Barang #${idx + 1}`"
                   :allow-clear="false"
                 />
               </div>
@@ -240,15 +245,23 @@
                 />
               </div>
 
-              <div class="md:col-span-4">
+              <div class="md:col-span-1">
+                <span class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Bonus</span>
+                <label class="min-h-[44px] px-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                  <input v-model="item.isBonus" type="checkbox" class="w-4 h-4 accent-emerald-600" :aria-label="`Barang ke-${idx + 1} adalah bonus`" />
+                  Ya
+                </label>
+              </div>
+
+              <div class="md:col-span-3">
                 <label :for="`pkg-item-note-${idx}`" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">
-                  Catatan Area (Opsional)
+                  Catatan (Opsional)
                 </label>
                 <input
                   :id="`pkg-item-note-${idx}`"
                   v-model="item.emblemNote"
                   type="text"
-                  placeholder="Misal: CVT (6) + Kanan (5)"
+                  placeholder="Misal: warna biru, posisi CVT"
                   class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
                 />
               </div>
@@ -258,7 +271,7 @@
                   type="button"
                   @click="removeItemRow(idx)"
                   :disabled="editorForm.items.length <= 1"
-                  :aria-label="`Hapus item baut ke-${idx + 1}`"
+                  :aria-label="`Hapus barang ke-${idx + 1}`"
                   class="min-w-[44px] min-h-[44px] rounded-xl border border-rose-300 dark:border-rose-500/30 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 inline-flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Trash2 class="w-4 h-4" aria-hidden="true" />
@@ -282,7 +295,7 @@
             class="min-h-[44px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Check class="w-4 h-4" aria-hidden="true" />
-            <span>{{ isSubmittingPackage ? 'Menyimpan...' : (editingPackageId ? 'Simpan Perubahan' : 'Simpan Paket') }}</span>
+            <span>{{ isSubmittingPackage ? 'Menyimpan...' : (editingPackageId ? 'Simpan Perubahan' : 'Simpan Bundling') }}</span>
           </button>
         </div>
       </form>
@@ -307,7 +320,7 @@
     <!-- Loading -->
     <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3" role="status" aria-live="polite">
       <SkeletonCard v-for="n in 6" :key="n" />
-      <span class="sr-only">Memuat daftar paket baut...</span>
+      <span class="sr-only">Memuat daftar bundling...</span>
     </div>
 
     <template v-else>
@@ -317,8 +330,8 @@
           <div class="flex-1">
             <SearchInput
               v-model="searchQuery"
-              placeholder="Cari nama paket, motor, atau kode baut..."
-              aria-label="Cari paket baut"
+              placeholder="Cari bundling, motor, atau barang..."
+              aria-label="Cari bundling"
             />
           </div>
 
@@ -329,7 +342,8 @@
               v-model="selectedMotorId"
               class="w-full min-h-[44px] px-3.5 py-2.5 bg-white dark:bg-[#121215] border border-zinc-500 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 shadow-sm"
             >
-              <option value="all">Semua Tipe Motor ({{ packages.length }})</option>
+              <option value="all">Semua motor ({{ packages.length }})</option>
+              <option value="none">Bundling umum (tanpa motor)</option>
               <option
                 v-for="mOpt in packageMotorOptions"
                 :key="mOpt.id"
@@ -355,12 +369,12 @@
           </div>
 
           <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-            Menampilkan {{ filteredPackages.length }} dari {{ baseVisiblePackages.length }} paket
+            Menampilkan {{ filteredPackages.length }} dari {{ baseVisiblePackages.length }} bundling
           </p>
         </div>
 
-        <!-- Status Filter Chips (Admin view, matching MotorcyclesView pattern) -->
-        <div v-if="auth.isAdmin && packages.length > 0" class="flex flex-wrap items-center gap-1.5">
+        <!-- Status Filter Chips (Admin view) -->
+        <div v-if="auth.can('PACKAGES_MANAGE') && packages.length > 0" class="flex flex-wrap items-center gap-1.5">
           <button
             v-for="opt in statusFilterOptions"
             :key="opt.value"
@@ -383,10 +397,10 @@
       <EmptyState
         v-if="filteredPackages.length === 0"
         :icon="PackageOpen"
-        title="Belum ada paket yang cocok"
-        :description="packages.length === 0 ? 'Belum ada paket baut yang tersedia di gerai.' : 'Coba ubah kata kunci atau filter paket lain.'"
-        :action-label="packages.length === 0 ? (auth.isAdmin ? 'Tambah Paket Pertama' : '') : 'Reset Filter'"
-        @action="packages.length === 0 && auth.isAdmin ? openCreateEditor() : resetFilters()"
+        title="Belum ada bundling yang cocok"
+        :description="packages.length === 0 ? 'Belum ada bundling di gerai.' : 'Coba ubah kata kunci atau filter lain.'"
+        :action-label="packages.length === 0 ? (auth.can('PACKAGES_MANAGE') ? 'Tambah Bundling Pertama' : '') : 'Reset Filter'"
+        @action="packages.length === 0 && auth.can('PACKAGES_MANAGE') ? openCreateEditor() : resetFilters()"
       />
 
       <!-- Package Cards Grid (Matching RosterCard / ItemCard anatomy & No Data Modal rule) -->
@@ -420,7 +434,13 @@
                   />
                   <Nut v-else class="w-6 h-6 text-zinc-400" aria-hidden="true" />
                   <span
-                    v-if="item.boltSpec?.diameterMm"
+                    v-if="item.isBonus"
+                    class="absolute top-0.5 left-0.5 px-1 rounded bg-emerald-600 text-[9px] font-bold text-white"
+                  >
+                    BONUS
+                  </span>
+                  <span
+                    v-if="Number(item.boltSpec?.diameterMm)"
                     class="absolute bottom-0.5 right-0.5 px-1 rounded bg-black/80 text-[9px] font-mono font-bold text-zinc-200"
                   >
                     M{{ Number(item.boltSpec.diameterMm) }}
@@ -469,7 +489,7 @@
               </h2>
               <div class="flex flex-wrap items-center gap-1.5 mt-1">
                 <span class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
-                  {{ pkg.motorcycleType?.displayName || 'Motor tidak diketahui' }}
+                  {{ pkg.motorcycleType?.displayName || 'Semua motor (bundling umum)' }}
                 </span>
                 <span
                   v-if="pkg.motorcycleType?.isActive === false"
@@ -480,93 +500,61 @@
               </div>
             </div>
 
+            <p class="font-mono text-lg font-bold" :class="pkg.price != null ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 text-sm'">
+              {{ formatPrice(pkg.price) }}
+            </p>
+
             <!-- Accurate Non-Redundant Stats -->
             <div class="flex flex-wrap items-center gap-1.5">
               <span class="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-[11px] font-mono text-zinc-700 dark:text-zinc-300">
-                {{ pkg.items?.length || 0 }} jenis baut
+                {{ pkg.items?.length || 0 }} barang
+              </span>
+              <span
+                v-if="bonusCount(pkg)"
+                class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-[11px] font-mono text-emerald-800 dark:text-emerald-300"
+              >
+                {{ bonusCount(pkg) }} bonus
               </span>
               <span class="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-[11px] font-mono text-zinc-700 dark:text-zinc-300">
                 {{ totalPcs(pkg) }} pcs total
               </span>
               <span
-                v-if="(pkg._count?.pickSessions || 0) > 0"
-                class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-[11px] font-mono text-emerald-800 dark:text-emerald-300"
+                v-if="(pkg._count?.claims || 0) > 0"
+                class="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-[11px] font-mono text-zinc-700 dark:text-zinc-300"
               >
-                {{ pkg._count.pickSessions }} sesi pakai
+                {{ pkg._count.claims }} checklist
               </span>
             </div>
 
-            <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed" :class="expandedPackageId === pkg.id ? '' : 'line-clamp-2'">
-              {{ pkg.description || 'Paket baut siap ambil untuk tipe motor ini.' }}
+            <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+              {{ pkg.description || 'Bundling barang titanium.' }}
             </p>
-
-            <!-- Inline Expandable Items List (Zero Data Modal) -->
-            <div
-              v-if="expandedPackageId === pkg.id"
-              class="pt-2.5 border-t border-zinc-200 dark:border-zinc-800 space-y-2"
-            >
-              <p class="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Daftar Baut di Paket Ini ({{ pkg.items?.length || 0 }})
-              </p>
-              <div class="max-h-64 overflow-y-auto space-y-1.5 pr-0.5">
-                <div
-                  v-for="item in pkg.items"
-                  :key="item.id"
-                  class="flex items-center gap-2.5 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181c]"
-                >
-                  <div class="w-10 h-10 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-300 dark:border-zinc-700 shrink-0 flex items-center justify-center">
-                    <img
-                      v-if="item.boltSpec?.images?.length"
-                      :src="item.boltSpec.images[0].url"
-                      :alt="item.boltSpec.code"
-                      class="w-full h-full object-cover"
-                    />
-                    <Nut v-else class="w-4 h-4 text-zinc-400" aria-hidden="true" />
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <p class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                      {{ item.boltSpec?.code }}
-                    </p>
-                    <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
-                      M{{ Number(item.boltSpec?.diameterMm) }} &times; {{ formatLength(item.boltSpec?.lengthMm, ' mm') }}
-                      <span v-if="item.emblemNote"> &bull; {{ item.emblemNote }}</span>
-                    </p>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-mono font-bold shrink-0">
-                    {{ item.quantity }} pcs
-                  </span>
-                </div>
-              </div>
-            </div>
 
             <!-- Footer Primary Actions (min 44px touch targets) -->
             <div class="mt-auto pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  @click="toggleExpandPackage(pkg.id)"
-                  :aria-expanded="expandedPackageId === pkg.id"
-                  class="min-h-[44px] px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center justify-center gap-1.5 cursor-pointer"
+              <div class="grid gap-2" :class="auth.can('SESSION_CHECKLIST') ? 'grid-cols-2' : 'grid-cols-1'">
+                <router-link
+                  :to="`/bundling/${pkg.id}`"
+                  class="min-h-[44px] px-3 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-semibold inline-flex items-center justify-center gap-1.5"
                 >
-                  <ChevronUp v-if="expandedPackageId === pkg.id" class="w-4 h-4" aria-hidden="true" />
-                  <ChevronDown v-else class="w-4 h-4" aria-hidden="true" />
-                  <span>{{ expandedPackageId === pkg.id ? 'Tutup Rincian' : 'Lihat Isi Paket' }}</span>
-                </button>
-
+                  <Eye class="w-4 h-4" aria-hidden="true" />
+                  <span>Lihat isi</span>
+                </router-link>
                 <button
+                  v-if="auth.can('SESSION_CHECKLIST')"
                   type="button"
-                  @click="pickThisPackage(pkg)"
-                  :disabled="pkg.status === 'INACTIVE' || pkg.motorcycleType?.isActive === false"
-                  class="min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  @click="dialogPkg = pkg"
+                  :disabled="pkg.status === 'INACTIVE' || claimingId === pkg.id"
+                  class="min-h-[44px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Play class="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>{{ pkg.status === 'INACTIVE' ? 'Nonaktif' : 'Pakai Paket' }}</span>
+                  <ListChecks class="w-4 h-4" aria-hidden="true" />
+                  <span>{{ claimingId === pkg.id ? 'Membuka...' : 'Mulai Checklist' }}</span>
                 </button>
               </div>
 
               <!-- Admin CRUD Actions Row (Separated from primary action & destructive separated) -->
               <div
-                v-if="auth.isAdmin"
+                v-if="auth.can('PACKAGES_MANAGE')"
                 class="pt-2 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2"
               >
                 <div class="flex items-center gap-2">
@@ -604,13 +592,23 @@
       </div>
     </template>
 
+    <StartChecklistDialog
+      :open="Boolean(dialogPkg)"
+      kind="bundling"
+      :name="dialogPkg?.name || ''"
+      :summary="dialogPkg ? `${dialogPkg.items?.length || 0} barang · ${totalPcs(dialogPkg)} pcs${bonusCount(dialogPkg) ? ` · ${bonusCount(dialogPkg)} bonus` : ''}` : ''"
+      :loading="Boolean(claimingId)"
+      @confirm="(buyer) => startClaim(dialogPkg, buyer)"
+      @cancel="dialogPkg = null"
+    />
+
     <!-- Status Toggle Confirmation Dialog -->
     <ConfirmDialog
       :open="Boolean(packageToToggleStatus)"
-      :title="packageToToggleStatus?.status === 'ACTIVE' ? 'Nonaktifkan Paket Baut?' : 'Aktifkan Kembali Paket Baut?'"
+      :title="packageToToggleStatus?.status === 'ACTIVE' ? 'Nonaktifkan Bundling?' : 'Aktifkan Kembali Bundling?'"
       :message="packageToToggleStatus?.status === 'ACTIVE'
-        ? `Paket '${packageToToggleStatus?.name}' akan disembunyikan dari daftar staf saat membuat pick-list baru. Data historis sesi tetap aman.`
-        : `Paket '${packageToToggleStatus?.name}' akan tampil kembali untuk staf gerai.`"
+        ? `Bundling '${packageToToggleStatus?.name}' akan disembunyikan dari staf dan tidak bisa dipakai untuk checklist baru. Riwayat tetap aman.`
+        : `Bundling '${packageToToggleStatus?.name}' akan tampil kembali untuk staf gerai.`"
       :confirm-text="packageToToggleStatus?.status === 'ACTIVE' ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan'"
       :danger="packageToToggleStatus?.status === 'ACTIVE'"
       :loading="isMutatingAction"
@@ -621,7 +619,7 @@
     <!-- Delete Package Confirmation Dialog -->
     <ConfirmDialog
       :open="Boolean(packageToDelete)"
-      title="Hapus Paket Baut?"
+      title="Hapus Bundling?"
       :message="deleteConfirmMessage"
       confirm-text="Ya, Hapus Permanen"
       :danger="true"
@@ -633,18 +631,16 @@
 </template>
 
 <script setup>
-import { formatLength } from '../utils/boltSize';
 import { ref, reactive, computed, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   Check,
-  ChevronDown,
-  ChevronUp,
   Download,
+  Eye,
+  ListChecks,
   Nut,
   PackageOpen,
   Pencil,
-  Play,
   Plus,
   Power,
   Trash2,
@@ -659,6 +655,7 @@ import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 import BoltSpecPicker from '../components/ui/BoltSpecPicker.vue';
+import StartChecklistDialog from '../components/ui/StartChecklistDialog.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -676,7 +673,6 @@ const searchQuery = ref('');
 const selectedMotorId = ref('all');
 const selectedType = ref('all');
 const selectedStatus = ref('ACTIVE');
-const expandedPackageId = ref(null);
 
 // Inline Editor CRUD state
 const editorSectionRef = ref(null);
@@ -685,15 +681,18 @@ const editingPackageId = ref(null);
 const isSubmittingPackage = ref(false);
 const isImportingMatrix = ref(false);
 const editorError = ref('');
-const packageTypePresets = ['Full Bike', 'Mesin', 'Pengereman', 'Bodi', 'CVT'];
+const packageTypePresets = ['Bundling Full Bike', 'Bodi Halus', 'Bodi Kasar', 'Bundling Lainnya'];
+
+const emptyItem = () => ({ boltSpecId: boltSpecs.value[0]?.id || '', quantity: 1, emblemNote: '', isBonus: false });
 
 const editorForm = reactive({
   motorcycleTypeId: '',
-  packageType: 'Mesin',
+  packageType: 'Bundling Full Bike',
   name: '',
   description: '',
+  price: null,
   status: 'ACTIVE',
-  items: [{ boltSpecId: '', quantity: 1, emblemNote: '' }],
+  items: [{ boltSpecId: '', quantity: 1, emblemNote: '', isBonus: false }],
 });
 
 // Confirmation dialog state
@@ -701,8 +700,15 @@ const packageToToggleStatus = ref(null);
 const packageToDelete = ref(null);
 const isMutatingAction = ref(false);
 
+// 'all' | 'none' (bundling umum) | motorcycle id
+const matchesMotorFilter = (pkg) => {
+  if (selectedMotorId.value === 'all') return true;
+  if (selectedMotorId.value === 'none') return !pkg.motorcycleTypeId;
+  return String(pkg.motorcycleTypeId) === selectedMotorId.value;
+};
+
 const baseVisiblePackages = computed(() => {
-  if (auth.isAdmin) return packages.value;
+  if (auth.can('PACKAGES_MANAGE')) return packages.value;
   return packages.value.filter((p) => p.status !== 'INACTIVE');
 });
 
@@ -732,18 +738,14 @@ const selectableMotorcycles = computed(() => {
 const typeChips = computed(() => {
   const map = new Map();
   for (const pkg of baseVisiblePackages.value) {
-    if (selectedMotorId.value !== 'all' && String(pkg.motorcycleTypeId) !== selectedMotorId.value) {
-      continue;
-    }
+    if (!matchesMotorFilter(pkg)) continue;
     const meta = getPackageTypeMeta(pkg.packageType);
     const entry = map.get(meta.key) || { value: meta.key, label: meta.label, count: 0 };
     entry.count += 1;
     map.set(meta.key, entry);
   }
 
-  const totalForScope = selectedMotorId.value === 'all'
-    ? baseVisiblePackages.value.length
-    : baseVisiblePackages.value.filter((p) => String(p.motorcycleTypeId) === selectedMotorId.value).length;
+  const totalForScope = baseVisiblePackages.value.filter(matchesMotorFilter).length;
 
   return [
     { value: 'all', label: 'Semua', count: totalForScope },
@@ -764,14 +766,12 @@ const statusFilterOptions = computed(() => {
 const filteredPackages = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   return baseVisiblePackages.value.filter((pkg) => {
-    if (auth.isAdmin && selectedStatus.value !== 'all') {
+    if (auth.can('PACKAGES_MANAGE') && selectedStatus.value !== 'all') {
       const normalizedStatus = pkg.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
       if (normalizedStatus !== selectedStatus.value) return false;
     }
 
-    if (selectedMotorId.value !== 'all' && String(pkg.motorcycleTypeId) !== selectedMotorId.value) {
-      return false;
-    }
+    if (!matchesMotorFilter(pkg)) return false;
 
     if (selectedType.value !== 'all') {
       const meta = getPackageTypeMeta(pkg.packageType);
@@ -789,6 +789,7 @@ const filteredPackages = computed(() => {
     return (pkg.items || []).some(
       (item) =>
         (item.boltSpec?.code || '').toLowerCase().includes(q) ||
+        (item.boltSpec?.name || '').toLowerCase().includes(q) ||
         (item.emblemNote || '').toLowerCase().includes(q)
     );
   });
@@ -801,37 +802,34 @@ const editorTotalPcs = computed(() =>
 const deleteConfirmMessage = computed(() => {
   if (!packageToDelete.value) return '';
   const usedCount = packageToDelete.value._count?.pickSessions || 0;
-  const base = `Paket "${packageToDelete.value.name}" akan dihapus permanen beserta daftar item di dalamnya.`;
+  const base = `Bundling "${packageToDelete.value.name}" akan dihapus permanen beserta isi dan riwayat checklist-nya.`;
   if (usedCount > 0) {
-    return `${base} Paket ini tercatat pada ${usedCount} riwayat sesi (riwayat lama tetap tersimpan, namun tautan paketnya akan dilepas).`;
+    return `${base} Bundling ini tercatat pada ${usedCount} riwayat pasang (riwayatnya tetap tersimpan).`;
   }
   return base;
 });
 
 const totalPcs = (pkg) => (pkg.items || []).reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-
-const toggleExpandPackage = (id) => {
-  expandedPackageId.value = expandedPackageId.value === id ? null : id;
-};
+const bonusCount = (pkg) => (pkg.items || []).filter((item) => item.isBonus).length;
+const formatPrice = (price) => (price == null ? 'Harga belum diatur' : `Rp ${Number(price).toLocaleString('id-ID')}`);
 
 const resetFilters = () => {
   searchQuery.value = '';
   selectedMotorId.value = 'all';
   selectedType.value = 'all';
-  selectedStatus.value = auth.isAdmin ? 'all' : 'ACTIVE';
+  selectedStatus.value = auth.can('PACKAGES_MANAGE') ? 'all' : 'ACTIVE';
 };
 
 const resetEditorForm = () => {
   editingPackageId.value = null;
   editorError.value = '';
-  editorForm.motorcycleTypeId = motorcycles.value.find((m) => m.isActive !== false)?.id
-    ? String(motorcycles.value.find((m) => m.isActive !== false).id)
-    : '';
-  editorForm.packageType = 'Mesin';
+  editorForm.motorcycleTypeId = '';
+  editorForm.packageType = 'Bundling Full Bike';
   editorForm.name = '';
   editorForm.description = '';
+  editorForm.price = null;
   editorForm.status = 'ACTIVE';
-  editorForm.items = [{ boltSpecId: boltSpecs.value[0]?.id || '', quantity: 1, emblemNote: '' }];
+  editorForm.items = [emptyItem()];
 };
 
 const scrollToEditor = async () => {
@@ -857,17 +855,19 @@ const openEditEditor = async (pkg) => {
   editingPackageId.value = pkg.id;
   editorError.value = '';
   editorForm.motorcycleTypeId = String(pkg.motorcycleTypeId || '');
-  editorForm.packageType = getPackageTypeMeta(pkg.packageType).label || pkg.packageType || 'Mesin';
+  editorForm.packageType = getPackageTypeMeta(pkg.packageType).label || pkg.packageType || 'Bundling Full Bike';
   editorForm.name = pkg.name || '';
   editorForm.description = pkg.description || '';
+  editorForm.price = pkg.price ?? null;
   editorForm.status = pkg.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
   editorForm.items = (pkg.items && pkg.items.length > 0)
     ? pkg.items.map((item) => ({
         boltSpecId: item.boltSpecId,
         quantity: Number(item.quantity) || 1,
         emblemNote: item.emblemNote || '',
+        isBonus: Boolean(item.isBonus),
       }))
-    : [{ boltSpecId: boltSpecs.value[0]?.id || '', quantity: 1, emblemNote: '' }];
+    : [emptyItem()];
   isEditorOpen.value = true;
   await scrollToEditor();
 };
@@ -879,11 +879,7 @@ const closeEditor = () => {
 };
 
 const addItemRow = () => {
-  editorForm.items.push({
-    boltSpecId: boltSpecs.value[0]?.id || '',
-    quantity: 1,
-    emblemNote: '',
-  });
+  editorForm.items.push(emptyItem());
 };
 
 const removeItemRow = (index) => {
@@ -927,10 +923,11 @@ const importFromMotorMatrix = async () => {
       boltSpecId: entry.boltSpecId,
       quantity: entry.quantity,
       emblemNote: entry.notes.join(', '),
+      isBonus: false,
     }));
 
     if (!editorForm.name.trim() && data.displayName) {
-      editorForm.name = `Paket ${getPackageTypeMeta(editorForm.packageType).label} ${data.displayName}`;
+      editorForm.name = `${getPackageTypeMeta(editorForm.packageType).label} ${data.displayName}`;
     }
 
     toast.success(`${editorForm.items.length} jenis baut disalin dari matriks motor.`);
@@ -947,22 +944,24 @@ const submitPackage = async () => {
 
   const validItems = editorForm.items.filter((item) => item.boltSpecId && Number(item.quantity) > 0);
   if (validItems.length === 0) {
-    editorError.value = 'Tambahkan minimal 1 item baut dengan jumlah minimal 1 pcs.';
+    editorError.value = 'Tambahkan minimal 1 barang dengan jumlah minimal 1 pcs.';
     return;
   }
 
   isSubmittingPackage.value = true;
   try {
     const payload = {
-      motorcycleTypeId: Number(editorForm.motorcycleTypeId),
+      motorcycleTypeId: editorForm.motorcycleTypeId ? Number(editorForm.motorcycleTypeId) : null,
       packageType: editorForm.packageType.trim(),
       name: editorForm.name.trim(),
       description: editorForm.description.trim() || null,
+      price: editorForm.price === '' || editorForm.price == null ? null : Number(editorForm.price),
       status: editorForm.status,
       items: validItems.map((item) => ({
         boltSpecId: Number(item.boltSpecId),
         quantity: Number(item.quantity),
         emblemNote: item.emblemNote?.trim() || null,
+        isBonus: Boolean(item.isBonus),
       })),
     };
 
@@ -976,15 +975,15 @@ const submitPackage = async () => {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gagal menyimpan paket baut.');
+    if (!res.ok) throw new Error(data.error || 'Gagal menyimpan bundling.');
 
     if (isEdit) {
       const idx = packages.value.findIndex((p) => p.id === data.id);
       if (idx !== -1) packages.value[idx] = data;
-      toast.success(`Paket "${data.name}" berhasil diperbarui.`);
+      toast.success(`Bundling "${data.name}" berhasil diperbarui.`);
     } else {
       packages.value.unshift(data);
-      toast.success(`Paket "${data.name}" berhasil ditambahkan.`);
+      toast.success(`Bundling "${data.name}" berhasil ditambahkan.`);
     }
 
     if (data.status === 'INACTIVE') {
@@ -996,7 +995,7 @@ const submitPackage = async () => {
     closeEditor();
   } catch (err) {
     editorError.value = err.message === 'Failed to fetch'
-      ? 'Sambungan terputus saat menyimpan paket. Coba lagi.'
+      ? 'Sambungan terputus saat menyimpan bundling. Coba lagi.'
       : err.message;
   } finally {
     isSubmittingPackage.value = false;
@@ -1018,15 +1017,15 @@ const confirmToggleStatus = async () => {
       body: JSON.stringify({}),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gagal mengubah status paket.');
+    if (!res.ok) throw new Error(data.error || 'Gagal mengubah status bundling.');
 
     const idx = packages.value.findIndex((p) => p.id === data.id);
     if (idx !== -1) packages.value[idx] = data;
 
     toast.success(
       data.status === 'ACTIVE'
-        ? `Paket "${data.name}" diaktifkan kembali.`
-        : `Paket "${data.name}" dinonaktifkan.`
+        ? `Bundling "${data.name}" diaktifkan kembali.`
+        : `Bundling "${data.name}" dinonaktifkan.`
     );
     packageToToggleStatus.value = null;
   } catch (err) {
@@ -1050,13 +1049,12 @@ const confirmDeletePackage = async () => {
       method: 'DELETE',
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gagal menghapus paket baut.');
+    if (!res.ok) throw new Error(data.error || 'Gagal menghapus bundling.');
 
     packages.value = packages.value.filter((p) => p.id !== target.id);
-    if (expandedPackageId.value === target.id) expandedPackageId.value = null;
     if (editingPackageId.value === target.id) closeEditor();
 
-    toast.success(`Paket "${target.name}" berhasil dihapus.`);
+    toast.success(`Bundling "${target.name}" berhasil dihapus.`);
     packageToDelete.value = null;
   } catch (err) {
     toast.error(err.message);
@@ -1071,13 +1069,13 @@ const loadInitialData = async () => {
   isLoading.value = true;
   try {
     const requests = [auth.apiFetch('/api/packages')];
-    if (auth.isAdmin) {
+    if (auth.can('PACKAGES_MANAGE')) {
       requests.push(auth.apiFetch('/api/motorcycles'));
       requests.push(auth.apiFetch('/api/bolt-specs'));
     }
 
     const [pkgRes, motorRes, specRes] = await Promise.all(requests);
-    if (!pkgRes.ok) throw new Error('Gagal memuat daftar paket baut.');
+    if (!pkgRes.ok) throw new Error('Gagal memuat daftar bundling.');
 
     const pkgData = await pkgRes.json();
     packages.value = Array.isArray(pkgData) ? pkgData : [];
@@ -1092,7 +1090,7 @@ const loadInitialData = async () => {
     }
 
     // Default admin status filter shows Active first (or All if none active)
-    if (auth.isAdmin && packages.value.some((p) => p.status !== 'INACTIVE')) {
+    if (auth.can('PACKAGES_MANAGE') && packages.value.some((p) => p.status !== 'INACTIVE')) {
       selectedStatus.value = 'all';
     }
   } catch (err) {
@@ -1105,15 +1103,28 @@ const loadInitialData = async () => {
   }
 };
 
-const pickThisPackage = (pkg) => {
-  if (pkg.status === 'INACTIVE' || pkg.motorcycleType?.isActive === false) return;
-  router.push({
-    path: '/pick-list',
-    query: {
-      motorId: pkg.motorcycleTypeId,
-      pkgId: pkg.id,
-    },
-  });
+// Mulai Checklist: the popup asks for the buyer, then a Riwayat slot is created for this bundling
+// (items are ticked off there; partial checklists stay open)
+const dialogPkg = ref(null);
+const claimingId = ref(null);
+const startClaim = async (pkg, buyerName = '') => {
+  if (claimingId.value) return;
+  claimingId.value = pkg.id;
+  try {
+    const res = await auth.apiFetch(`/api/packages/${pkg.id}/claims`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ buyerName }),
+    });
+    const claim = await res.json();
+    if (!res.ok) throw new Error(claim.error || 'Gagal membuat riwayat checklist.');
+    dialogPkg.value = null;
+    router.push(`/history/klaim/${claim.id}`);
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    claimingId.value = null;
+  }
 };
 
 onMounted(loadInitialData);

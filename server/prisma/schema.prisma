@@ -18,6 +18,7 @@ model User {
   isActive     Boolean       @default(true) @map("is_active")
   createdAt    DateTime      @default(now()) @map("created_at")
   pickSessions PickSession[]
+  bundleClaims BundleClaim[]
   auditLogs    AuditLog[]
 
   @@map("users")
@@ -188,6 +189,8 @@ model CloseUpBoltPin {
 model BoltSpec {
   id           Int                    @id @default(autoincrement())
   code         String                 @unique
+  itemType     String                 @default("BAUT") @map("item_type") // Master Barang: BAUT (incl. nuts), EMBLEM
+  name         String?                // display name for non-bolt items (emblem); bolts are named by their size
   diameterMm   Decimal                @map("diameter_mm") @db.Decimal(5, 2)
   lengthMm     Decimal                @map("length_mm") @db.Decimal(6, 2)
   headType     String                 @map("head_type") // Flange Hex, Button, Taper, dll.
@@ -200,6 +203,7 @@ model BoltSpec {
   sessionItems PickSessionItem[]
   images       BoltImage[]
   closeUpPins  CloseUpBoltPin[]
+  bundleClaimItems BundleClaimItem[]
 
   @@map("bolt_specs")
 }
@@ -225,6 +229,8 @@ model MotorBoltRequirement {
   quantity         Int
   side             String         @default("NONE") // LEFT, RIGHT, FRONT, REAR, NONE
   isOptional       Boolean        @default(false) @map("is_optional")
+  isCritical       Boolean        @default(false) @map("is_critical") // brake/stand etc.: certified Ti Gr5 + OEM torque only
+  sizeStatus       String         @default("VERIFIED") @map("size_status") // VERIFIED, CEK_FISIK (size derived from part code)
   sortOrder        Int            @default(0) @map("sort_order")
   notes            String?
   motorcycleType   MotorcycleType @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
@@ -238,15 +244,17 @@ model MotorBoltRequirement {
 
 model Package {
   id               Int            @id @default(autoincrement())
-  motorcycleTypeId Int            @map("motorcycle_type_id")
+  motorcycleTypeId Int?           @map("motorcycle_type_id") // optional: a bundling can be sold for any motorcycle
   packageType      String         @map("package_type") // Mesin, Bodi, Full Bike
   name             String
   description      String?
   status           String         @default("ACTIVE") // ACTIVE, INACTIVE
+  price            Int?           // bundling price in Rupiah (set by the owner)
   createdAt        DateTime       @default(now()) @map("created_at")
-  motorcycleType   MotorcycleType @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
+  motorcycleType   MotorcycleType? @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
   items            PackageItem[]
   pickSessions     PickSession[]
+  claims           BundleClaim[]
 
   @@map("packages")
 }
@@ -258,6 +266,7 @@ model PackageItem {
   sourceRequirementId Int?                   @map("source_requirement_id")
   quantity            Int
   emblemNote          String?                @map("emblem_note")
+  isBonus             Boolean                @default(false) @map("is_bonus") // free item in the bundling
   package             Package                @relation(fields: [packageId], references: [id], onDelete: Cascade)
   boltSpec            BoltSpec               @relation(fields: [boltSpecId], references: [id], onDelete: Restrict)
   sourceRequirement   MotorBoltRequirement?  @relation(fields: [sourceRequirementId], references: [id], onDelete: SetNull)
@@ -272,6 +281,8 @@ model PickSession {
   createdBy        Int               @map("created_by")
   createdAt        DateTime          @default(now()) @map("created_at")
   status           String            @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  completedAt      DateTime?         @map("completed_at") // set when every item is checked; createdAt..completedAt = preparation time
+  buyerName        String?           @map("buyer_name") // customer or receipt number of a Paket Full Bike claim
   notes            String?
   motorcycleType   MotorcycleType    @relation(fields: [motorcycleTypeId], references: [id], onDelete: Restrict)
   package          Package?          @relation(fields: [packageId], references: [id], onDelete: SetNull)
@@ -307,3 +318,40 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Small key/value store for shop-level settings (e.g. baselineMinutes for the service-time evaluation)
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
+}
+
+// A buyer's bundling: items are copied from the bundling when the claim starts, then ticked off as the buyer receives them
+model BundleClaim {
+  id          Int               @id @default(autoincrement())
+  packageId   Int               @map("package_id")
+  buyerName   String?           @map("buyer_name") // buyer or receipt number from the cashier app
+  createdBy   Int               @map("created_by")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  completedAt DateTime?         @map("completed_at")
+  package     Package           @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  creator     User              @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  items       BundleClaimItem[]
+
+  @@map("bundle_claims")
+}
+
+model BundleClaimItem {
+  id         Int         @id @default(autoincrement())
+  claimId    Int         @map("claim_id")
+  boltSpecId Int         @map("bolt_spec_id")
+  quantity   Int
+  isBonus    Boolean     @default(false) @map("is_bonus")
+  claimed    Boolean     @default(false)
+  claimedAt  DateTime?   @map("claimed_at")
+  claim      BundleClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  boltSpec   BoltSpec    @relation(fields: [boltSpecId], references: [id], onDelete: Restrict)
+
+  @@map("bundle_claim_items")
+}

@@ -61,7 +61,7 @@ defineEmits(['select']);
 const title = computed(() => props.title || props.pkg?.name || 'Lengkap Satu Motor');
 const subtitle = computed(() => {
   if (props.subtitle) return props.subtitle;
-  if (!props.pkg) return 'Semua titik pasang motor';
+  if (!props.pkg) return 'Semua posisi pasang motor';
   return formatPackageType(props.pkg.packageType);
 });
 const badgeText = computed(() => {

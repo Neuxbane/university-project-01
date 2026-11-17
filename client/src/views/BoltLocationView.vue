@@ -7,7 +7,7 @@
           <p class="text-xs font-mono uppercase">Hex Titanium &bull; Peta Lokasi &amp; Daftar Baut</p>
           <h1 class="text-lg font-bold">{{ locationData.motorcycle.displayName }}</h1>
           <p class="text-xs">
-            Paket: {{ locationData.package ? locationData.package.name : 'Lengkap Satu Motor' }}
+            Bundling: {{ locationData.package ? locationData.package.name : 'Lengkap Satu Motor' }}
           </p>
         </div>
         <div class="text-right text-xs font-mono">
@@ -46,10 +46,26 @@
 
     <!-- SCREEN UI -->
     <div class="no-print">
+      <MotorProfileDialog
+        :open="profileDialogOpen"
+        :motor-id="locationData?.motorcycle?.id || null"
+        @saved="onProfileSaved"
+        @cancel="profileDialogOpen = false"
+      />
+      <StartChecklistDialog
+        :open="checklistDialogOpen"
+        kind="paket"
+        :name="locationData ? `${locationData.motorcycle.displayName}${locationData.package ? ` · ${locationData.package.name}` : ''}` : ''"
+        :summary="locationData ? `${locationData.bolts.length} ukuran baut · ${locationData.summary?.totalQuantity || 0} pcs` : ''"
+        :loading="isCreatingSession"
+        @confirm="startSession"
+        @cancel="checklistDialogOpen = false"
+      />
       <AppShell>
         <template #topbar>
           <div class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-4 sm:p-5 shadow-sm space-y-3">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <!-- title row first; the action buttons wrap below it until there is room for both -->
+            <div class="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3">
               <div class="flex items-center gap-3 min-w-0">
                 <router-link
                   to="/pick-list"
@@ -95,8 +111,41 @@
 
               <!-- Header Controls -->
               <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <router-link
+                  v-if="auth.can('MOTORCYCLES_MANAGE') && locationData"
+                  :to="`/motorcycles/${locationData.motorcycle.id}`"
+                  class="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <Wrench class="w-4 h-4" aria-hidden="true" />
+                  <span>Kelola Data</span>
+                </router-link>
+
                 <button
-                  v-if="auth.isAdmin && locationData"
+                  v-if="auth.can('MOTORCYCLES_MANAGE') && locationData"
+                  type="button"
+                  @click="profileDialogOpen = true"
+                  class="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Pencil class="w-4 h-4" aria-hidden="true" />
+                  <span>Edit Profil Paket</span>
+                </button>
+
+                <button
+                  v-if="locationData?.positionBreakdown?.length"
+                  type="button"
+                  @click="openGuide"
+                  :aria-pressed="leftMode === 'guide'"
+                  class="min-h-[44px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                  :class="leftMode === 'guide'
+                    ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+                    : 'border-zinc-400 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'"
+                >
+                  <MapIcon class="w-4 h-4" aria-hidden="true" />
+                  <span>Panduan Pasang</span>
+                </button>
+
+                <button
+                  v-if="auth.can('MOTORCYCLES_MANAGE') && locationData"
                   type="button"
                   @click="toggleModelPanel"
                   :aria-pressed="showModelPanel"
@@ -110,7 +159,7 @@
                 </button>
 
                 <button
-                  v-if="auth.isAdmin && locationData"
+                  v-if="auth.can('MOTORCYCLES_MANAGE') && locationData"
                   type="button"
                   @click="annotationMode = !annotationMode"
                   :aria-pressed="annotationMode"
@@ -134,13 +183,13 @@
                 </button>
 
                 <button
-                  v-if="locationData"
+                  v-if="locationData && auth.can('SESSION_CHECKLIST')"
                   type="button"
-                  @click="startSession"
+                  @click="checklistDialogOpen = true"
                   :disabled="isCreatingSession || locationData.bolts.length === 0"
                   class="hidden lg:inline-flex min-h-[44px] px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold items-center gap-2 cursor-pointer disabled:opacity-40"
                 >
-                  <span>{{ isCreatingSession ? 'Menyiapkan...' : 'Mulai Checklist' }}</span>
+                  <span>{{ isCreatingSession ? 'Membuka...' : 'Mulai Checklist' }}</span>
                   <ArrowRight class="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
@@ -195,7 +244,7 @@
         >
           <!-- LEFT COLUMN: BOLT CARDS / POSITION SLOTS / PACKAGES -->
           <section
-            aria-label="Daftar baut dan paket motor"
+            aria-label="Daftar baut dan bundling motor"
             class="space-y-3"
             :class="mobileTab === 'baut' ? 'block' : 'hidden lg:block'"
           >
@@ -204,13 +253,25 @@
               :options="leftTabOptions"
             />
 
+            <!-- Sub-view D: step-by-step installation guide, highlighted on the 3D model -->
+            <template v-if="leftMode === 'guide'">
+              <InstallGuidePanel
+                :location-data="locationData"
+                :motor-id="locationData.motorcycle.id"
+                :package-id="selectedPackageId"
+                :start-arranging="route.query.atur === '1'"
+                @step-change="onGuideStep"
+                @changed="loadLocationMap({ silent: true })"
+              />
+            </template>
+
             <!-- Sub-view C: Package Preset Cards -->
-            <template v-if="leftMode === 'packages'">
+            <template v-else-if="leftMode === 'packages'">
               <div class="grid grid-cols-1 gap-2.5">
                 <PresetCard
                   :pkg="null"
                   title="Lengkap Satu Motor"
-                  :subtitle="`${locationData.positions.length} titik pasang`"
+                  :subtitle="`${locationData.positions.length} posisi pasang`"
                   :active="!selectedPackageId"
                   @select="selectPackage(null, 'Lengkap Satu Motor')"
                 />
@@ -235,7 +296,7 @@
               >
                 <div class="flex items-center gap-2 min-w-0">
                   <Layers class="w-4 h-4 text-zinc-600 dark:text-zinc-400 shrink-0" aria-hidden="true" />
-                  <span class="text-xs font-medium text-zinc-600 dark:text-zinc-400 shrink-0">Paket:</span>
+                  <span class="text-xs font-medium text-zinc-600 dark:text-zinc-400 shrink-0">Bundling:</span>
                   <span class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                     {{ locationData.package ? locationData.package.name : 'Lengkap Satu Motor' }}
                   </span>
@@ -284,13 +345,13 @@
                 </div>
               </template>
 
-              <!-- Sub-view B: Position Slots (Per Titik) -->
+              <!-- Sub-view B: Position Slots (Per Posisi) -->
               <template v-else>
                 <EmptyState
                   v-if="filteredBreakdown.length === 0"
                   :icon="Wrench"
-                  title="Titik Tidak Ditemukan"
-                  description="Belum ada titik pemasangan yang cocok."
+                  title="Posisi Tidak Ditemukan"
+                  description="Belum ada posisi pemasangan yang cocok."
                   action-label="Reset Pencarian"
                   @action="boltSearch = ''"
                 />
@@ -314,7 +375,7 @@
             :class="mobileTab === 'lokasi' ? 'block' : 'hidden lg:block'"
           >
             <ModelManagerPanel
-              v-if="auth.isAdmin && showModelPanel && locationData?.motorcycle?.id"
+              v-if="auth.can('MOTORCYCLES_MANAGE') && showModelPanel && locationData?.motorcycle?.id"
               :motorcycle-id="locationData.motorcycle.id"
               :motorcycle-name="locationData.motorcycle.displayName"
               :model="locationData.model"
@@ -324,8 +385,28 @@
               @close="showModelPanel = false"
             />
 
+            <div
+              v-if="locationData.model?.modelUrl && locationData.motorcycle?.images?.length"
+              role="tablist"
+              aria-label="Tampilan motor"
+              class="inline-flex p-1 rounded-xl bg-zinc-100 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700"
+            >
+              <button
+                v-for="opt in [{ value: '3d', label: 'Model 3D' }, { value: 'foto', label: 'Foto motor' }]"
+                :key="opt.value"
+                type="button"
+                role="tab"
+                :aria-selected="viewMode === opt.value"
+                @click="viewMode = opt.value"
+                class="min-h-[36px] px-3.5 rounded-lg text-xs font-semibold cursor-pointer"
+                :class="viewMode === opt.value ? 'bg-white dark:bg-[#121215] text-zinc-900 dark:text-zinc-100 shadow-sm' : 'text-zinc-600 dark:text-zinc-400'"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+
             <component
-              :is="locationData.model?.modelUrl ? AsyncModelViewer : LocationCanvas"
+              :is="locationData.model?.modelUrl && viewMode === '3d' ? AsyncModelViewer : LocationCanvas"
               :motorcycle="locationData.motorcycle"
               :model="locationData.model"
               :positions="locationData.positions"
@@ -338,7 +419,7 @@
               :active-annotation="activeAnnotation"
               :selected-bolt="selectedBolt"
               :annotation-mode="annotationMode"
-              :can-annotate="auth.isAdmin"
+              :can-annotate="auth.can('MOTORCYCLES_MANAGE')"
               :is-saving-annotation="isSavingAnnotation"
               :is-deleting-annotation="isDeletingAnnotation"
               @select-annotation="onSelectAnnotation"
@@ -372,12 +453,13 @@
               </button>
 
               <button
+                v-if="auth.can('SESSION_CHECKLIST')"
                 type="button"
-                @click="startSession"
+                @click="checklistDialogOpen = true"
                 :disabled="isCreatingSession || locationData.bolts.length === 0"
                 class="flex-1 min-h-[48px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
               >
-                <span>{{ isCreatingSession ? 'Menyiapkan...' : 'Mulai Checklist' }}</span>
+                <span>{{ isCreatingSession ? 'Membuka...' : 'Mulai Checklist' }}</span>
                 <ArrowRight class="w-4 h-4" aria-hidden="true" />
               </button>
             </ActionBar>
@@ -392,7 +474,7 @@
 import { formatLength, formatOptional } from '../utils/boltSize';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Nut, Printer, Wrench } from 'lucide-vue-next';
+import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Map as MapIcon, Nut, Pencil, Printer, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { formatSideLabel, getDiameterTier, getCompletenessMeta } from '../utils/boltTokens';
@@ -407,6 +489,9 @@ import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ActionBar from '../components/ui/ActionBar.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
+import InstallGuidePanel from '../components/location/InstallGuidePanel.vue';
+import StartChecklistDialog from '../components/ui/StartChecklistDialog.vue';
+import MotorProfileDialog from '../components/ui/MotorProfileDialog.vue';
 import ModelManagerPanel from '../components/location/ModelManagerPanel.vue';
 
 const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
@@ -421,7 +506,9 @@ const allSpecs = ref([]);
 const isLoading = ref(false);
 const errorMsg = ref('');
 const mobileTab = ref('baut');
-const leftMode = ref('rack');
+const leftMode = ref(route.query.panduan === '1' ? 'guide' : 'rack');
+// motors with a 3D model show it by default; the photo stays one tap away
+const viewMode = ref('3d');
 const boltSearch = ref('');
 const selectedSizeTier = ref('ALL');
 const selectedPackageId = ref(route.query.packageId ? parseInt(route.query.packageId, 10) : null);
@@ -441,11 +528,12 @@ const completeness = computed(() => {
 const leftTabOptions = computed(() => {
   const opts = [
     { value: 'rack', label: 'Per Rak', count: locationData.value?.bolts?.length || 0 },
-    { value: 'slots', label: 'Per Titik', count: locationData.value?.positionBreakdown?.length || 0 },
+    { value: 'slots', label: 'Per Posisi', count: locationData.value?.positionBreakdown?.length || 0 },
+    { value: 'guide', label: 'Panduan Pasang', count: new Set((locationData.value?.positionBreakdown || []).map((r) => r.positionId ?? r.positionName)).size },
   ];
   const pkgCount = locationData.value?.packages?.length || 0;
   if (pkgCount > 0) {
-    opts.push({ value: 'packages', label: 'Paket', count: pkgCount + 1 });
+    opts.push({ value: 'packages', label: 'Bundling', count: pkgCount + 1 });
   }
   return opts;
 });
@@ -505,8 +593,8 @@ const loadLocationMap = async ({ silent = false } = {}) => {
     const requests = [
       auth.apiFetch(`/api/motorcycles/${route.params.motorId}/location-map${pkgQuery}`),
     ];
-    if (auth.isAdmin && allSpecs.value.length === 0) {
-      requests.push(auth.apiFetch('/api/bolt-specs'));
+    if (auth.can('MOTORCYCLES_MANAGE') && allSpecs.value.length === 0) {
+      requests.push(auth.apiFetch('/api/bolt-specs?itemType=BAUT'));
     }
     const [res, resSpecs] = await Promise.all(requests);
     const data = await res.json();
@@ -546,7 +634,7 @@ const selectPackage = async (pkgId, pkgLabel) => {
   await loadLocationMap();
   leftMode.value = 'rack';
   if (pkgLabel) {
-    toast.success(`Paket dipilih: ${pkgLabel}`);
+    toast.success(`Bundling dipilih: ${pkgLabel}`);
   }
 };
 
@@ -575,6 +663,20 @@ const onSelectBolt = (bolt) => {
       toast.info(`Baut ${bolt.code} belum ditandai di peta lokasi.`);
     }
   }
+};
+
+// Guide step changed: highlight that position on the 3D model / photo and show its first bolt
+const onGuideStep = (step) => {
+  const firstRow = step.rows?.[0];
+  selectedBolt.value = firstRow
+    ? (locationData.value?.bolts || []).find((b) => b.boltSpecId === firstRow.boltSpec?.id) || null
+    : null;
+  activeAnnotation.value = findAnnotationForPositions(step.positionId ? [step.positionId] : [], step.name || '');
+};
+
+const openGuide = () => {
+  leftMode.value = 'guide';
+  mobileTab.value = 'baut';
 };
 
 const onSelectSlot = (slotRow) => {
@@ -658,9 +760,9 @@ const handleCreateAnnotation = async ({
 
     await loadLocationMap({ silent: true });
     onSelectAnnotation(created);
-    toast.success(created.createdRequirement ? 'Area, titik lokasi & baut disimpan' : 'Titik lokasi baut berhasil disimpan');
+    toast.success(created.createdRequirement ? 'Area, penanda lokasi & baut disimpan' : 'Penanda lokasi baut berhasil disimpan');
   } catch (err) {
-    toast.error(err.message || 'Gagal menyimpan titik lokasi.');
+    toast.error(err.message || 'Gagal menyimpan penanda lokasi.');
   } finally {
     isSavingAnnotation.value = false;
   }
@@ -694,9 +796,9 @@ const handleUpdateAnnotation = async ({
     if (activeAnnotation.value?.id === id) {
       activeAnnotation.value = updated;
     }
-    toast.success('Titik lokasi diperbarui');
+    toast.success('Penanda lokasi diperbarui');
   } catch (err) {
-    toast.error(err.message || 'Gagal memperbarui titik lokasi.');
+    toast.error(err.message || 'Gagal memperbarui penanda lokasi.');
   } finally {
     isSavingAnnotation.value = false;
   }
@@ -724,7 +826,17 @@ const handleDeleteAnnotation = async (annotationId) => {
   }
 };
 
-const startSession = async () => {
+// Edit Profil Paket (admin): name, motorcycle data and main photo of this Paket Full Bike slot
+const profileDialogOpen = ref(false);
+const onProfileSaved = async (updated) => {
+  profileDialogOpen.value = false;
+  toast.success(`Profil ${updated.displayName} disimpan`);
+  await loadLocationMap({ silent: true });
+};
+
+// Mulai Checklist: the popup asks for the buyer, then the Riwayat slot is created and opened
+const checklistDialogOpen = ref(false);
+const startSession = async (buyerName = '') => {
   if (!locationData.value || isCreatingSession.value) return;
   isCreatingSession.value = true;
   try {
@@ -734,7 +846,8 @@ const startSession = async () => {
       body: JSON.stringify({
         motorcycleTypeId: locationData.value.motorcycle.id,
         packageId: locationData.value.package?.id || null,
-        notes: `Pengambilan baut ${locationData.value.motorcycle.displayName}${locationData.value.package ? ` - ${locationData.value.package.name}` : ''}`,
+        buyerName,
+        notes: `Checklist Paket Full Bike ${locationData.value.motorcycle.displayName}${locationData.value.package ? ` - ${locationData.value.package.name}` : ''}`,
         items: (locationData.value.bolts || []).map((item) => ({
           boltSpecId: item.boltSpecId,
           quantity: item.totalQuantity,
@@ -744,11 +857,12 @@ const startSession = async () => {
       }),
     });
     const session = await res.json();
-    if (!res.ok) throw new Error(session.error || 'Gagal memulai sesi checklist.');
-    toast.success('Sesi pengambilan baut dimulai');
-    router.push(`/pick-list/${session.id}`);
+    if (!res.ok) throw new Error(session.error || 'Gagal membuat riwayat checklist.');
+    checklistDialogOpen.value = false;
+    toast.success('Riwayat checklist dibuat');
+    router.push(`/history/paket/${session.id}`);
   } catch (err) {
-    toast.error(err.message || 'Gagal memulai sesi checklist.');
+    toast.error(err.message || 'Gagal membuat riwayat checklist.');
   } finally {
     isCreatingSession.value = false;
   }

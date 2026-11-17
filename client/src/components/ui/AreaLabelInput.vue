@@ -8,11 +8,11 @@
         {{ label }}
       </label>
       <router-link
-        v-if="showManageLink && auth.isAdmin"
-        to="/bolt-specs?tab=positions"
+        v-if="showManageLink && auth.can('MOTORCYCLES_MANAGE')"
+        :to="route.params.motorId ? `/pick-list/${route.params.motorId}/lokasi?panduan=1&atur=1` : '/pick-list'"
         class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white underline underline-offset-2 shrink-0"
       >
-        Kelola Master Posisi
+        Atur Posisi
       </router-link>
     </div>
 
@@ -106,9 +106,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { ChevronDown, Plus, X } from 'lucide-vue-next';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 
 const auth = useAuthStore();
+const route = useRoute();
 
 const props = defineProps({
   inputId: { type: String, default: 'area-label-input' },

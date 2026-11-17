@@ -1,11 +1,11 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/audit-logs
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/', requireAuth, requirePermission('AUDIT_LOG_VIEW'), async (req, res) => {
   try {
     const { limit = 50 } = req.query;
     const logs = await prisma.auditLog.findMany({

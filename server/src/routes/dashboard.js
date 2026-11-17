@@ -1,6 +1,6 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -9,15 +9,16 @@ const sizeLabel = (spec) => (Number(spec.lengthMm) > 0 ? `M${fmt(spec.diameterMm
 const ILLUSTRATION_PREFIX = '/uploads/bolts/ukuran/';
 
 // GET /api/dashboard/overview — read-only aggregates for the dashboard charts
-router.get('/overview', requireAuth, async (req, res) => {
+router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async (req, res) => {
   try {
     const [motorcycles, specs, requirements, positions, packages, sessions] = await Promise.all([
       prisma.motorcycleType.findMany({ select: { id: true, brand: true, displayName: true, isActive: true } }),
       prisma.boltSpec.findMany({
+        where: { itemType: 'BAUT' },
         select: { id: true, code: true, headType: true, diameterMm: true, lengthMm: true, images: { select: { url: true } } },
       }),
       prisma.motorBoltRequirement.findMany({
-        select: { motorcycleTypeId: true, boltSpecId: true, quantity: true, boltPosition: { select: { category: true } } },
+        select: { motorcycleTypeId: true, boltSpecId: true, quantity: true, isCritical: true, sizeStatus: true, boltPosition: { select: { category: true } } },
       }),
       prisma.boltPosition.count(),
       prisma.package.findMany({ select: { status: true, packageType: true } }),
@@ -114,6 +115,12 @@ router.get('/overview', requireAuth, async (req, res) => {
       imageCoverage,
       packagesByType: countBy(packages, (p) => p.packageType),
       sessionsByStatus: countBy(sessions, (s) => s.status),
+      // brief: data completeness warning on the dashboard
+      completeness: {
+        motorsWithoutData: motorcycles.filter((m) => m.isActive && !byMotor.has(m.id)).map((m) => ({ id: m.id, label: m.displayName })),
+        rowsToCheck: requirements.filter((r) => r.sizeStatus === 'CEK_FISIK').length,
+        criticalRows: requirements.filter((r) => r.isCritical).length,
+      },
     });
   } catch (error) {
     console.error('Error building dashboard overview:', error);

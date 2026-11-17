@@ -1,0 +1,27 @@
+services:
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hexti_test
+      POSTGRES_PASSWORD: isolated_test_only
+      POSTGRES_DB: hextitanium_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hexti_test -d hextitanium_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+  test-api:
+    build: .
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://hexti_test:isolated_test_only@test-db:5432/hextitanium_test?schema=public
+      TEST_DATABASE_URL: postgresql://hexti_test:isolated_test_only@test-db:5432/hextitanium_test?schema=public
+      JWT_SECRET: isolated-test-secret
+      UPLOADS_DIR: /tmp/hextitanium-test-seed
+    depends_on:
+      test-db:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command: ["npx prisma db push --skip-generate && node prisma/seed.js && npm test"]

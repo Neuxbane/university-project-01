@@ -1,13 +1,13 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { buildPickListData } = require('../utils/pickListAggregator');
 
 const router = express.Router();
 
 // POST /api/pick-lists/generate
-router.post('/generate', requireAuth, async (req, res) => {
+router.post('/generate', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE'), async (req, res) => {
   try {
     const { motorcycleTypeId, packageId } = req.body;
     if (!motorcycleTypeId) {
@@ -32,9 +32,9 @@ router.post('/generate', requireAuth, async (req, res) => {
 });
 
 // POST /api/pick-lists/sessions
-router.post('/sessions', requireAuth, async (req, res) => {
+router.post('/sessions', requireAuth, requirePermission('SESSION_CHECKLIST'), async (req, res) => {
   try {
-    const { motorcycleTypeId, packageId, notes, items } = req.body;
+    const { motorcycleTypeId, packageId, notes, items, buyerName } = req.body;
     if (!motorcycleTypeId || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Data motor dan item pick session wajib diisi.' });
     }
@@ -46,6 +46,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
         createdBy: req.user.id,
         status: 'IN_PROGRESS',
         notes: notes ? notes.trim() : null,
+        buyerName: buyerName ? String(buyerName).trim() || null : null,
         items: {
           create: items.map((item) => ({
             boltSpecId: parseInt(item.boltSpecId, 10),
@@ -83,7 +84,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
 });
 
 // GET /api/pick-lists/sessions
-router.get('/sessions', requireAuth, async (req, res) => {
+router.get('/sessions', requireAuth, requirePermission('MENU_RIWAYAT'), async (req, res) => {
   try {
     const { status, limit = 20 } = req.query;
     const where = {};
@@ -127,7 +128,7 @@ router.get('/sessions', requireAuth, async (req, res) => {
 });
 
 // GET /api/pick-lists/sessions/:id
-router.get('/sessions/:id', requireAuth, async (req, res) => {
+router.get('/sessions/:id', requireAuth, requirePermission('MENU_RIWAYAT'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const session = await prisma.pickSession.findUnique({
@@ -178,12 +179,32 @@ router.get('/sessions/:id', requireAuth, async (req, res) => {
   }
 });
 
+// PATCH /api/pick-lists/sessions/:id - { buyerName } of a Paket Full Bike claim
+router.patch('/sessions/:id', requireAuth, requirePermission('SESSION_CHECKLIST'), async (req, res) => {
+  try {
+    const buyerName = req.body.buyerName ? String(req.body.buyerName).trim() : '';
+    const session = await prisma.pickSession.update({
+      where: { id: parseInt(req.params.id, 10) },
+      data: { buyerName: buyerName || null },
+      select: { id: true, buyerName: true },
+    });
+    res.json(session);
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Klaim tidak ditemukan.' });
+    console.error('Error updating session buyer:', error);
+    res.status(500).json({ error: 'Gagal menyimpan nama pembeli.' });
+  }
+});
+
 // PATCH /api/pick-lists/sessions/:id/items/:itemId
-router.patch('/sessions/:id/items/:itemId', requireAuth, async (req, res) => {
+router.patch('/sessions/:id/items/:itemId', requireAuth, requirePermission('SESSION_CHECKLIST'), async (req, res) => {
   try {
     const sessionId = parseInt(req.params.id, 10);
     const itemId = parseInt(req.params.itemId, 10);
     const { checked } = req.body;
+
+    const item = await prisma.pickSessionItem.findFirst({ where: { id: itemId, pickSessionId: sessionId } });
+    if (!item) return res.status(404).json({ error: 'Item tidak ditemukan dalam sesi ini.' });
 
     const updatedItem = await prisma.pickSessionItem.update({
       where: { id: itemId },
@@ -198,9 +219,12 @@ router.patch('/sessions/:id/items/:itemId', requireAuth, async (req, res) => {
     const isAllChecked = allItems.every((item) => item.checked);
     const newStatus = isAllChecked ? 'COMPLETED' : 'IN_PROGRESS';
 
+    // completedAt marks the end of preparation (start = createdAt) for the service-time report;
+    // the first completion counts, unticking an item clears it again
+    const session = await prisma.pickSession.findUnique({ where: { id: sessionId }, select: { completedAt: true } });
     await prisma.pickSession.update({
       where: { id: sessionId },
-      data: { status: newStatus },
+      data: { status: newStatus, completedAt: isAllChecked ? session?.completedAt || new Date() : null },
     });
 
     res.json({ updatedItem, sessionStatus: newStatus, isAllChecked });

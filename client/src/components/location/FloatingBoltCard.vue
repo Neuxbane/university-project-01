@@ -2,7 +2,7 @@
   <div
     class="pointer-events-auto w-[184px] sm:w-[216px] bg-white/95 dark:bg-[#121215]/95 backdrop-blur-md rounded-2xl border border-zinc-300 dark:border-zinc-700 shadow-2xl overflow-hidden transition-all duration-150 flex flex-col"
     role="region"
-    :aria-label="`Detail titik ${positionName}`"
+    :aria-label="`Detail posisi ${positionName}`"
   >
     <!-- Rarity / Size Accent Band -->
     <div class="h-1 w-full shrink-0" :class="tier.band" aria-hidden="true"></div>
@@ -90,7 +90,7 @@ import { getDiameterTier } from '../../utils/boltTokens';
 
 const props = defineProps({
   bolt: { type: Object, required: true },
-  positionName: { type: String, default: 'Titik Pasang' },
+  positionName: { type: String, default: 'Posisi Pasang' },
   checkStatus: { type: String, default: null }, // 'done' | 'partial' | 'pending' | null
   isTogglingCheck: { type: Boolean, default: false },
 });

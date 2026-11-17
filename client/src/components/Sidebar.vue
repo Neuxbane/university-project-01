@@ -66,7 +66,7 @@
       <div class="p-4 flex-1 overflow-y-auto">
         <!-- Logo & Close button on Mobile -->
         <div class="flex items-center justify-between pb-4 mb-3 border-b border-zinc-200 dark:border-zinc-800">
-          <router-link to="/pick-list" class="flex items-center gap-2.5 min-h-[44px]">
+          <router-link :to="auth.homePath" class="flex items-center gap-2.5 min-h-[44px]">
             <div class="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-black text-xs tracking-tighter shadow-sm shrink-0">
               HX
             </div>
@@ -102,6 +102,7 @@
         <!-- Navigation Links -->
         <nav v-if="auth.isAuthenticated" class="space-y-1.5" aria-label="Navigasi Halaman">
           <router-link
+            v-if="auth.can('MENU_DASHBOARD')"
             to="/dashboard"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
             :class="[$route.path === '/dashboard' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
@@ -112,20 +113,10 @@
             <span>Dashboard</span>
           </router-link>
 
-          <p class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Basis Data Baut</p>
+          <p v-if="auth.can('MENU_MASTER_BARANG', 'VERIFICATION_MANAGE')" class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Basis Data</p>
 
           <router-link
-            to="/motorcycles"
-            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/motorcycles') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
-          >
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-            <span>Tipe Motor</span>
-          </router-link>
-
-          <router-link
+            v-if="auth.can('MENU_MASTER_BARANG')"
             to="/bolt-specs"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
             :class="[$route.path === '/bolt-specs' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
@@ -134,38 +125,52 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
               <circle cx="12" cy="12" r="3" stroke-width="2"></circle>
             </svg>
-            <span>Master Baut</span>
+            <span>Master Barang</span>
           </router-link>
 
           <router-link
-            v-if="auth.isAdmin"
-            to="/packages"
+            v-if="auth.can('VERIFICATION_MANAGE')"
+            to="/verifikasi"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/packages' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path === '/verifikasi' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
             </svg>
-            <span>Komposisi Paket</span>
+            <span>Verifikasi Full Bike</span>
           </router-link>
 
-          <p class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Operasional</p>
+          <p v-if="auth.can('MENU_PAKET_FULL_BIKE', 'MENU_BUNDLING', 'MENU_RIWAYAT')" class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Operasional</p>
 
           <router-link
+            v-if="auth.can('MENU_PAKET_FULL_BIKE')"
             to="/pick-list"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/pick-list') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[($route.path.startsWith('/pick-list') || $route.path.startsWith('/motorcycles') || $route.path.startsWith('/pasang')) ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
             </svg>
-            <span>Ambil Baut</span>
+            <span>Paket Full Bike</span>
           </router-link>
 
           <router-link
+            v-if="auth.can('MENU_BUNDLING')"
+            to="/bundling"
+            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
+            :class="[$route.path.startsWith('/bundling') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+          >
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <span>Bundling</span>
+          </router-link>
+
+          <router-link
+            v-if="auth.can('MENU_RIWAYAT')"
             to="/history"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/history' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path.startsWith('/history') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -173,10 +178,24 @@
             <span>Riwayat</span>
           </router-link>
 
-          <p class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Sistem</p>
+          <p v-if="auth.can('REPORT_SERVICE_TIME')" class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Laporan</p>
 
           <router-link
-            v-if="auth.isAdmin"
+            v-if="auth.can('REPORT_SERVICE_TIME')"
+            to="/laporan/waktu"
+            class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
+            :class="[$route.path.startsWith('/laporan') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+          >
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span>Waktu Layanan</span>
+          </router-link>
+
+          <p v-if="auth.canOpenSystem || auth.can('MENU_BUKU_PANDUAN')" class="px-3.5 pt-4 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Sistem</p>
+
+          <router-link
+            v-if="auth.canOpenSystem"
             to="/admin/import"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
             :class="[$route.path.startsWith('/admin') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
@@ -188,6 +207,7 @@
           </router-link>
 
           <router-link
+            v-if="auth.can('MENU_BUKU_PANDUAN')"
             to="/help/manual"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
             :class="[$route.path === '/help/manual' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
@@ -209,8 +229,8 @@
               <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                 {{ auth.user?.name }}
               </p>
-              <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 uppercase">
-                {{ auth.user?.role }}
+              <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 uppercase truncate">
+                {{ auth.user?.roleName || auth.user?.role }}
               </p>
             </div>
           </div>

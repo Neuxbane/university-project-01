@@ -3,7 +3,7 @@ const multer = require('multer');
 const { Readable } = require('stream');
 const csvParser = require('csv-parser');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
@@ -11,7 +11,7 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // POST /api/import/requirements
-router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), async (req, res) => {
+router.post('/requirements', requireAuth, requirePermission('CSV_IMPORT_EXPORT'), upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'File CSV wajib diunggah.' });
@@ -160,7 +160,7 @@ router.post('/requirements', requireAuth, requireAdmin, upload.single('file'), a
 });
 
 // GET /api/admin/backup
-router.get('/backup', requireAuth, requireAdmin, async (req, res) => {
+router.get('/backup', requireAuth, requirePermission('SYSTEM_BACKUP_RESTORE'), async (req, res) => {
   try {
     const backupData = {
       version: '1.0',
@@ -191,7 +191,7 @@ router.get('/backup', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // POST /api/admin/restore
-router.post('/restore', requireAuth, requireAdmin, async (req, res) => {
+router.post('/restore', requireAuth, requirePermission('SYSTEM_BACKUP_RESTORE'), async (req, res) => {
   try {
     const { backupData, confirmation } = req.body;
     if (confirmation !== 'RESTORE_HEXTITANIUM') {

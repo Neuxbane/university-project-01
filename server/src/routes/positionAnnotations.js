@@ -1,13 +1,13 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
 const router = express.Router();
 
 // POST /api/position-annotations (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const {
       boltPositionId,
@@ -146,7 +146,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/position-annotations/:id (Admin only)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const existing = await prisma.positionAnnotation.findUnique({ where: { id } });
@@ -215,7 +215,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/position-annotations/:id (Admin only)
-router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const existing = await prisma.positionAnnotation.findUnique({ where: { id } });

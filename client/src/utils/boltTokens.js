@@ -64,6 +64,10 @@ export function getPackageTypeMeta(type) {
     };
   }
   const normalized = raw.toLowerCase().replace(/[\s_-]+/g, '');
+  // Bundling names used by the shop: keep their own wording, reuse the colour of the matching group
+  if (normalized === 'bundlingfullbike') return { ...PACKAGE_TYPE_META_MAP.FULL_BIKE, key: 'BUNDLING_FULL_BIKE', label: 'Bundling Full Bike' };
+  if (normalized === 'bodihalus') return { ...PACKAGE_TYPE_META_MAP.BODY, key: 'BODI_HALUS', label: 'Bodi Halus' };
+  if (normalized === 'bodikasar') return { ...PACKAGE_TYPE_META_MAP.ENGINE, key: 'BODI_KASAR', label: 'Bodi Kasar' };
   if (normalized === 'fullbike' || normalized === 'lengkapsatumotor') return PACKAGE_TYPE_META_MAP.FULL_BIKE;
   if (normalized === 'engine' || normalized === 'mesin') return PACKAGE_TYPE_META_MAP.ENGINE;
   if (normalized === 'brake' || normalized === 'pengereman' || normalized === 'rem') return PACKAGE_TYPE_META_MAP.BRAKE;

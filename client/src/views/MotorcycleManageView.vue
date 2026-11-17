@@ -6,11 +6,11 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
             <router-link
-              to="/motorcycles"
+              to="/pick-list"
               class="min-h-[44px] px-3 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-xs sm:text-sm font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1.5 shrink-0 transition-colors"
             >
               <ArrowLeft class="w-4 h-4" aria-hidden="true" />
-              <span>Tipe Motor</span>
+              <span>Daftar Motor</span>
             </router-link>
 
             <div
@@ -36,7 +36,7 @@
                 </span>
               </div>
               <p v-if="motor" class="text-xs font-mono text-zinc-600 dark:text-zinc-400 mt-0.5">
-                {{ requirements.length }} entri matriks &bull; {{ annotations.length }} titik peta &bull; {{ closeUpPhotos.length }} foto close-up
+                {{ requirements.length }} entri matriks &bull; {{ annotations.length }} penanda peta &bull; {{ closeUpPhotos.length }} foto close-up
               </p>
             </div>
           </div>
@@ -51,7 +51,17 @@
             </router-link>
 
             <button
-              v-if="auth.isAdmin"
+              v-if="auth.can('MOTORCYCLES_MANAGE')"
+              type="button"
+              @click="profileDialogOpen = true"
+              class="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Pencil class="w-4 h-4" aria-hidden="true" />
+              <span>Edit Profil Paket</span>
+            </button>
+
+            <button
+              v-if="auth.can('MOTORCYCLES_MANAGE')"
               type="button"
               @click="askToggleActive"
               class="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-xs sm:text-sm font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer"
@@ -109,7 +119,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2">
               <SearchInput v-model="matrixSearch" placeholder="Cari area atau kode baut..." class="flex-1 min-w-[180px]" />
               <button
-                v-if="auth.isAdmin"
+                v-if="auth.can('MOTORCYCLES_MANAGE')"
                 type="button"
                 @click="showQuickAddCard = !showQuickAddCard"
                 :aria-expanded="showQuickAddCard"
@@ -125,7 +135,7 @@
 
             <!-- Compact On-Demand Fallback Form (when adding without clicking 3D/2D model first) -->
             <form
-              v-if="auth.isAdmin && showQuickAddCard"
+              v-if="auth.can('MOTORCYCLES_MANAGE') && showQuickAddCard"
               @submit.prevent="handleAddRequirement"
               class="p-3.5 rounded-2xl bg-white dark:bg-[#121215] border border-zinc-300 dark:border-zinc-700 shadow-sm space-y-2.5"
             >
@@ -207,7 +217,7 @@
               v-if="groupedAreas.length === 0"
               :icon="Wrench"
               title="Belum ada area &amp; baut"
-              description="Aktifkan Mode Anotasi Posisi lalu ketuk bagian pada motor untuk menambah area, titik lokasi, dan bautnya sekaligus."
+              description="Aktifkan Mode Anotasi Posisi lalu ketuk bagian pada motor untuk menambah area, penanda lokasi, dan bautnya sekaligus."
             />
 
             <!-- Grouped Area Cards -->
@@ -246,7 +256,7 @@
                         : 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100'"
                     >
                       <MapPin class="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>{{ area.hasAnnotation ? 'Lihat Titik' : 'Tandai di Peta' }}</span>
+                      <span>{{ area.hasAnnotation ? 'Lihat Penanda' : 'Tandai di Peta' }}</span>
                     </button>
 
                     <button
@@ -260,7 +270,7 @@
                     </button>
 
                     <button
-                      v-if="auth.isAdmin"
+                      v-if="auth.can('MOTORCYCLES_MANAGE')"
                       type="button"
                       @click="confirmDeleteArea = area"
                       :title="`Hapus area ${area.positionName} dari motor ini`"
@@ -305,7 +315,7 @@
                     </div>
 
                     <button
-                      v-if="auth.isAdmin"
+                      v-if="auth.can('MOTORCYCLES_MANAGE')"
                       type="button"
                       @click="confirmDeleteReq = req"
                       :aria-label="`Hapus ${req.boltSpec?.code} dari ${area.positionName}`"
@@ -320,7 +330,7 @@
                 </p>
 
                 <!-- Inline + Tambah Baut inside THIS Area Card -->
-                <div v-if="auth.isAdmin" class="pt-1">
+                <div v-if="auth.can('MOTORCYCLES_MANAGE')" class="pt-1">
                   <form
                     v-if="inlineAddPositionId === area.positionId"
                     @submit.prevent="submitInlineBoltForArea(area.positionId)"
@@ -397,7 +407,7 @@
           <!-- Right: Live 3D / 2D Location Viewer & Annotation Mode -->
           <section class="lg:sticky lg:top-6 space-y-3" aria-label="Peta lokasi 3D dan anotasi">
             <div
-              v-if="auth.isAdmin"
+              v-if="auth.can('MOTORCYCLES_MANAGE')"
               class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-3 flex items-center justify-between gap-2"
             >
               <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">
@@ -432,7 +442,7 @@
               :selected-bolt="focusedBolt"
               :annotation-mode="annotationMode"
               :initial-position-id="pendingAnnotationPositionId"
-              :can-annotate="auth.isAdmin"
+              :can-annotate="auth.can('MOTORCYCLES_MANAGE')"
               :is-saving-annotation="isSavingAnnotation"
               :is-deleting-annotation="isDeletingAnnotation"
               @select-annotation="onSelectAnnotation"
@@ -451,7 +461,7 @@
       <div v-else-if="activeTab === 'closeup'" class="space-y-5">
         <!-- Upload New Close-Up Photo Card -->
         <section
-          v-if="auth.isAdmin"
+          v-if="auth.can('MOTORCYCLES_MANAGE')"
           class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 p-4 shadow-sm space-y-3"
         >
           <div>
@@ -539,7 +549,7 @@
           :selected-photo-id="selectedCloseupPhotoId"
           :requirements="requirements"
           :all-specs="allSpecs"
-          :can-annotate="auth.isAdmin"
+          :can-annotate="auth.can('MOTORCYCLES_MANAGE')"
           :is-saving-pin="isSavingPin"
           @select-photo="(p) => selectedCloseupPhotoId = p.id"
           @create-pin="handleCreateCloseupPin"
@@ -556,7 +566,7 @@
             <div>
               <h2 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Galeri Foto Motor</h2>
               <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                Foto utama tampil pada kartu roster dan header motor.
+                Foto utama tampil di kartu Paket Full Bike dan halaman motornya. Foto yang baru diunggah langsung menjadi foto utama.
               </p>
             </div>
             <span class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold">
@@ -564,7 +574,7 @@
             </span>
           </div>
 
-          <form v-if="auth.isAdmin" @submit.prevent="handleUploadMotorImages" class="flex flex-col sm:flex-row gap-2">
+          <form v-if="auth.can('MOTORCYCLES_MANAGE')" @submit.prevent="handleUploadMotorImages" class="flex flex-col sm:flex-row gap-2">
             <input
               ref="motorPhotoInput"
               type="file"
@@ -606,7 +616,7 @@
               </div>
               <div class="p-2.5 flex items-center justify-between gap-2">
                 <button
-                  v-if="auth.isAdmin && !img.isPrimary"
+                  v-if="auth.can('MOTORCYCLES_MANAGE') && !img.isPrimary"
                   type="button"
                   @click="setPrimaryMotorImage(img.id)"
                   class="min-h-[36px] px-2.5 py-1 rounded-lg border border-zinc-400 dark:border-zinc-700 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
@@ -618,7 +628,7 @@
                 </span>
 
                 <button
-                  v-if="auth.isAdmin"
+                  v-if="auth.can('MOTORCYCLES_MANAGE')"
                   type="button"
                   @click="confirmDeleteMotorImage = img"
                   aria-label="Hapus foto motor"
@@ -633,7 +643,7 @@
 
         <!-- Inline 3D Model (.glb) Manager -->
         <ModelManagerPanel
-          v-if="auth.isAdmin"
+          v-if="auth.can('MOTORCYCLES_MANAGE')"
           :motorcycle-id="motor.id"
           :motorcycle-name="motor.displayName"
           :model="model"
@@ -645,6 +655,13 @@
     </template>
 
     <!-- Confirm Delete Requirement -->
+    <MotorProfileDialog
+      :open="profileDialogOpen"
+      :motor-id="motor?.id || null"
+      @saved="onProfileSaved"
+      @cancel="profileDialogOpen = false"
+    />
+
     <ConfirmDialog
       :open="Boolean(confirmDeleteReq)"
       title="Hapus baut dari area?"
@@ -659,7 +676,7 @@
     <ConfirmDialog
       :open="Boolean(confirmDeleteArea)"
       title="Hapus area ini dari motor?"
-      :message="confirmDeleteArea ? `Area '${confirmDeleteArea.positionName}' beserta ${confirmDeleteArea.requirements.length} item baut, ${confirmDeleteArea.annotationsCount} titik peta 3D/2D, dan foto close-up terkait pada motor ini akan dihapus.` : ''"
+      :message="confirmDeleteArea ? `Area '${confirmDeleteArea.positionName}' beserta ${confirmDeleteArea.requirements.length} item baut, ${confirmDeleteArea.annotationsCount} penanda peta 3D/2D, dan foto close-up terkait pada motor ini akan dihapus.` : ''"
       confirm-text="Ya, Hapus Area"
       :danger="true"
       @confirm="executeDeleteArea"
@@ -705,6 +722,7 @@ import {
   Plus,
   Trash2,
   Wrench,
+  Pencil,
 } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
@@ -717,6 +735,7 @@ import BoltSpecPicker from '../components/ui/BoltSpecPicker.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
+import MotorProfileDialog from '../components/ui/MotorProfileDialog.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
 import CloseUpViewer from '../components/location/CloseUpViewer.vue';
 import ModelManagerPanel from '../components/location/ModelManagerPanel.vue';
@@ -919,7 +938,7 @@ const loadAll = async ({ silent = false } = {}) => {
       auth.apiFetch(`/api/motorcycles/${motorId}`),
       auth.apiFetch(`/api/motorcycles/${motorId}/location-map`),
       auth.apiFetch(`/api/motorcycles/${motorId}/requirements`),
-      auth.apiFetch('/api/bolt-specs'),
+      auth.apiFetch('/api/bolt-specs?itemType=BAUT'),
     ]);
 
     if (!resMotor.ok || !resMap.ok || !resReqs.ok || !resSpecs.ok) {
@@ -1035,7 +1054,7 @@ const focusPositionOnMap = (boltPositionId) => {
     pendingAnnotationPositionId.value = boltPositionId;
     annotationMode.value = true;
     const posName = locationPositions.value.find((p) => p.id === boltPositionId)?.name || 'Area ini';
-    toast.info(`Area "${posName}" dipilih — ketuk titik lokasi pada motor di kanan.`);
+    toast.info(`Area "${posName}" dipilih — ketuk lokasinya pada motor di kanan.`);
   }
 };
 
@@ -1069,9 +1088,9 @@ const handleCreateAnnotation = async (payload) => {
     pendingAnnotationPositionId.value = null;
     await loadAll({ silent: true });
     onSelectAnnotation(created);
-    toast.success(created.createdRequirement ? 'Area, titik lokasi & baut disimpan' : 'Titik lokasi disimpan');
+    toast.success(created.createdRequirement ? 'Area, penanda lokasi & baut disimpan' : 'Penanda lokasi disimpan');
   } catch (err) {
-    toast.error(err.message || 'Gagal menyimpan titik lokasi.');
+    toast.error(err.message || 'Gagal menyimpan penanda lokasi.');
   } finally {
     isSavingAnnotation.value = false;
   }
@@ -1087,13 +1106,13 @@ const handleUpdateAnnotation = async ({ id, boltPositionId, customAreaName, cust
       body: JSON.stringify({ boltPositionId, customAreaName, customAreaCategory, label }),
     });
     const updated = await res.json();
-    if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui titik.');
+    if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui penanda.');
     const idx = annotations.value.findIndex((a) => a.id === id);
     if (idx >= 0) annotations.value[idx] = updated;
     if (activeAnnotation.value?.id === id) onSelectAnnotation(updated);
-    toast.success('Titik lokasi diperbarui');
+    toast.success('Penanda lokasi diperbarui');
   } catch (err) {
-    toast.error(err.message || 'Gagal memperbarui titik.');
+    toast.error(err.message || 'Gagal memperbarui penanda.');
   } finally {
     isSavingAnnotation.value = false;
   }
@@ -1104,12 +1123,12 @@ const handleDeleteAnnotation = async (id) => {
   isDeletingAnnotation.value = true;
   try {
     const res = await auth.apiFetch(`/api/position-annotations/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Gagal menghapus titik.');
+    if (!res.ok) throw new Error('Gagal menghapus penanda.');
     annotations.value = annotations.value.filter((a) => a.id !== id);
     if (activeAnnotation.value?.id === id) activeAnnotation.value = null;
-    toast.success('Titik lokasi dihapus');
+    toast.success('Penanda lokasi dihapus');
   } catch (err) {
-    toast.error(err.message || 'Gagal menghapus titik.');
+    toast.error(err.message || 'Gagal menghapus penanda.');
   } finally {
     isDeletingAnnotation.value = false;
   }
@@ -1175,14 +1194,14 @@ const handleCreateCloseupPin = async ({ photoId, boltSpecId, x, y, quantity, lab
       body: JSON.stringify({ boltSpecId, x, y, quantity, label }),
     });
     const created = await res.json();
-    if (!res.ok) throw new Error(created.error || 'Gagal menyimpan titik baut.');
+    if (!res.ok) throw new Error(created.error || 'Gagal menyimpan penanda baut.');
     const target = closeUpPhotos.value.find((p) => p.id === photoId);
     if (target) {
       target.pins = [...(target.pins || []), created];
     }
-    toast.success('Titik baut disimpan pada foto close-up');
+    toast.success('Penanda baut disimpan pada foto close-up');
   } catch (err) {
-    toast.error(err.message || 'Gagal menyimpan titik baut.');
+    toast.error(err.message || 'Gagal menyimpan penanda baut.');
   } finally {
     isSavingPin.value = false;
   }
@@ -1191,13 +1210,13 @@ const handleCreateCloseupPin = async ({ photoId, boltSpecId, x, y, quantity, lab
 const handleDeleteCloseupPin = async (pinId) => {
   try {
     const res = await auth.apiFetch(`/api/closeup-pins/${pinId}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Gagal menghapus titik baut.');
+    if (!res.ok) throw new Error('Gagal menghapus penanda baut.');
     for (const p of closeUpPhotos.value) {
       p.pins = (p.pins || []).filter((pin) => pin.id !== pinId);
     }
-    toast.success('Titik baut dihapus');
+    toast.success('Penanda baut dihapus');
   } catch (err) {
-    toast.error(err.message || 'Gagal menghapus titik baut.');
+    toast.error(err.message || 'Gagal menghapus penanda baut.');
   }
 };
 
@@ -1284,6 +1303,14 @@ const executeToggleActive = async () => {
   } catch (err) {
     toast.error(err.message);
   }
+};
+
+// Edit Profil Paket (admin): name, motorcycle data and main photo
+const profileDialogOpen = ref(false);
+const onProfileSaved = async (updated) => {
+  profileDialogOpen.value = false;
+  toast.success(`Profil ${updated.displayName} disimpan`);
+  await loadAll({ silent: true });
 };
 
 onMounted(loadAll);

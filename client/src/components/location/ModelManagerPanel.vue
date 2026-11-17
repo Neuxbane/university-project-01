@@ -291,7 +291,7 @@
     <ConfirmDialog
       :open="confirmDeleteOpen"
       title="Hapus model 3D ini?"
-      :message="`Model 3D untuk ${motorcycleName || 'motor ini'} beserta titik anotasi 3D-nya akan dihapus dan tampilan kembali ke foto 2D.`"
+      :message="`Model 3D untuk ${motorcycleName || 'motor ini'} beserta penanda 3D-nya akan dihapus dan tampilan kembali ke foto 2D.`"
       confirm-text="Ya, Hapus Model"
       :danger="true"
       @confirm="confirmDeleteModel"

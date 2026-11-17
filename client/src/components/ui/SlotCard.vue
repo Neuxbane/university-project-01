@@ -13,8 +13,9 @@
           {{ name }}
         </p>
         <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">
-          {{ sideText }}<span v-if="category"> &bull; {{ category }}</span>
+          <span v-if="sizeText" class="font-mono font-bold text-zinc-800 dark:text-zinc-200">{{ sizeText }} &bull; </span>{{ sideText }}<span v-if="category"> &bull; {{ category }}</span>
         </p>
+        <BoltFlags class="mt-1" :critical="Boolean(slotData.isCritical)" :check="slotData.sizeStatus === 'CEK_FISIK'" />
       </div>
     </div>
 
@@ -28,6 +29,8 @@
 import { computed } from 'vue';
 import { Wrench } from 'lucide-vue-next';
 import { formatSideLabel } from '../../utils/boltTokens';
+import { formatLength } from '../../utils/boltSize';
+import BoltFlags from './BoltFlags.vue';
 
 const props = defineProps({
   slotData: { type: Object, required: true },
@@ -39,4 +42,9 @@ const name = computed(() => props.slotData.boltPosition?.name || props.slotData.
 const category = computed(() => props.slotData.boltPosition?.category || props.slotData.category || '');
 const sideText = computed(() => formatSideLabel(props.slotData.side));
 const quantity = computed(() => props.slotData.quantity || 0);
+const sizeText = computed(() => {
+  const spec = props.slotData.boltSpec;
+  if (!spec) return '';
+  return Number(spec.lengthMm) > 0 ? `M${Number(spec.diameterMm)} × ${formatLength(spec.lengthMm)}` : `${spec.headType} M${Number(spec.diameterMm)}`;
+});
 </script>

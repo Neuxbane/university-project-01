@@ -45,6 +45,9 @@
 
       <!-- Modal Body (Scrollable) -->
       <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+        <!-- Optional item details from the caller (e.g. size editor on Master Barang) -->
+        <slot name="details" />
+
         <!-- Inline Error Banner -->
         <div
           v-if="errorMsg"

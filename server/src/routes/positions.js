@@ -1,12 +1,12 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 
 const router = express.Router();
 
 // GET /api/positions
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE', 'PACKAGES_MANAGE'), async (req, res) => {
   try {
     const where = {};
     if (req.query.motorcycleTypeId !== undefined && req.query.motorcycleTypeId !== '') {
@@ -38,7 +38,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST /api/positions (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const { name, category, sortOrder, notes, motorcycleTypeId } = req.body;
     if (!name || !String(name).trim()) {
@@ -86,7 +86,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/positions/:id (Admin only)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { name, category, sortOrder, notes } = req.body;
@@ -117,7 +117,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/positions/:id (Admin only)
-router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const existing = await prisma.boltPosition.findUnique({

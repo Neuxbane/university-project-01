@@ -1,8 +1,9 @@
 const express = require('express');
 const fs = require('fs');
+const { UPLOADS_DIR, uploadPath } = require('../utils/uploadPaths');
 const path = require('path');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { createUploader } = require('../middleware/upload');
 const { resolveOrCreatePosition } = require('../utils/positionHelper');
@@ -36,7 +37,7 @@ function safeUnlink(filePath) {
 }
 
 // GET /api/motorcycles/:motorId/closeups
-router.get('/motorcycles/:motorId/closeups', requireAuth, async (req, res) => {
+router.get('/motorcycles/:motorId/closeups', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE', 'MENU_RIWAYAT'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.motorId, 10);
     if (!Number.isInteger(motorcycleTypeId)) {
@@ -63,7 +64,7 @@ router.get('/motorcycles/:motorId/closeups', requireAuth, async (req, res) => {
 });
 
 // POST /api/motorcycles/:motorId/closeups (Admin only, multipart photo or JSON imageUrl)
-router.post('/motorcycles/:motorId/closeups', requireAuth, requireAdmin, (req, res, next) => {
+router.post('/motorcycles/:motorId/closeups', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), (req, res, next) => {
   uploadCloseup.single('photo')(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err.message || 'Gagal mengunggah foto close-up.' });
@@ -136,7 +137,7 @@ router.post('/motorcycles/:motorId/closeups', requireAuth, requireAdmin, (req, r
 });
 
 // DELETE /api/closeups/:photoId (Admin only)
-router.delete('/closeups/:photoId', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/closeups/:photoId', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.photoId, 10);
     const existing = await prisma.closeUpPhoto.findUnique({ where: { id } });
@@ -149,7 +150,7 @@ router.delete('/closeups/:photoId', requireAuth, requireAdmin, async (req, res) 
     if (existing.imageUrl.startsWith('/uploads/closeups/')) {
       const refs = await prisma.closeUpPhoto.count({ where: { imageUrl: existing.imageUrl } });
       if (refs === 0) {
-        safeUnlink(path.join(__dirname, '../..', existing.imageUrl));
+        safeUnlink(uploadPath(existing.imageUrl));
       }
     }
 
@@ -169,7 +170,7 @@ router.delete('/closeups/:photoId', requireAuth, requireAdmin, async (req, res) 
 });
 
 // POST /api/closeups/:photoId/pins (Admin only)
-router.post('/closeups/:photoId/pins', requireAuth, requireAdmin, async (req, res) => {
+router.post('/closeups/:photoId/pins', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const closeUpPhotoId = parseInt(req.params.photoId, 10);
     const boltSpecId = parseInt(req.body.boltSpecId, 10);
@@ -234,7 +235,7 @@ router.post('/closeups/:photoId/pins', requireAuth, requireAdmin, async (req, re
 });
 
 // PUT /api/closeup-pins/:pinId (Admin only)
-router.put('/closeup-pins/:pinId', requireAuth, requireAdmin, async (req, res) => {
+router.put('/closeup-pins/:pinId', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.pinId, 10);
     const existing = await prisma.closeUpBoltPin.findUnique({ where: { id } });
@@ -288,7 +289,7 @@ router.put('/closeup-pins/:pinId', requireAuth, requireAdmin, async (req, res) =
 });
 
 // DELETE /api/closeup-pins/:pinId (Admin only)
-router.delete('/closeup-pins/:pinId', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/closeup-pins/:pinId', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.pinId, 10);
     const existing = await prisma.closeUpBoltPin.findUnique({ where: { id } });

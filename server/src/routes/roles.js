@@ -1,17 +1,17 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission, isSuperAdmin } = require('../middleware/auth');
+const { normalizePermissionCodes, sortByCatalog } = require('../utils/permissions');
 const { logAudit } = require('../middleware/audit');
 
 const router = express.Router();
 
 // GET /api/roles/permissions (List all system permissions)
-router.get('/permissions', requireAuth, async (req, res) => {
+router.get('/permissions', requireAuth, requirePermission('USERS_MANAGE', 'ROLES_MANAGE'), async (req, res) => {
   try {
-    const permissions = await prisma.permission.findMany({
-      orderBy: [{ category: 'asc' }, { name: 'asc' }],
-    });
-    res.json(permissions);
+    // catalog order (menu first, then operasional, kelola data, kelola sistem) plus what each code requires
+    const permissions = await prisma.permission.findMany();
+    res.json(sortByCatalog(permissions));
   } catch (error) {
     console.error('Error fetching permissions:', error);
     res.status(500).json({ error: 'Gagal mengambil data permissions.' });
@@ -19,7 +19,7 @@ router.get('/permissions', requireAuth, async (req, res) => {
 });
 
 // GET /api/roles (List all roles with their assigned permissions)
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, requirePermission('USERS_MANAGE', 'ROLES_MANAGE'), async (req, res) => {
   try {
     const roles = await prisma.role.findMany({
       orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
@@ -43,7 +43,7 @@ router.get('/', requireAuth, async (req, res) => {
       isSystem: r.isSystem,
       createdAt: r.createdAt,
       userCount: r._count.users,
-      permissions: r.permissions.map((rp) => rp.permission),
+      permissions: sortByCatalog(r.permissions.map((rp) => rp.permission)),
       permissionCodes: r.permissions.map((rp) => rp.permission.code),
     }));
 
@@ -55,7 +55,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // GET /api/roles/:id
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, requirePermission('USERS_MANAGE', 'ROLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const role = await prisma.role.findUnique({
@@ -79,7 +79,7 @@ router.get('/:id', requireAuth, async (req, res) => {
       description: role.description,
       isSystem: role.isSystem,
       userCount: role._count.users,
-      permissions: role.permissions.map((rp) => rp.permission),
+      permissions: sortByCatalog(role.permissions.map((rp) => rp.permission)),
       permissionCodes: role.permissions.map((rp) => rp.permission.code),
     });
   } catch (error) {
@@ -89,7 +89,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/roles (Admin only - Create custom dynamic role)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('ROLES_MANAGE'), async (req, res) => {
   try {
     const { name, displayName, description, permissionCodes = [] } = req.body;
 
@@ -114,10 +114,11 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       },
     });
 
-    // Assign permissions
-    if (Array.isArray(permissionCodes) && permissionCodes.length > 0) {
+    // Assign permissions (a "kelola" feature brings its menu along)
+    const codes = normalizePermissionCodes(permissionCodes);
+    if (codes.length > 0) {
       const perms = await prisma.permission.findMany({
-        where: { code: { in: permissionCodes } },
+        where: { code: { in: codes } },
       });
 
       if (perms.length > 0) {
@@ -135,7 +136,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       action: 'CREATE',
       entity: 'ROLE',
       entityId: newRole.id,
-      detail: `Membuat role kustom baru: ${newRole.name} (${newRole.displayName}) dengan ${permissionCodes.length} izin akses.`,
+      detail: `Membuat role kustom baru: ${newRole.name} (${newRole.displayName}) dengan ${codes.length} izin akses.`,
     });
 
     // Return created role with permissions
@@ -154,7 +155,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       description: result.description,
       isSystem: result.isSystem,
       userCount: result._count.users,
-      permissions: result.permissions.map((rp) => rp.permission),
+      permissions: sortByCatalog(result.permissions.map((rp) => rp.permission)),
       permissionCodes: result.permissions.map((rp) => rp.permission.code),
     });
   } catch (error) {
@@ -164,7 +165,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/roles/:id (Admin only - Update role details and its permissions)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('ROLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { displayName, description, permissionCodes } = req.body;
@@ -172,6 +173,10 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     const targetRole = await prisma.role.findUnique({ where: { id } });
     if (!targetRole) {
       return res.status(404).json({ error: 'Role tidak ditemukan.' });
+    }
+    // the super admin role always has every feature; only the super admin may rename it
+    if (targetRole.name === 'ADMIN' && !isSuperAdmin(req.user)) {
+      return res.status(403).json({ error: 'Hanya super admin yang dapat mengubah peran super admin.' });
     }
 
     const updateData = {};
@@ -184,10 +189,10 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     });
 
     // If permissionCodes array is provided, sync the permissions
-    if (Array.isArray(permissionCodes)) {
-      // Find matching permissions
+    if (Array.isArray(permissionCodes) && targetRole.name !== 'ADMIN') {
+      // Find matching permissions (a "kelola" feature brings its menu along)
       const perms = await prisma.permission.findMany({
-        where: { code: { in: permissionCodes } },
+        where: { code: { in: normalizePermissionCodes(permissionCodes) } },
       });
 
       await prisma.$transaction([
@@ -224,7 +229,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       description: updated.description,
       isSystem: updated.isSystem,
       userCount: updated._count.users,
-      permissions: updated.permissions.map((rp) => rp.permission),
+      permissions: sortByCatalog(updated.permissions.map((rp) => rp.permission)),
       permissionCodes: updated.permissions.map((rp) => rp.permission.code),
     });
   } catch (error) {
@@ -234,7 +239,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/roles/:id (Admin only - Delete custom role)
-router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('ROLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
 

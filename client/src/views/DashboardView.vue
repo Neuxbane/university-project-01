@@ -7,15 +7,16 @@
           <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Dashboard &bull; {{ auth.user?.name }}</p>
           <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">Gambaran Inventory Baut</h1>
           <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-            Isi sistem saat ini: motor, spesifikasi baut, titik pasang, paket, dan sesi checklist. Angka diambil langsung dari database.
+            Isi sistem saat ini: motor, spesifikasi baut, posisi pasang, paket, dan sesi checklist. Angka diambil langsung dari database.
           </p>
         </div>
         <router-link
+          v-if="auth.can('MENU_PAKET_FULL_BIKE')"
           to="/pick-list"
           class="min-h-[48px] px-5 py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm inline-flex items-center justify-center gap-2 shrink-0 transition-all active:scale-[0.98]"
         >
           <Bike class="w-5 h-5" aria-hidden="true" />
-          Ambil Baut
+          Paket Full Bike
           <ArrowRight class="w-4 h-4" aria-hidden="true" />
         </router-link>
       </div>
@@ -23,15 +24,15 @@
 
     <!-- Continue only when there is something to continue -->
     <router-link
-      v-if="inProgressSession"
-      :to="`/pick-list/${inProgressSession.id}`"
+      v-if="inProgressSession && auth.can('MENU_RIWAYAT')"
+      :to="`/history/paket/${inProgressSession.id}`"
       class="group flex items-center gap-4 p-4 sm:p-5 rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 hover:border-amber-500 transition-all active:scale-[0.99]"
     >
       <div class="w-12 h-12 rounded-xl bg-amber-600 text-white flex items-center justify-center shrink-0">
         <Play class="w-5 h-5" aria-hidden="true" />
       </div>
       <div class="min-w-0 flex-1">
-        <p class="text-[11px] font-mono uppercase tracking-wider text-amber-800 dark:text-amber-300 font-bold">Sesi Belum Selesai</p>
+        <p class="text-[11px] font-mono uppercase tracking-wider text-amber-800 dark:text-amber-300 font-bold">Checklist Paket Full Bike belum selesai</p>
         <p class="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ inProgressSession.motorcycleType.displayName }}</p>
         <p class="text-xs font-mono text-zinc-700 dark:text-zinc-300">
           {{ inProgressSession.checkedItems }}/{{ inProgressSession.totalItems }} item &bull; {{ inProgressSession.progressPercent }}%
@@ -67,8 +68,9 @@
     <template v-else-if="overview">
       <!-- Key numbers -->
       <section aria-label="Angka utama" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        <router-link
+        <component
           v-for="kpi in kpis"
+          :is="canOpenKpi(kpi.to) ? 'router-link' : 'div'"
           :key="kpi.label"
           :to="kpi.to"
           class="group p-4 rounded-2xl border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121215] hover:border-zinc-500 dark:hover:border-zinc-600 shadow-sm transition-all hover:-translate-y-0.5 flex flex-col gap-1.5 min-w-0"
@@ -79,6 +81,30 @@
           </span>
           <span class="font-mono text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ kpi.value }}</span>
           <span class="text-[11px] leading-snug text-zinc-600 dark:text-zinc-400">{{ kpi.hint }}</span>
+        </component>
+      </section>
+
+      <!-- Data completeness (brief: warn about incomplete motorcycle data) -->
+      <section
+        v-if="overview.completeness.motorsWithoutData.length || overview.completeness.rowsToCheck"
+        aria-label="Kelengkapan data"
+        class="p-4 rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 flex flex-col md:flex-row md:items-center gap-3"
+      >
+        <div class="min-w-0 flex-1 space-y-1">
+          <h2 class="text-sm font-bold text-amber-900 dark:text-amber-300">Kelengkapan data</h2>
+          <p class="text-sm text-amber-900 dark:text-amber-200/90">
+            <strong>{{ overview.completeness.motorsWithoutData.length }} motor</strong> belum punya data baut dan
+            <strong>{{ overview.completeness.rowsToCheck }} baris</strong> ukurannya masih perlu cek fisik.
+          </p>
+          <p class="text-xs text-amber-800 dark:text-amber-300/80 truncate" :title="motorsWithoutDataText">Belum ada data: {{ motorsWithoutDataText }}</p>
+        </div>
+        <router-link
+          v-if="auth.can('VERIFICATION_MANAGE')"
+          to="/verifikasi"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold inline-flex items-center gap-1.5 shrink-0"
+        >
+          Buka Verifikasi Full Bike
+          <ArrowRight class="w-4 h-4" aria-hidden="true" />
         </router-link>
       </section>
 
@@ -101,11 +127,11 @@
           <BarList :items="topSpecBars" unit="pcs" bar-class="bg-emerald-600 dark:bg-emerald-500" aria-label="10 baut paling banyak dipakai" />
         </ChartCard>
 
-        <ChartCard title="Ukuran baut per diameter" description="Jumlah ukuran di Master Baut untuk tiap diameter; di bawahnya total pcs terpakai.">
+        <ChartCard title="Ukuran baut per diameter" description="Jumlah ukuran di Master Barang untuk tiap diameter; di bawahnya total pcs terpakai.">
           <ColumnChart :items="diameterColumns" unit="ukuran" aria-label="Ukuran baut per diameter" />
         </ChartCard>
 
-        <ChartCard title="Ukuran dipakai per merek" description="Berapa ukuran dari Master Baut yang dipakai motor tiap merek. Satu ukuran bisa dipakai beberapa merek.">
+        <ChartCard title="Ukuran dipakai per merek" description="Berapa ukuran dari Master Barang yang dipakai motor tiap merek. Satu ukuran bisa dipakai beberapa merek.">
           <BarList :items="brandBars" unit="ukuran" aria-label="Ukuran dipakai per merek" />
         </ChartCard>
 
@@ -123,7 +149,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { ArrowRight, Bike, Boxes, ClipboardCheck, MapPin, Nut, Package, Play } from 'lucide-vue-next';
+import { ArrowRight, Bike, Boxes, ClipboardCheck, MapPin, Package, Play, Ruler } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { getDiameterTier } from '../utils/boltTokens';
 import ChartCard from '../components/charts/ChartCard.vue';
@@ -139,6 +165,10 @@ const errorMsg = ref('');
 const recentSessions = ref([]);
 
 const num = (n) => Number(n || 0).toLocaleString('id-ID');
+const canOpenKpi = (to) => auth.can({
+  '/pick-list': 'MENU_PAKET_FULL_BIKE', '/bolt-specs': 'MENU_MASTER_BARANG',
+  '/bundling': 'MENU_BUNDLING', '/history': 'MENU_RIWAYAT',
+}[to]);
 
 const inProgressSession = computed(
   () => recentSessions.value.find((s) => s.status === 'IN_PROGRESS') || null
@@ -148,11 +178,11 @@ const kpis = computed(() => {
   const t = overview.value.totals;
   const sessionStatus = Object.fromEntries(overview.value.sessionsByStatus.map((s) => [s.label, s.count]));
   return [
-    { label: 'Motor', icon: Bike, to: '/motorcycles', value: num(t.motorcyclesWithData), hint: `dari ${num(t.motorcycles)} motor sudah punya data baut` },
-    { label: 'Ukuran baut', icon: Nut, to: '/bolt-specs', value: num(t.specs), hint: `${num(t.specsSharedAcrossBrands)} dipakai lintas merek` },
-    { label: 'Titik pasang', icon: MapPin, to: '/bolt-specs', value: num(t.positions), hint: 'area / posisi baut di motor' },
+    { label: 'Motor', icon: Bike, to: '/pick-list', value: num(t.motorcyclesWithData), hint: `dari ${num(t.motorcycles)} motor sudah punya data baut` },
+    { label: 'Ukuran baut', icon: Ruler, to: '/bolt-specs', value: num(t.specs), hint: `${num(t.specsSharedAcrossBrands)} dipakai lintas merek` },
+    { label: 'Posisi pasang', icon: MapPin, to: '/pick-list', value: num(t.positions), hint: 'langkah pasang di semua motor' },
     { label: 'Total baut', icon: Boxes, to: '/pick-list', value: num(t.totalPcs), hint: `pcs, dari ${num(t.requirementRows)} baris kebutuhan` },
-    { label: 'Paket', icon: Package, to: auth.isAdmin ? '/packages' : '/pick-list', value: num(t.packages), hint: `${num(t.activePackages)} aktif` },
+    { label: 'Bundling', icon: Package, to: '/bundling', value: num(t.packages), hint: `${num(t.activePackages)} aktif` },
     {
       label: 'Sesi checklist',
       icon: ClipboardCheck,
@@ -162,6 +192,8 @@ const kpis = computed(() => {
     },
   ];
 });
+
+const motorsWithoutDataText = computed(() => overview.value.completeness.motorsWithoutData.map((m) => m.label).join(', ') || '–');
 
 const motorBars = computed(() =>
   overview.value.pcsByMotorcycle.map((m) => ({ label: m.label, value: m.pcs, hint: `${m.rows} baris · ${m.sizes} ukuran baut` }))
@@ -227,6 +259,7 @@ const loadOverview = async () => {
 };
 
 const loadSessions = async () => {
+  if (!auth.can('MENU_RIWAYAT')) return;
   try {
     const res = await auth.apiFetch('/api/pick-lists/sessions?limit=20');
     if (!res.ok) throw new Error('Gagal memuat riwayat sesi.');

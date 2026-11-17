@@ -1,13 +1,13 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { resolveOrCreatePosition } = require('../utils/positionHelper');
 
 const router = express.Router();
 
 // GET /api/motorcycles/:id/requirements
-router.get('/motorcycles/:id/requirements', requireAuth, async (req, res) => {
+router.get('/motorcycles/:id/requirements', requireAuth, requirePermission('MENU_PAKET_FULL_BIKE', 'PACKAGES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const requirements = await prisma.motorBoltRequirement.findMany({
@@ -37,7 +37,7 @@ router.get('/motorcycles/:id/requirements', requireAuth, async (req, res) => {
 });
 
 // POST /api/motorcycles/:id/requirements (Admin only)
-router.post('/motorcycles/:id/requirements', requireAuth, requireAdmin, async (req, res) => {
+router.post('/motorcycles/:id/requirements', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const motorcycleTypeId = parseInt(req.params.id, 10);
     const {
@@ -123,7 +123,7 @@ router.post('/motorcycles/:id/requirements', requireAuth, requireAdmin, async (r
 });
 
 // PUT /api/requirements/:id (Admin only)
-router.put('/requirements/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/requirements/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { boltPositionId, boltSpecId, quantity, side, isOptional, sortOrder, notes } = req.body;
@@ -167,7 +167,7 @@ router.put('/requirements/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/requirements/:id (Admin only)
-router.delete('/requirements/:id', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/requirements/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     await prisma.motorBoltRequirement.delete({ where: { id } });
