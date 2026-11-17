@@ -13,7 +13,7 @@
 
           <div class="flex items-center gap-2 shrink-0">
             <router-link
-              to="/dashboard"
+              to="/history"
               class="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-xs sm:text-sm font-semibold text-zinc-800 dark:text-zinc-200 inline-flex items-center gap-1.5 transition-colors"
             >
               <History class="w-4 h-4" aria-hidden="true" />

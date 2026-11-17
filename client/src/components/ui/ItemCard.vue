@@ -64,6 +64,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../../utils/boltSize';
 import { computed } from 'vue';
 import { Nut } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';
@@ -84,6 +85,6 @@ const headType = computed(() => spec.value.headType || props.item.headType || ''
 const quantity = computed(() => props.item.totalQuantity ?? props.item.quantity ?? 0);
 const primaryImage = computed(() => props.item.images?.[0]?.url || spec.value.images?.[0]?.url || null);
 const positionLabel = computed(() => props.item.positionsSummary || props.item.positionName || 'Semua posisi');
-const dimensionText = computed(() => `M${diameter.value} × ${length.value}`);
+const dimensionText = computed(() => `M${diameter.value} × ${formatLength(length.value)}`);
 const tier = computed(() => getDiameterTier(diameter.value));
 </script>

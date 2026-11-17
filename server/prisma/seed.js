@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
@@ -136,76 +138,8 @@ async function main() {
 
   console.log('✅ Users seeded:', adminUser.username, staffUser.username, techUser.username);
 
-  // 2. Seed Bolt Positions
-  const positionsData = [
-    { name: 'Cover Crankcase Kiri / CVT', category: 'Mesin', sortOrder: 1, notes: 'Bak CVT & filter CVT' },
-    { name: 'Cover Crankcase Kanan', category: 'Mesin', sortOrder: 2, notes: 'Bak kopling / magnet' },
-    { name: 'Cover Radiator & Kipas', category: 'Mesin', sortOrder: 3, notes: 'Grill dan baut pengikat radiator' },
-    { name: 'Intake & Throttle Body', category: 'Mesin', sortOrder: 4, notes: 'Manipol & manifold' },
-    { name: 'Kaliper Cakram Depan', category: 'Pengereman', sortOrder: 5, notes: 'Baut bracket & kaliper disc depan' },
-    { name: 'Kaliper Cakram Belakang', category: 'Pengereman', sortOrder: 6, notes: 'Baut kaliper disc belakang' },
-    { name: 'Piringan Cakram Depan', category: 'Pengereman', sortOrder: 7, notes: 'Disc brake rotor depan' },
-    { name: 'Piringan Cakram Belakang', category: 'Pengereman', sortOrder: 8, notes: 'Disc brake rotor belakang' },
-    { name: 'Master Rem & Klem Stang', category: 'Kemudi', sortOrder: 9, notes: 'Klem tabung minyak rem & saklar' },
-    { name: 'Spion & Saklar', category: 'Kemudi', sortOrder: 10, notes: 'Dudukan spion dan panel tombol' },
-    { name: 'Windshield & Visor', category: 'Bodi', sortOrder: 11, notes: 'Visor depan bodi' },
-    { name: 'Bodi Depan & Dasi', category: 'Bodi', sortOrder: 12, notes: 'Fairing depan dan cover dasi' },
-    { name: 'Behel Jok Belakang', category: 'Bodi', sortOrder: 13, notes: 'Pegangan belakang penumpang' },
-    { name: 'Footstep Depan', category: 'Rangka', sortOrder: 14, notes: 'Pijakan kaki pengemudi' },
-    { name: 'Footstep Belakang', category: 'Rangka', sortOrder: 15, notes: 'Pijakan kaki penumpang' },
-    { name: 'Cover Knalpot & Silencer', category: 'Knalpot', sortOrder: 16, notes: 'Pelindung panas dan silencer' },
-  ];
-
-  const positionsMap = {};
-  for (const pos of positionsData) {
-    // Positions are now scoped per motorcycle. Seed rows act as a shared
-    // library (motorcycleTypeId = null); per-bike labels are created on demand
-    // from the annotation/requirement forms.
-    const existing = await prisma.boltPosition.findFirst({
-      where: { name: pos.name, motorcycleTypeId: null },
-    });
-    const record = existing
-      ? await prisma.boltPosition.update({ where: { id: existing.id }, data: pos })
-      : await prisma.boltPosition.create({ data: { ...pos, motorcycleTypeId: null } });
-    positionsMap[pos.name] = record;
-  }
-  console.log(`✅ Seeded ${positionsData.length} bolt positions.`);
-
-  // 3. Seed Bolt Specifications
-  const specsData = [
-    { code: 'HEX-M5-15-FL', diameterMm: 5.0, lengthMm: 15.0, headType: 'Flange Hex', threadPitch: '0.8', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Bodi halus & visor' },
-    { code: 'HEX-M6-12-FL', diameterMm: 6.0, lengthMm: 12.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Cover knalpot & filter' },
-    { code: 'HEX-M6-15-FL', diameterMm: 6.0, lengthMm: 15.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Cover bodi & spakbor' },
-    { code: 'HEX-M6-20-FL', diameterMm: 6.0, lengthMm: 20.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Baut serbaguna CVT & radiator' },
-    { code: 'HEX-M6-25-FL', diameterMm: 6.0, lengthMm: 25.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Bak crankcase & CVT panjang' },
-    { code: 'HEX-M6-30-FL', diameterMm: 6.0, lengthMm: 30.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Crankcase tengah' },
-    { code: 'HEX-M6-35-FL', diameterMm: 6.0, lengthMm: 35.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Crankcase & blok silinder' },
-    { code: 'HEX-M6-40-FL', diameterMm: 6.0, lengthMm: 40.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Baut panjang CVT tengah' },
-    { code: 'HEX-M6-45-FL', diameterMm: 6.0, lengthMm: 45.0, headType: 'Flange Hex', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Baut ekstra panjang CVT' },
-    { code: 'HEX-M8-20-FL', diameterMm: 8.0, lengthMm: 20.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Piringan disc & bracket' },
-    { code: 'HEX-M8-25-FL', diameterMm: 8.0, lengthMm: 25.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Kaliper rem & behel jok' },
-    { code: 'HEX-M8-30-FL', diameterMm: 8.0, lengthMm: 30.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Kaliper rem depan & footstep' },
-    { code: 'HEX-M8-35-FL', diameterMm: 8.0, lengthMm: 35.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Bracket knalpot & sokbreker' },
-    { code: 'HEX-M8-40-FL', diameterMm: 8.0, lengthMm: 40.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Knalpot utama & rangka' },
-    { code: 'HEX-M10-25-FL', diameterMm: 10.0, lengthMm: 25.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Kaliper radial & shock' },
-    { code: 'HEX-M10-30-FL', diameterMm: 10.0, lengthMm: 30.0, headType: 'Flange Hex', threadPitch: '1.25', material: 'Titanium Gr5', finish: 'Glossy', notes: 'Bracket kaliper depan besar' },
-    { code: 'BTN-M5-15-DO', diameterMm: 5.0, lengthMm: 15.0, headType: 'Button Head', threadPitch: '0.8', material: 'Titanium Gr5', finish: 'Doff', notes: 'Bodi estetis doff' },
-    { code: 'BTN-M6-16-DO', diameterMm: 6.0, lengthMm: 16.0, headType: 'Button Head', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Doff', notes: 'Windshield & visor doff' },
-    { code: 'BTN-M6-20-DO', diameterMm: 6.0, lengthMm: 20.0, headType: 'Button Head', threadPitch: '1.0', material: 'Titanium Gr5', finish: 'Doff', notes: 'Cover bodi luar doff' },
-  ];
-
-  const specsMap = {};
-  for (const s of specsData) {
-    const record = await prisma.boltSpec.upsert({
-      where: { code: s.code },
-      update: s,
-      create: s,
-    });
-    specsMap[s.code] = record;
-  }
-  console.log(`✅ Seeded ${specsData.length} bolt specifications.`);
-
-  // 4. Seed 20 Popular Motorcycle Types
+  // 4. Motorcycle types already in the system. Kept as rows; their former sample content
+  //    (bolt matrix, packages, photos, 3D models, close-ups) is no longer seeded.
   const motorcyclesData = [
     { brand: 'Honda', model: 'Vario', variant: '125 eSP', yearStart: 2022, yearEnd: 2026, displayName: 'Honda Vario 125 eSP (2022-2026)', notes: 'Populer modifikasi harian' },
     { brand: 'Honda', model: 'Vario', variant: '160 CBS/ABS', yearStart: 2022, yearEnd: 2026, displayName: 'Honda Vario 160 CBS/ABS (2022-2026)', notes: 'Populer full bike' },
@@ -229,9 +163,8 @@ async function main() {
     { brand: 'Kawasaki', model: 'KLX', variant: '150', yearStart: 2019, yearEnd: 2026, displayName: 'Kawasaki KLX 150 (2019-2026)', notes: 'Dual purpose populer' },
   ];
 
-  const motorsMap = {};
   for (const m of motorcyclesData) {
-    const record = await prisma.motorcycleType.upsert({
+    await prisma.motorcycleType.upsert({
       where: {
         brand_model_variant_yearStart_yearEnd: {
           brand: m.brand,
@@ -244,314 +177,173 @@ async function main() {
       update: m,
       create: m,
     });
-    motorsMap[`${m.brand} ${m.model} ${m.variant}`] = record;
   }
-  console.log(`✅ Seeded ${motorcyclesData.length} motorcycle types.`);
+  console.log(`✅ Seeded ${motorcyclesData.length} existing motorcycle types (no sample bolt data).`);
 
-  // 5. Seed detailed Bolt Requirements for popular bikes (Yamaha NMAX 155, Honda Vario 160, Yamaha Aerox 155, Honda Beat)
-  const nmax = motorsMap['Yamaha NMAX 155 Connected'];
-  const vario160 = motorsMap['Honda Vario 160 CBS/ABS'];
-  const aerox = motorsMap['Yamaha Aerox 155 Connected'];
+  // 5. Catalog data from docs/Hex_Ti_Spesifikasi_Baut.xlsx
+  //    (converted once by scripts/xlsx_to_seed_json.py into prisma/data/hexti-katalog-baut.json)
+  const katalog = require('./data/hexti-katalog-baut.json');
 
-  const nmaxRequirements = [
-    // CVT / Crankcase Kiri
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-25-FL', qty: 6, side: 'LEFT', order: 1 },
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-35-FL', qty: 4, side: 'LEFT', order: 2 },
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-40-FL', qty: 2, side: 'LEFT', order: 3 },
-    // Crankcase Kanan
-    { pos: 'Cover Crankcase Kanan', spec: 'HEX-M6-25-FL', qty: 5, side: 'RIGHT', order: 4 },
-    { pos: 'Cover Crankcase Kanan', spec: 'HEX-M6-30-FL', qty: 3, side: 'RIGHT', order: 5 },
-    // Radiator
-    { pos: 'Cover Radiator & Kipas', spec: 'HEX-M6-20-FL', qty: 4, side: 'RIGHT', order: 6 },
-    // Rem Depan & Belakang
-    { pos: 'Kaliper Cakram Depan', spec: 'HEX-M8-30-FL', qty: 2, side: 'FRONT', order: 7 },
-    { pos: 'Kaliper Cakram Belakang', spec: 'HEX-M8-25-FL', qty: 2, side: 'REAR', order: 8 },
-    { pos: 'Piringan Cakram Depan', spec: 'HEX-M8-20-FL', qty: 3, side: 'FRONT', order: 9 },
-    { pos: 'Piringan Cakram Belakang', spec: 'HEX-M8-20-FL', qty: 3, side: 'REAR', order: 10 },
-    // Kemudi & Visor
-    { pos: 'Master Rem & Klem Stang', spec: 'HEX-M6-20-FL', qty: 4, side: 'NONE', order: 11 },
-    { pos: 'Windshield & Visor', spec: 'BTN-M6-16-DO', qty: 4, side: 'FRONT', order: 12 },
-    // Bodi & Knalpot
-    { pos: 'Behel Jok Belakang', spec: 'HEX-M8-25-FL', qty: 4, side: 'REAR', order: 13 },
-    { pos: 'Cover Knalpot & Silencer', spec: 'HEX-M6-12-FL', qty: 3, side: 'RIGHT', order: 14 },
-    { pos: 'Cover Knalpot & Silencer', spec: 'HEX-M8-35-FL', qty: 2, side: 'RIGHT', order: 15 },
-    { pos: 'Footstep Belakang', spec: 'HEX-M8-30-FL', qty: 4, side: 'NONE', order: 16 },
-  ];
-
-  for (const req of nmaxRequirements) {
-    await prisma.motorBoltRequirement.upsert({
-      where: {
-        motorcycleTypeId_boltPositionId_boltSpecId_side: {
-          motorcycleTypeId: nmax.id,
-          boltPositionId: positionsMap[req.pos].id,
-          boltSpecId: specsMap[req.spec].id,
-          side: req.side,
-        },
-      },
-      update: { quantity: req.qty, sortOrder: req.order },
-      create: {
-        motorcycleTypeId: nmax.id,
-        boltPositionId: positionsMap[req.pos].id,
-        boltSpecId: specsMap[req.spec].id,
-        quantity: req.qty,
-        side: req.side,
-        sortOrder: req.order,
-      },
-    });
+  // 5a. Bolt specifications: one per size, shared by every brand (M{diameter}x{length}; nuts MUR-M{d} / MUR-PEGAS-M{d}, length 0)
+  const specsMap = {};
+  for (const s of katalog.specs) {
+    const data = {
+      code: s.code,
+      diameterMm: s.diameterMm,
+      lengthMm: s.lengthMm,
+      headType: s.headType,
+      threadPitch: s.threadPitch,
+      material: s.material,
+      finish: s.finish,
+      notes: s.notes,
+    };
+    specsMap[s.code] = await prisma.boltSpec.upsert({ where: { code: s.code }, update: data, create: data });
   }
+  console.log(`✅ Seeded ${katalog.specs.length} bolt specifications from the catalog workbook.`);
 
-  // Seed Vario 160
-  const varioRequirements = [
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-25-FL', qty: 8, side: 'LEFT', order: 1 },
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-35-FL', qty: 3, side: 'LEFT', order: 2 },
-    { pos: 'Cover Radiator & Kipas', spec: 'HEX-M6-20-FL', qty: 3, side: 'RIGHT', order: 3 },
-    { pos: 'Kaliper Cakram Depan', spec: 'HEX-M8-30-FL', qty: 2, side: 'FRONT', order: 4 },
-    { pos: 'Piringan Cakram Depan', spec: 'HEX-M8-20-FL', qty: 4, side: 'FRONT', order: 5 },
-    { pos: 'Master Rem & Klem Stang', spec: 'HEX-M6-20-FL', qty: 2, side: 'NONE', order: 6 },
-    { pos: 'Cover Knalpot & Silencer', spec: 'HEX-M6-12-FL', qty: 2, side: 'RIGHT', order: 7 },
-    { pos: 'Cover Knalpot & Silencer', spec: 'HEX-M8-40-FL', qty: 2, side: 'RIGHT', order: 8 },
-    { pos: 'Behel Jok Belakang', spec: 'HEX-M8-25-FL', qty: 4, side: 'REAR', order: 9 },
-  ];
-
-  for (const req of varioRequirements) {
-    await prisma.motorBoltRequirement.upsert({
-      where: {
-        motorcycleTypeId_boltPositionId_boltSpecId_side: {
-          motorcycleTypeId: vario160.id,
-          boltPositionId: positionsMap[req.pos].id,
-          boltSpecId: specsMap[req.spec].id,
-          side: req.side,
-        },
-      },
-      update: { quantity: req.qty, sortOrder: req.order },
-      create: {
-        motorcycleTypeId: vario160.id,
-        boltPositionId: positionsMap[req.pos].id,
-        boltSpecId: specsMap[req.spec].id,
-        quantity: req.qty,
-        side: req.side,
-        sortOrder: req.order,
-      },
+  // 5b. Catalog motorcycles with their own positions and requirement matrix
+  const catalogMotors = [];
+  let positionCount = 0;
+  let requirementCount = 0;
+  for (const m of katalog.motorcycles) {
+    const motoData = {
+      brand: m.brand,
+      model: m.model,
+      variant: m.variant,
+      yearStart: m.yearStart,
+      yearEnd: m.yearEnd,
+      displayName: m.displayName,
+      notes: m.notes,
+    };
+    // yearEnd is null (catalog edition only), so look the row up instead of using the compound unique key
+    const existingMoto = await prisma.motorcycleType.findFirst({
+      where: { brand: m.brand, model: m.model, variant: m.variant, yearStart: m.yearStart, yearEnd: m.yearEnd },
     });
-  }
+    const moto = existingMoto
+      ? await prisma.motorcycleType.update({ where: { id: existingMoto.id }, data: motoData })
+      : await prisma.motorcycleType.create({ data: motoData });
 
-  // Seed Aerox 155
-  const aeroxRequirements = [
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-25-FL', qty: 7, side: 'LEFT', order: 1 },
-    { pos: 'Cover Crankcase Kiri / CVT', spec: 'HEX-M6-35-FL', qty: 4, side: 'LEFT', order: 2 },
-    { pos: 'Cover Radiator & Kipas', spec: 'HEX-M6-20-FL', qty: 4, side: 'RIGHT', order: 3 },
-    { pos: 'Kaliper Cakram Depan', spec: 'HEX-M8-30-FL', qty: 2, side: 'FRONT', order: 4 },
-    { pos: 'Piringan Cakram Depan', spec: 'HEX-M8-20-FL', qty: 3, side: 'FRONT', order: 5 },
-    { pos: 'Windshield & Visor', spec: 'BTN-M6-16-DO', qty: 4, side: 'FRONT', order: 6 },
-    { pos: 'Cover Knalpot & Silencer', spec: 'HEX-M6-12-FL', qty: 3, side: 'RIGHT', order: 7 },
-  ];
+    const positionsByName = {};
+    for (const p of m.positions) {
+      const posData = { name: p.name, category: p.category, sortOrder: p.sortOrder, notes: p.notes };
+      const existingPos = await prisma.boltPosition.findFirst({ where: { motorcycleTypeId: moto.id, name: p.name } });
+      positionsByName[p.name] = existingPos
+        ? await prisma.boltPosition.update({ where: { id: existingPos.id }, data: posData })
+        : await prisma.boltPosition.create({ data: { ...posData, motorcycleTypeId: moto.id } });
+      positionCount += 1;
+    }
 
-  for (const req of aeroxRequirements) {
-    await prisma.motorBoltRequirement.upsert({
-      where: {
-        motorcycleTypeId_boltPositionId_boltSpecId_side: {
-          motorcycleTypeId: aerox.id,
-          boltPositionId: positionsMap[req.pos].id,
-          boltSpecId: specsMap[req.spec].id,
-          side: req.side,
-        },
-      },
-      update: { quantity: req.qty, sortOrder: req.order },
-      create: {
-        motorcycleTypeId: aerox.id,
-        boltPositionId: positionsMap[req.pos].id,
-        boltSpecId: specsMap[req.spec].id,
-        quantity: req.qty,
-        side: req.side,
-        sortOrder: req.order,
-      },
-    });
-  }
-
-  console.log('✅ Seeded requirements matrix for NMAX 155, Vario 160, and Aerox 155.');
-
-  // 6. Seed Packages (Program 3 integration) for NMAX 155 (idempotent & deduplicated)
-  const seedPackagesData = [
-    {
-      packageType: 'Mesin',
-      name: 'Paket Area Mesin & CVT NMAX 155',
-      description: 'Set baut titanium untuk cover CVT, crankcase kanan, dan cover radiator.',
-      items: [
-        { boltSpecId: specsMap['HEX-M6-25-FL'].id, quantity: 11, emblemNote: 'CVT (6) + Kanan (5)' },
-        { boltSpecId: specsMap['HEX-M6-35-FL'].id, quantity: 4, emblemNote: 'CVT (4)' },
-        { boltSpecId: specsMap['HEX-M6-40-FL'].id, quantity: 2, emblemNote: 'CVT Tengah (2)' },
-        { boltSpecId: specsMap['HEX-M6-30-FL'].id, quantity: 3, emblemNote: 'Kanan (3)' },
-        { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 4, emblemNote: 'Radiator (4)' },
-      ],
-    },
-    {
-      packageType: 'Pengereman',
-      name: 'Paket Pengereman & Kaliper NMAX 155',
-      description: 'Set baut titanium untuk kaliper depan/belakang, disc brake, dan master rem.',
-      items: [
-        { boltSpecId: specsMap['HEX-M8-30-FL'].id, quantity: 2, emblemNote: 'Kaliper Depan' },
-        { boltSpecId: specsMap['HEX-M8-25-FL'].id, quantity: 2, emblemNote: 'Kaliper Belakang' },
-        { boltSpecId: specsMap['HEX-M8-20-FL'].id, quantity: 6, emblemNote: 'Disc Brake Depan (3) + Belakang (3)' },
-        { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 4, emblemNote: 'Master Rem Stang' },
-      ],
-    },
-    {
-      packageType: 'Full Bike',
-      name: 'Paket Full Bike Titanium NMAX 155',
-      description: 'Komposisi lengkap seluruh baut eksterior, pengereman, mesin, dan bodi NMAX 155.',
-      items: [
-        { boltSpecId: specsMap['HEX-M6-25-FL'].id, quantity: 11, emblemNote: 'Mesin & CVT' },
-        { boltSpecId: specsMap['HEX-M6-35-FL'].id, quantity: 4, emblemNote: 'CVT' },
-        { boltSpecId: specsMap['HEX-M6-40-FL'].id, quantity: 2, emblemNote: 'CVT' },
-        { boltSpecId: specsMap['HEX-M6-30-FL'].id, quantity: 3, emblemNote: 'Mesin Kanan' },
-        { boltSpecId: specsMap['HEX-M6-20-FL'].id, quantity: 8, emblemNote: 'Radiator (4) & Master Rem (4)' },
-        { boltSpecId: specsMap['HEX-M8-30-FL'].id, quantity: 6, emblemNote: 'Kaliper (2) & Footstep (4)' },
-        { boltSpecId: specsMap['HEX-M8-25-FL'].id, quantity: 6, emblemNote: 'Kaliper (2) & Behel (4)' },
-        { boltSpecId: specsMap['HEX-M8-20-FL'].id, quantity: 6, emblemNote: 'Disc Rotor (6)' },
-        { boltSpecId: specsMap['BTN-M6-16-DO'].id, quantity: 4, emblemNote: 'Visor Windshield' },
-        { boltSpecId: specsMap['HEX-M6-12-FL'].id, quantity: 3, emblemNote: 'Cover Knalpot' },
-        { boltSpecId: specsMap['HEX-M8-35-FL'].id, quantity: 2, emblemNote: 'Silencer Knalpot' },
-      ],
-    },
-  ];
-
-  const seededPackageNames = [];
-  let removedDuplicatePackages = 0;
-  for (const pkgDef of seedPackagesData) {
-    const existingList = await prisma.package.findMany({
-      where: { motorcycleTypeId: nmax.id, name: pkgDef.name },
-      orderBy: { id: 'asc' },
-      include: { _count: { select: { pickSessions: true } } },
-    });
-
-    if (existingList.length === 0) {
-      const created = await prisma.package.create({
-        data: {
-          motorcycleTypeId: nmax.id,
-          packageType: pkgDef.packageType,
-          name: pkgDef.name,
-          description: pkgDef.description,
-          status: 'ACTIVE',
-          items: { create: pkgDef.items },
-        },
+    const requirementRows = [];
+    for (const r of m.requirements) {
+      const key = {
+        motorcycleTypeId: moto.id,
+        boltPositionId: positionsByName[r.position].id,
+        boltSpecId: specsMap[r.specCode].id,
+        side: r.side,
+      };
+      const data = { quantity: r.quantity, isOptional: r.isOptional, sortOrder: r.sortOrder, notes: r.notes };
+      const row = await prisma.motorBoltRequirement.upsert({
+        where: { motorcycleTypeId_boltPositionId_boltSpecId_side: key },
+        update: data,
+        create: { ...key, ...data },
       });
-      seededPackageNames.push(created.name);
-    } else {
-      const keeper = existingList.find((p) => p._count.pickSessions > 0) || existingList[0];
-      seededPackageNames.push(keeper.name);
-      const duplicateIds = existingList
-        .filter((p) => p.id !== keeper.id && p._count.pickSessions === 0)
-        .map((p) => p.id);
-      if (duplicateIds.length > 0) {
-        const delRes = await prisma.package.deleteMany({
-          where: { id: { in: duplicateIds } },
-        });
-        removedDuplicatePackages += delRes.count;
+      requirementRows.push({ row, source: r });
+      requirementCount += 1;
+    }
+    catalogMotors.push({ moto, catalog: m, requirementRows });
+  }
+  console.log(`✅ Seeded ${katalog.motorcycles.length} catalog motorcycles, ${positionCount} positions, ${requirementCount} requirement rows.`);
+
+  // 5c. Packages derived from the workbook: "Paket Default" = all Scope DEFAULT rows (README),
+  //     plus Body (Halus) / Mekanis (Kasar) = the same DEFAULT rows split by the Zona column.
+  const packageDefs = [
+    { name: 'Paket Default', packageType: 'Full Bike', zona: null, description: 'Semua baut bagian terlihat / body luar.' },
+    { name: 'Paket Body (Halus)', packageType: 'Bodi', zona: 'HALUS', description: 'Baut zona halus: panel, cover, lampu, jok, spakbor.' },
+    { name: 'Paket Mekanis (Kasar)', packageType: 'Mekanis', zona: 'KASAR', description: 'Baut zona kasar: cover mesin & CVT, rem, rangka, knalpot, stang.' },
+  ];
+  let packageCount = 0;
+  for (const { moto, catalog, requirementRows } of catalogMotors) {
+    for (const def of packageDefs) {
+      const items = requirementRows
+        .map(({ row, source }) => {
+          const byZona = source.defaultQtyByZona || {};
+          const quantity = def.zona ? (byZona[def.zona] || 0) : Object.values(byZona).reduce((a, b) => a + b, 0);
+          return { boltSpecId: row.boltSpecId, sourceRequirementId: row.id, quantity, emblemNote: source.position };
+        })
+        .filter((item) => item.quantity > 0);
+      if (items.length === 0) continue;
+
+      const name = `${def.name} ${catalog.model} ${catalog.variant}`;
+      const pkgData = { packageType: def.packageType, name, description: def.description, status: 'ACTIVE' };
+      const existingPkg = await prisma.package.findFirst({ where: { motorcycleTypeId: moto.id, name } });
+      if (existingPkg) {
+        await prisma.package.update({ where: { id: existingPkg.id }, data: pkgData });
+        await prisma.packageItem.deleteMany({ where: { packageId: existingPkg.id } });
+        await prisma.packageItem.createMany({ data: items.map((item) => ({ ...item, packageId: existingPkg.id })) });
+      } else {
+        await prisma.package.create({ data: { ...pkgData, motorcycleTypeId: moto.id, items: { create: items } } });
       }
+      packageCount += 1;
     }
   }
+  console.log(`✅ Seeded ${packageCount} packages (Default / Body Halus / Mekanis Kasar) from Scope & Zona columns.`);
 
-  console.log(
-    `✅ Seeded packages for NMAX 155 (${seededPackageNames.join(', ')})`
-    + (removedDuplicatePackages > 0 ? ` — cleaned ${removedDuplicatePackages} duplicate rows` : '')
-  );
-
-  // 6. Seed Sample Photos, 3D Models, and Close-Ups (idempotent: never wipe existing admin data)
-  console.log('📸 Checking sample bolt & motorcycle photos...');
-
-  // Bolt Images (seed only when empty)
-  const existingBoltImgCount = await prisma.boltImage.count();
-  if (existingBoltImgCount === 0) {
-    const sampleBoltImages = [
-      { specCode: 'HEX-M6-25-FL', url: '/uploads/bolts/titanium-flange-hex-blue.svg', caption: 'Blue Ice Anodized Glossy', isPrimary: true },
-      { specCode: 'HEX-M6-25-FL', url: '/uploads/bolts/titanium-flange-hex-gold.svg', caption: 'Royal Gold Anodized Glossy', isPrimary: false },
-      { specCode: 'HEX-M6-25-FL', url: '/uploads/bolts/titanium-flange-hex-purple.svg', caption: 'Deep Purple Anodized Glossy', isPrimary: false },
-      { specCode: 'HEX-M6-20-FL', url: '/uploads/bolts/titanium-flange-hex-blue.svg', caption: 'Blue Ice Anodized Glossy', isPrimary: true },
-      { specCode: 'HEX-M6-20-FL', url: '/uploads/bolts/titanium-flange-hex-gold.svg', caption: 'Royal Gold Anodized Glossy', isPrimary: false },
-      { specCode: 'HEX-M8-30-FL', url: '/uploads/bolts/titanium-flange-hex-blue.svg', caption: 'Blue Ice Flange Hex M8', isPrimary: true },
-      { specCode: 'HEX-M8-30-FL', url: '/uploads/bolts/titanium-flange-hex-gold.svg', caption: 'Royal Gold Flange Hex M8', isPrimary: false },
-      { specCode: 'HEX-M8-20-FL', url: '/uploads/bolts/titanium-flange-hex-blue.svg', caption: 'Blue Ice Disc Rotor Spec', isPrimary: true },
-      { specCode: 'HEX-M8-20-FL', url: '/uploads/bolts/titanium-flange-hex-purple.svg', caption: 'Deep Purple Disc Rotor Spec', isPrimary: false },
-      { specCode: 'BTN-M6-16-DO', url: '/uploads/bolts/titanium-button-head-doff.svg', caption: 'Raw Matte Titanium Doff (Windshield)', isPrimary: true },
-      { specCode: 'BTN-M6-16-DO', url: '/uploads/bolts/titanium-flange-hex-blue.svg', caption: 'Alternatif Warna Blue Ice', isPrimary: false },
-      { specCode: 'BTN-M5-15-DO', url: '/uploads/bolts/titanium-button-head-doff.svg', caption: 'Button Head Doff M5', isPrimary: true },
-    ];
-
-    const seededSpecCodesWithImages = new Set();
-    for (const img of sampleBoltImages) {
-      if (specsMap[img.specCode]) {
-        seededSpecCodesWithImages.add(img.specCode);
+  // 5d. Product photos (colours named by the owner) on every size the catalog uses with a flange head
+  const flangeCodes = new Set(katalog.boltPhotos.specCodes);
+  let photoCount = 0;
+  for (const s of katalog.specs) {
+    if (!flangeCodes.has(s.code)) continue;
+    for (const img of katalog.boltPhotos.images) {
+      const exists = await prisma.boltImage.findFirst({ where: { boltSpecId: specsMap[s.code].id, url: img.url } });
+      if (!exists) {
         await prisma.boltImage.create({
-          data: {
-            boltSpecId: specsMap[img.specCode].id,
-            url: img.url,
-            caption: img.caption,
-            isPrimary: img.isPrimary,
-          },
+          data: { boltSpecId: specsMap[s.code].id, url: img.url, caption: img.caption, isPrimary: img.isPrimary },
         });
+        photoCount += 1;
       }
     }
-
-    for (const spec of Object.values(specsMap)) {
-      if (seededSpecCodesWithImages.has(spec.code)) continue;
-      const isButton = (spec.headType || '').toLowerCase().includes('button');
-      await prisma.boltImage.create({
-        data: {
-          boltSpecId: spec.id,
-          url: isButton
-            ? '/uploads/bolts/titanium-button-head-doff.svg'
-            : '/uploads/bolts/titanium-flange-hex-blue.svg',
-          caption: `${spec.headType} ${spec.finish || 'Titanium'}`,
-          isPrimary: true,
-        },
-      });
-    }
   }
+  console.log(`✅ Attached ${photoCount} colour photos (Blue Relaxa, Pink, Rosegold, Green) to flange sizes.`);
 
-  // Motorcycle Images (seed only when empty)
-  const existingMotorImgCount = await prisma.motorcycleImage.count();
-  if (existingMotorImgCount === 0) {
-    if (nmax) {
-      await prisma.motorcycleImage.createMany({
-        data: [
-          { motorcycleTypeId: nmax.id, url: '/uploads/motorcycles/yamaha-nmax-155.svg', caption: 'Tampak Samping Kiri (Titik CVT & Bodi)', isPrimary: true },
-          { motorcycleTypeId: nmax.id, url: '/uploads/motorcycles/yamaha-aerox-155.svg', caption: 'Area Pengereman Depan & Master Rem', isPrimary: false },
-        ],
-      });
-    }
-
-    if (vario160) {
-      await prisma.motorcycleImage.create({
-        data: {
-          motorcycleTypeId: vario160.id,
-          url: '/uploads/motorcycles/honda-vario-160.svg',
-          caption: 'Tampak Samping Kiri & Bak Mesin eSP+',
-          isPrimary: true,
-        },
-      });
-    }
-
-    if (aerox) {
-      await prisma.motorcycleImage.create({
-        data: {
-          motorcycleTypeId: aerox.id,
-          url: '/uploads/motorcycles/yamaha-aerox-155.svg',
-          caption: 'Tampak Samping Kiri Sport Matic VVA',
-          isPrimary: true,
-        },
-      });
-    }
+  // 5e. Size illustrations (scripts/generate_bolt_drawings.py), one file per size spec: ukuran/<code>.svg.
+  // Primary only when the spec has no primary photo yet.
+  const sizeDir = path.join(__dirname, '..', 'uploads', 'bolts', 'ukuran');
+  let sizeImageCount = 0;
+  for (const s of katalog.specs) {
+    if (!fs.existsSync(path.join(sizeDir, `${s.code}.svg`))) continue;
+    const boltSpecId = specsMap[s.code].id;
+    const url = `/uploads/bolts/ukuran/${s.code}.svg`;
+    const exists = await prisma.boltImage.findFirst({ where: { boltSpecId, url } });
+    if (exists) continue;
+    const hasPrimary = await prisma.boltImage.count({ where: { boltSpecId, isPrimary: true } });
+    const size = Number(s.lengthMm) > 0 ? `M${Number(s.diameterMm)} × ${Number(s.lengthMm)} mm` : `${s.headType} M${Number(s.diameterMm)}`;
+    await prisma.boltImage.create({
+      data: { boltSpecId, url, caption: `Ilustrasi ukuran ${size}`, isPrimary: hasPrimary === 0 },
+    });
+    sizeImageCount += 1;
   }
+  console.log(`✅ Attached size illustrations to ${sizeImageCount} size specifications.`);
 
-  console.log('✅ Sample photos check complete (existing uploads preserved).');
-
+  // 5f. Motorcycle side views (uploads/motorcycles) and 3D .glb models (uploads/models, scripts/generateMotorcycleGlb.js)
+  //     for the motorcycles they were made for. Existing images, models and admin 3D annotations are kept.
+  const motorMedia = [
+    { match: 'Yamaha NMAX 155 Connected', url: '/uploads/motorcycles/yamaha-nmax-155.svg', caption: 'Tampak Samping Kiri (Titik CVT & Bodi)' },
+    { match: 'Honda Vario 160 CBS/ABS', url: '/uploads/motorcycles/honda-vario-160.svg', caption: 'Tampak Samping Kiri & Bak Mesin eSP+' },
+    { match: 'Yamaha Aerox 155 Connected', url: '/uploads/motorcycles/yamaha-aerox-155.svg', caption: 'Tampak Samping Kiri Sport Matic VVA' },
+  ];
+  let motorImageCount = 0;
+  for (const media of motorMedia) {
+    const motor = await prisma.motorcycleType.findFirst({ where: { displayName: { contains: media.match, mode: 'insensitive' } } });
+    if (!motor || await prisma.motorcycleImage.findFirst({ where: { motorcycleTypeId: motor.id, url: media.url } })) continue;
+    const hasPrimary = await prisma.motorcycleImage.count({ where: { motorcycleTypeId: motor.id, isPrimary: true } });
+    await prisma.motorcycleImage.create({
+      data: { motorcycleTypeId: motor.id, url: media.url, caption: media.caption, isPrimary: hasPrimary === 0 },
+    });
+    motorImageCount += 1;
+  }
   const { attachSampleGlbModels } = require('../scripts/attachSampleGlbModels');
   const glbSummary = await attachSampleGlbModels(prisma, { overwrite: false });
-  console.log(`✅ Attached ${glbSummary.attachedModels} missing 3D .glb models (existing models & admin annotations preserved).`);
-
-  const { attachSampleCloseUps } = require('../scripts/attachSampleCloseUps');
-  const cuSummary = await attachSampleCloseUps(prisma, { overwrite: false });
-  console.log(`✅ Attached ${cuSummary.photosCreated} missing close-up photos and ${cuSummary.pinsCreated} multi-bolt pins.`);
+  console.log(`✅ Attached ${motorImageCount} motorcycle photos and ${glbSummary.attachedModels} 3D .glb models (existing models & annotations preserved).`);
 
   if (process.argv.includes('--with-demo-annotations')) {
     const { seedDemoAnnotations } = require('../scripts/seedDemoAnnotations');

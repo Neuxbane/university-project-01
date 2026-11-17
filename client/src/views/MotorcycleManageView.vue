@@ -292,7 +292,7 @@
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-1.5">
                           <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                            M{{ Number(req.boltSpec?.diameterMm) }}&times;{{ Number(req.boltSpec?.lengthMm) }}
+                            M{{ Number(req.boltSpec?.diameterMm) }}&times;{{ formatLength(req.boltSpec?.lengthMm) }}
                           </span>
                           <span class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-mono text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
                             {{ req.quantity }} pcs
@@ -691,6 +691,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../utils/boltSize';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {

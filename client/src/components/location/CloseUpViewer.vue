@@ -227,12 +227,12 @@
               <option value="">-- Pilih Baut --</option>
               <optgroup v-if="positionSpecs.length" :label="`Baut di ${activePhoto.boltPosition?.name || 'Area Ini'}`">
                 <option v-for="s in positionSpecs" :key="`pos-${s.id}`" :value="s.id">
-                  {{ s.code }} (M{{ Number(s.diameterMm) }}×{{ Number(s.lengthMm) }} • {{ s.qty }} pcs)
+                  {{ s.code }} (M{{ Number(s.diameterMm) }}×{{ formatLength(s.lengthMm) }} • {{ s.qty }} pcs)
                 </option>
               </optgroup>
               <optgroup v-if="otherSpecs.length" label="Semua Ukuran Baut Lainnya">
                 <option v-for="s in otherSpecs" :key="`all-${s.id}`" :value="s.id">
-                  {{ s.code }} (M{{ Number(s.diameterMm) }}×{{ Number(s.lengthMm) }})
+                  {{ s.code }} (M{{ Number(s.diameterMm) }}×{{ formatLength(s.lengthMm) }})
                 </option>
               </optgroup>
             </select>
@@ -317,7 +317,7 @@
                 {{ pin.boltSpec?.code }} &bull; {{ pin.quantity }} pcs
               </p>
               <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
-                {{ pin.label || `M${Number(pin.boltSpec?.diameterMm)}×${Number(pin.boltSpec?.lengthMm)}` }}
+                {{ pin.label || `M${Number(pin.boltSpec?.diameterMm)}×${formatLength(pin.boltSpec?.lengthMm)}` }}
               </p>
             </div>
           </button>
@@ -364,6 +364,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../../utils/boltSize';
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { Camera, Crosshair, Eye, Trash2 } from 'lucide-vue-next';
 import { layoutVisibleCallouts } from '../../utils/annotationCallouts';
@@ -476,7 +477,7 @@ const autoCallouts = computed(() => {
         },
         quantity: pin.quantity,
         extraSpecsCount: 0,
-        positionName: pin.label || `M${Number(pin.boltSpec.diameterMm)}×${Number(pin.boltSpec.lengthMm)}`,
+        positionName: pin.label || `M${Number(pin.boltSpec.diameterMm)}×${formatLength(pin.boltSpec.lengthMm)}`,
       },
     }));
 

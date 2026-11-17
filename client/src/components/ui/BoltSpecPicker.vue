@@ -28,7 +28,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-              M{{ Number(selectedSpec.diameterMm) }}&times;{{ Number(selectedSpec.lengthMm) }}
+              M{{ Number(selectedSpec.diameterMm) }}&times;{{ formatLength(selectedSpec.lengthMm) }}
             </span>
             <span class="text-[11px] font-mono text-zinc-500 ml-1.5 truncate">
               {{ selectedSpec.code }}
@@ -110,7 +110,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <p class="font-mono text-xs font-bold leading-tight">
-              M{{ Number(spec.diameterMm) }}&times;{{ Number(spec.lengthMm) }}
+              M{{ Number(spec.diameterMm) }}&times;{{ formatLength(spec.lengthMm) }}
               <span class="font-normal opacity-75 ml-1">{{ spec.headType }}</span>
             </p>
             <p class="font-mono text-[10px] opacity-75 truncate">{{ spec.code }}</p>
@@ -126,6 +126,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../../utils/boltSize';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ChevronDown, Nut, X } from 'lucide-vue-next';
 

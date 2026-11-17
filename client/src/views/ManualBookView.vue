@@ -52,8 +52,10 @@
 
       <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-800 dark:text-zinc-200 font-medium">
         <li><strong>Sapa Pelanggan:</strong> Tanyakan tipe motor, tahun pembuatan, dan kebutuhan variasi (satuan, paket mesin, pengereman, atau lengkap satu motor).</li>
+        <li><strong>Lihat Dashboard:</strong> Halaman pertama setelah login. Berisi diagram gambaran isi sistem: jumlah baut per motor, per area, ukuran yang paling banyak dipakai, dan kelengkapan gambar baut.</li>
         <li><strong>Buka Sistem di Komputer / Ponsel:</strong> Akses menu <em>Ambil Baut</em> pada browser kasir atau ponsel staf via Wi-Fi gerai.</li>
-        <li><strong>Pilih Tipe Motor:</strong> Pilih motor dari daftar (tersedia 20 tipe motor terpopuler seperti NMAX, Vario 160, Aerox, PCX, Beat, ZX-25R).</li>
+        <li><strong>Pilih Tipe Motor:</strong> Pilih motor dari daftar. Data baut sudah tersedia untuk Honda Genio, Scoopy eSP, Vario 125 eSP, PCX 150 (CBS &amp; ABS) dan Yamaha NMAX 155 (BC11, BBM1, BTP2); motor lain masih menunggu pengukuran.</li>
+        <li><strong>Pilih Paket (opsional):</strong> Di halaman Ambil Baut, buka tab <em>Paket</em> untuk memilih paket (misalnya Body Halus atau Mekanis Kasar); daftar baut langsung menyesuaikan isi paket. Isi paket diatur admin di menu <em>Komposisi Paket</em>.</li>
         <li><strong>Tampilkan Daftar Baut:</strong> Sistem langsung menampilkan jumlah dan kode ukuran baut tanpa perlu mengukur fisik motor.</li>
         <li><strong>Catat Transaksi:</strong> Catat pembayaran di aplikasi kasir <em>Kelola</em> (sistem ini khusus untuk spesifikasi dan penyiapan baut).</li>
       </ol>

@@ -31,7 +31,7 @@
       <span
         class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-zinc-950/90 border border-white/20 text-white font-mono text-[9px] sm:text-[10px] font-bold leading-none"
       >
-        #{{ index }}<template v-if="!minimalMode"> M{{ Number(bolt.diameterMm) }}&times;{{ Number(bolt.lengthMm) }}</template>
+        #{{ index }}<template v-if="!minimalMode"> M{{ Number(bolt.diameterMm) }}&times;{{ formatLength(bolt.lengthMm) }}</template>
       </span>
 
       <!-- Top-right Checklist Status Badge (only in checklist mode) -->
@@ -78,6 +78,7 @@
 </template>
 
 <script setup>
+import { formatLength } from '../../utils/boltSize';
 import { computed } from 'vue';
 import { Check, MapPin, Nut } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';

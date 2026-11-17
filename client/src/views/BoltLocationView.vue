@@ -35,8 +35,8 @@
           >
             <td class="py-2 pr-2 font-mono">{{ idx + 1 }}</td>
             <td class="py-2 pr-2 font-mono font-bold">{{ item.code }}</td>
-            <td class="py-2 pr-2 font-mono">M{{ Number(item.diameterMm) }} × {{ Number(item.lengthMm) }} mm</td>
-            <td class="py-2 pr-2">{{ item.headType }} &bull; {{ item.finish }}</td>
+            <td class="py-2 pr-2 font-mono">M{{ Number(item.diameterMm) }} × {{ formatLength(item.lengthMm, ' mm') }}</td>
+            <td class="py-2 pr-2">{{ item.headType }} &bull; {{ formatOptional(item.finish) }}</td>
             <td class="py-2 pr-2 text-center font-mono font-bold">{{ item.totalQuantity }} pcs</td>
             <td class="py-2">{{ item.positionsSummary }}</td>
           </tr>
@@ -389,6 +389,7 @@
 </template>
 
 <script setup>
+import { formatLength, formatOptional } from '../utils/boltSize';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Nut, Printer, Wrench } from 'lucide-vue-next';
