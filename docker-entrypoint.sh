@@ -30,8 +30,32 @@ echo "✅ Database connection established."
 echo "🔄 Synchronizing database schema with Prisma db push..."
 npx prisma db push --skip-generate
 
-echo "🌱 Running database seeding..."
-node prisma/seed.js || true
+# Seed policy:
+#   - production  -> never seed automatically (protects real shop data)
+#   - development -> seed only when the database is still empty (no users)
+if [ "${NODE_ENV:-development}" = "production" ]; then
+  echo "⏭️  NODE_ENV=production: automatic seeding skipped."
+  echo "   To load initial data manually: docker compose exec backend node prisma/seed.js"
+else
+  USER_COUNT=$(node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+prisma.user.count()
+  .then((c) => { console.log(c); return prisma.\$disconnect(); })
+  .catch(() => { console.log('error'); process.exit(0); });
+")
+
+  if [ "$USER_COUNT" = "0" ]; then
+    echo "🌱 Database is empty: running database seeding..."
+    if ! node prisma/seed.js; then
+      echo "❌ Seeding failed. Check the error above."
+    fi
+  elif [ "$USER_COUNT" = "error" ]; then
+    echo "⚠️  Could not check database contents: seeding skipped."
+  else
+    echo "⏭️  Database already has data ($USER_COUNT users): seeding skipped."
+  fi
+fi
 
 echo "=========================================================="
 echo "🚀 Hex Titanium System Ready!"

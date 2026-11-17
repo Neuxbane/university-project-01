@@ -1,5 +1,5 @@
 # Stage 1: Build the UI (Vue 3 + Vite)
-FROM node:20-alpine AS ui-builder
+FROM node:22-alpine AS ui-builder
 WORKDIR /app/client
 
 COPY client/package*.json ./
@@ -11,7 +11,7 @@ ENV VITE_BACKEND_PORT=$VITE_BACKEND_PORT
 RUN npm run build
 
 # Stage 2: Backend (Node.js + Express + Prisma) & Production App
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app/server
 
 RUN apk add --no-cache openssl
