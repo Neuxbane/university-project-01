@@ -7,7 +7,7 @@
     >
       <div class="flex items-center justify-between gap-2">
         <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-          Titik 3D Baru ({{ draftPoint.x.toFixed(2) }}, {{ draftPoint.y.toFixed(2) }}, {{ draftPoint.z.toFixed(2) }})
+          Penanda 3D Baru ({{ draftPoint.x.toFixed(2) }}, {{ draftPoint.y.toFixed(2) }}, {{ draftPoint.z.toFixed(2) }})
         </p>
         <button
           type="button"
@@ -99,7 +99,7 @@
               :disabled="isSaving || (!draftPositionId && !draftCustomName.trim())"
               class="w-full sm:w-auto min-w-[120px] min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
             >
-              {{ isSaving ? '...' : (draftBoltSpecId && !selectedAreaHasBolts ? 'Simpan Titik & Baut' : 'Simpan Titik') }}
+              {{ isSaving ? '...' : (draftBoltSpecId && !selectedAreaHasBolts ? 'Simpan Penanda & Baut' : 'Simpan Penanda') }}
             </button>
           </div>
         </div>
@@ -123,7 +123,7 @@
     <!-- Existing 3D Annotations List with inline edit & delete -->
     <div v-if="annotations.length > 0" class="space-y-2">
       <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-        Titik Terpasang di Model 3D ({{ annotations.length }})
+        Penanda di Model 3D ({{ annotations.length }})
       </p>
 
       <div class="space-y-2">
@@ -159,7 +159,7 @@
               <button
                 type="button"
                 @click="startEdit(ann)"
-                :aria-label="`Ubah titik ${ann.label || ann.boltPosition?.name}`"
+                :aria-label="`Ubah penanda ${ann.label || ann.boltPosition?.name}`"
                 class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 cursor-pointer"
               >
                 <Pencil class="w-4 h-4" aria-hidden="true" />
@@ -167,7 +167,7 @@
               <button
                 type="button"
                 @click="confirmDeleteTarget = ann"
-                :aria-label="`Hapus titik ${ann.label || ann.boltPosition?.name}`"
+                :aria-label="`Hapus penanda ${ann.label || ann.boltPosition?.name}`"
                 class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 cursor-pointer"
               >
                 <Trash2 class="w-4 h-4" aria-hidden="true" />
@@ -225,7 +225,7 @@
     <ConfirmDialog
       :open="Boolean(confirmDeleteTarget)"
       title="Hapus Penanda 3D?"
-      :message="`Penanda &quot;${confirmDeleteTarget?.label || confirmDeleteTarget?.boltPosition?.name || 'Titik'}&quot; akan dihapus dari model 3D.`"
+      :message="`Penanda &quot;${confirmDeleteTarget?.label || confirmDeleteTarget?.boltPosition?.name || 'Penanda'}&quot; akan dihapus dari model 3D.`"
       confirm-text="Ya, Hapus"
       :danger="true"
       :loading="isDeleting"

@@ -83,6 +83,7 @@ router.post('/login', async (req, res) => {
 
     const user = await prisma.user.findUnique({
       where: { username },
+      include: { roleRel: { select: { displayName: true, permissions: { select: { permission: { select: { code: true } } } } } } },
     });
 
     let isValid = false;
@@ -129,6 +130,8 @@ router.post('/login', async (req, res) => {
         username: user.username,
         name: user.name,
         role: user.role,
+        roleName: user.roleRel?.displayName || user.role,
+        permissionCodes: user.role === 'ADMIN' ? ['*'] : (user.roleRel?.permissions.map((rp) => rp.permission.code) || []),
       },
     });
   } catch (error) {
@@ -138,8 +141,10 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/me
+// GET /api/auth/me — the client refreshes the menu/feature list with this, so role changes apply without re-login
 router.get('/me', requireAuth, async (req, res) => {
-  res.json({ user: req.user });
+  const { id, username, name, role, permissionCodes, roleRel } = req.user;
+  res.json({ user: { id, username, name, role, roleName: roleRel?.displayName || role, permissionCodes } });
 });
 
 module.exports = router;

@@ -61,7 +61,7 @@
         </button>
 
         <span class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-          {{ annotations3D.length }} titik 3D
+          {{ annotations3D.length }} penanda 3D
         </span>
       </div>
     </div>
@@ -171,7 +171,7 @@
             v-if="proj.visible && !proj.occluded"
             type="button"
             @click.stop="onHotspotClick(proj.annotation)"
-            :aria-label="`Titik ${proj.index}: ${proj.annotation.label || proj.annotation.boltPosition?.name || 'Baut'}`"
+            :aria-label="`Penanda ${proj.index}: ${proj.annotation.label || proj.annotation.boltPosition?.name || 'Baut'}`"
             :aria-pressed="activeAnnotation?.id === proj.annotation.id"
             class="absolute -translate-x-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full cursor-pointer transition-transform duration-100 focus-visible:ring-2 focus-visible:ring-amber-400 z-20"
             :class="activeAnnotation?.id === proj.annotation.id ? 'scale-110 z-30' : 'hover:scale-110'"
@@ -255,7 +255,7 @@
       class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-center justify-between gap-2"
     >
       <p class="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        Belum ada titik 3D yang ditandai pada model ini.
+        Belum ada penanda 3D yang ditandai pada model ini.
       </p>
       <button
         v-if="canAnnotate"

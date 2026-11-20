@@ -36,7 +36,7 @@ const props = defineProps({
   x: { type: Number, required: true },
   y: { type: Number, required: true },
   indexNumber: { type: [Number, String], default: '' },
-  label: { type: String, default: 'Titik Baut' },
+  label: { type: String, default: 'Penanda Baut' },
   active: { type: Boolean, default: false },
   draft: { type: Boolean, default: false },
   checkStatus: { type: String, default: null },
@@ -44,7 +44,7 @@ const props = defineProps({
 
 defineEmits(['select']);
 
-const ariaLabel = computed(() => `Titik ${props.indexNumber}: ${props.label}`);
+const ariaLabel = computed(() => `Penanda ${props.indexNumber}: ${props.label}`);
 
 const dotClasses = computed(() => {
   if (props.draft) {

@@ -167,7 +167,7 @@ const handleSubmit = async () => {
   isLoading.value = true;
   try {
     await auth.login(username.value, password.value);
-    router.push('/dashboard');
+    router.push(auth.homePath);
   } catch (err) {
     errorMessage.value = err.message === 'Failed to fetch'
       ? 'Tidak dapat terhubung ke server gerai. Periksa sambungan Wi-Fi lalu coba lagi.'

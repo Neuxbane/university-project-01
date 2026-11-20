@@ -2,7 +2,7 @@
   <button
     type="button"
     @click.stop="$emit('select')"
-    :aria-label="`Titik ${index}: ${positionName} - ${bolt.code}, ${quantity} pcs${statusAriaSuffix}`"
+    :aria-label="`Penanda ${index}: ${positionName} - ${bolt.code}, ${quantity} pcs${statusAriaSuffix}`"
     class="group pointer-events-auto w-full h-full bg-white/95 dark:bg-[#121215]/95 backdrop-blur-sm rounded-xl border shadow-lg overflow-hidden flex flex-col text-left cursor-pointer transition-all duration-150 hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-amber-400"
     :class="cardBorderClass"
   >
@@ -90,7 +90,7 @@ const props = defineProps({
   minimalMode: { type: Boolean, default: false },
   quantity: { type: Number, default: 0 },
   extraSpecsCount: { type: Number, default: 0 },
-  positionName: { type: String, default: 'Titik Pasang' },
+  positionName: { type: String, default: 'Posisi Pasang' },
   checkStatus: { type: String, default: null }, // 'done' | 'partial' | 'pending' | null
 });
 

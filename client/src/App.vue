@@ -65,8 +65,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Sidebar from './components/Sidebar.vue';
 import ToastContainer from './components/ui/ToastContainer.vue';
 import { useTheme } from './composables/useTheme';
@@ -74,6 +74,7 @@ import { useSystemInfo } from './composables/useSystemInfo';
 import { useAuthStore } from './stores/auth';
 
 const route = useRoute();
+const router = useRouter();
 const auth = useAuthStore();
 const { initTheme } = useTheme();
 const { backendPort, isBackendOnline } = useSystemInfo();
@@ -82,7 +83,24 @@ const showSidebar = computed(() => {
   return auth.isAuthenticated && route.name !== 'login';
 });
 
+let accessRefreshTimer;
+const refreshAccess = () => auth.refreshMe({ maxAgeMs: 0 });
+watch(() => [auth.isAuthenticated, auth.permissionCodes], () => {
+  if (route.meta.public) return;
+  if (!auth.isAuthenticated) { router.replace('/login'); return; }
+  const needed = route.meta.permission;
+  if ((needed && !auth.can(...[].concat(needed))) || (route.name === 'no-access' && auth.homePath !== '/tanpa-akses')) {
+    router.replace(auth.homePath);
+  }
+});
+
 onMounted(() => {
   initTheme();
+  accessRefreshTimer = setInterval(refreshAccess, 30000);
+  window.addEventListener('focus', refreshAccess);
+});
+onUnmounted(() => {
+  clearInterval(accessRefreshTimer);
+  window.removeEventListener('focus', refreshAccess);
 });
 </script>

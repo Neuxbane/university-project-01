@@ -1,25 +1,29 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { UPLOADS_DIR, uploadPath } = require('../utils/uploadPaths');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { createUploader } = require('../middleware/upload');
+const { ILLUSTRATION_PREFIX, sizeCode, sizeCaption, writeSizeIllustration } = require('../utils/sizeIllustration');
 
 const router = express.Router();
 const upload = createUploader('bolts');
 
 // GET /api/bolt-specs
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, requirePermission('MENU_MASTER_BARANG', 'MOTORCYCLES_MANAGE', 'PACKAGES_MANAGE'), async (req, res) => {
   try {
-    const { q, finish, headType } = req.query;
+    const { q, finish, headType, itemType } = req.query;
 
     const where = {};
+    if (itemType) where.itemType = String(itemType).toUpperCase();
     if (finish) where.finish = { equals: finish, mode: 'insensitive' };
     if (headType) where.headType = { equals: headType, mode: 'insensitive' };
     if (q) {
       where.OR = [
         { code: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q, mode: 'insensitive' } },
         { headType: { contains: q, mode: 'insensitive' } },
         { notes: { contains: q, mode: 'insensitive' } },
       ];
@@ -46,7 +50,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // GET /api/bolt-specs/:id
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, requirePermission('MENU_MASTER_BARANG', 'MOTORCYCLES_MANAGE', 'PACKAGES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const spec = await prisma.boltSpec.findUnique({
@@ -76,7 +80,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/bolt-specs (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('BOLTS_MANAGE'), async (req, res) => {
   try {
     const { code, diameterMm, lengthMm, headType, threadPitch, material, finish, notes } = req.body;
     if (!code || diameterMm === undefined || lengthMm === undefined || !headType) {
@@ -118,7 +122,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/bolt-specs/:id (Admin only)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('BOLTS_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { code, diameterMm, lengthMm, headType, threadPitch, material, finish, notes } = req.body;
@@ -157,9 +161,130 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+// POST /api/bolt-specs/items (Admin only) - Tambah Barang di Master Barang
+// { itemType: 'BAUT' | 'MUR' | 'MUR_PEGAS' | 'EMBLEM', diameterMm, lengthMm, name, notes }
+// Bolts and nuts are one item per size: an existing size is refused (409) and returned so the UI can open it.
+const ITEM_HEAD_TYPES = { BAUT: 'Baut', MUR: 'Mur', MUR_PEGAS: 'Mur pegas (klip)', EMBLEM: 'Emblem' };
+router.post('/items', requireAuth, requirePermission('BOLTS_MANAGE'), async (req, res) => {
+  try {
+    const kind = String(req.body.itemType || 'BAUT').toUpperCase();
+    const headType = ITEM_HEAD_TYPES[kind];
+    if (!headType) return res.status(400).json({ error: 'Jenis barang tidak dikenal.' });
+
+    let data;
+    if (kind === 'EMBLEM') {
+      const name = String(req.body.name || '').trim();
+      if (!name) return res.status(400).json({ error: 'Nama emblem wajib diisi.' });
+      const slug = name.toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      data = { code: `EMB-${slug}`, itemType: 'EMBLEM', name, headType, diameterMm: 0, lengthMm: 0 };
+    } else {
+      const diameterMm = Number(req.body.diameterMm);
+      const lengthMm = kind === 'BAUT' ? Number(req.body.lengthMm) : 0;
+      if (!Number.isFinite(diameterMm) || diameterMm < 1 || diameterMm > 30) {
+        return res.status(400).json({ error: 'Diameter harus antara 1 dan 30 mm.' });
+      }
+      if (kind === 'BAUT' && (!Number.isFinite(lengthMm) || lengthMm < 1 || lengthMm > 300)) {
+        return res.status(400).json({ error: 'Panjang harus antara 1 dan 300 mm.' });
+      }
+      data = { code: sizeCode({ diameterMm, lengthMm, headType }), itemType: 'BAUT', headType, diameterMm, lengthMm };
+    }
+
+    const existing = await prisma.boltSpec.findUnique({ where: { code: data.code }, select: { id: true, code: true } });
+    if (existing) {
+      return res.status(409).json({ error: `${data.code} sudah ada di Master Barang.`, existingId: existing.id, code: existing.code });
+    }
+
+    const spec = await prisma.boltSpec.create({
+      data: { ...data, material: '', finish: '', notes: req.body.notes ? String(req.body.notes).trim() : null },
+    });
+    if (spec.itemType === 'BAUT') {
+      const url = writeSizeIllustration(spec);
+      await prisma.boltImage.create({ data: { boltSpecId: spec.id, url, caption: sizeCaption(spec), isPrimary: true } });
+    }
+    const created = await prisma.boltSpec.findUnique({
+      where: { id: spec.id },
+      include: {
+        images: { orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }] },
+        _count: { select: { requirements: true, packageItems: true } },
+      },
+    });
+
+    await logAudit({ userId: req.user.id, action: 'CREATE', entity: 'BOLT_SPEC', entityId: spec.id, detail: `Menambah barang ${spec.code} ke Master Barang` });
+    res.status(201).json(created);
+  } catch (error) {
+    console.error('Error adding Master Barang item:', error);
+    res.status(500).json({ error: 'Gagal menambah barang.' });
+  }
+});
+
+// PATCH /api/bolt-specs/:id/size (Admin only) — { diameterMm, lengthMm }
+// Master Baut is one spec per size, so the code follows the size (M6x16, MUR-M8) and the size illustration is redrawn.
+router.patch('/:id/size', requireAuth, requirePermission('BOLTS_MANAGE'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const spec = await prisma.boltSpec.findUnique({ where: { id }, include: { images: true } });
+    if (!spec) return res.status(404).json({ error: 'Spesifikasi baut tidak ditemukan.' });
+    if (spec.itemType !== 'BAUT') return res.status(400).json({ error: 'Ukuran hanya berlaku untuk baut dan mur.' });
+
+    const isNut = Number(spec.lengthMm) <= 0;
+    const diameterMm = Number(req.body.diameterMm);
+    const lengthMm = isNut ? 0 : Number(req.body.lengthMm);
+    if (!Number.isFinite(diameterMm) || diameterMm < 1 || diameterMm > 30) {
+      return res.status(400).json({ error: 'Diameter harus antara 1 dan 30 mm.' });
+    }
+    if (!isNut && (!Number.isFinite(lengthMm) || lengthMm < 1 || lengthMm > 300)) {
+      return res.status(400).json({ error: 'Panjang harus antara 1 dan 300 mm.' });
+    }
+
+    const size = { diameterMm, lengthMm, headType: spec.headType };
+    const code = sizeCode(size);
+    if (code !== spec.code && await prisma.boltSpec.findUnique({ where: { code } })) {
+      return res.status(409).json({ error: `Ukuran ${code} sudah ada di Master Baut. Pakai ukuran itu atau pilih ukuran lain.` });
+    }
+
+    const url = writeSizeIllustration({ ...size, code });
+    const illustration = spec.images.find((img) => img.url.startsWith(ILLUSTRATION_PREFIX));
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.boltSpec.update({ where: { id }, data: { code, diameterMm, lengthMm } });
+      if (illustration) {
+        await tx.boltImage.update({ where: { id: illustration.id }, data: { url, caption: sizeCaption(size) } });
+      } else {
+        await tx.boltImage.create({ data: { boltSpecId: id, url, caption: sizeCaption(size), isPrimary: !spec.images.some((img) => img.isPrimary) } });
+      }
+      return tx.boltSpec.findUnique({
+        where: { id },
+        include: {
+          images: { orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }] },
+          _count: { select: { requirements: true, packageItems: true } },
+        },
+      });
+    });
+
+    // drop the old drawing unless something else still points at it
+    const oldUrl = illustration?.url;
+    if (oldUrl && oldUrl !== url && (await prisma.boltImage.count({ where: { url: oldUrl } })) === 0) {
+      const oldFile = uploadPath(oldUrl);
+      if (fs.existsSync(oldFile)) fs.unlinkSync(oldFile);
+    }
+
+    await logAudit({
+      userId: req.user.id,
+      action: 'UPDATE',
+      entity: 'BOLT_SPEC',
+      entityId: id,
+      detail: code === spec.code ? `Mengubah ukuran baut ${code}` : `Mengubah ukuran baut ${spec.code} menjadi ${code}`,
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Error updating bolt size:', error);
+    res.status(500).json({ error: 'Gagal mengubah ukuran baut.' });
+  }
+});
+
 // POST /api/bolt-specs/:id/images (Admin only)
 // Supports multi-file upload via multipart/form-data or JSON with { url, caption, isPrimary }
-router.post('/:id/images', requireAuth, requireAdmin, (req, res, next) => {
+router.post('/:id/images', requireAuth, requirePermission('BOLTS_MANAGE'), (req, res, next) => {
   upload.array('images', 10)(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err.message || 'Gagal mengunggah foto.' });
@@ -245,7 +370,7 @@ router.post('/:id/images', requireAuth, requireAdmin, (req, res, next) => {
 });
 
 // DELETE /api/bolt-specs/:id/images/:imageId (Admin only)
-router.delete('/:id/images/:imageId', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id/images/:imageId', requireAuth, requirePermission('BOLTS_MANAGE'), async (req, res) => {
   try {
     const boltSpecId = parseInt(req.params.id, 10);
     const imageId = parseInt(req.params.imageId, 10);
@@ -262,7 +387,7 @@ router.delete('/:id/images/:imageId', requireAuth, requireAdmin, async (req, res
 
     // If local file in uploads, unlink it
     if (image.url.startsWith('/uploads/')) {
-      const localFilePath = path.join(__dirname, '../..', image.url);
+      const localFilePath = uploadPath(image.url);
       if (fs.existsSync(localFilePath)) {
         try {
           fs.unlinkSync(localFilePath);
@@ -307,7 +432,7 @@ router.delete('/:id/images/:imageId', requireAuth, requireAdmin, async (req, res
 });
 
 // PATCH /api/bolt-specs/:id/images/:imageId/primary (Admin only)
-router.patch('/:id/images/:imageId/primary', requireAuth, requireAdmin, async (req, res) => {
+router.patch('/:id/images/:imageId/primary', requireAuth, requirePermission('BOLTS_MANAGE'), async (req, res) => {
   try {
     const boltSpecId = parseInt(req.params.id, 10);
     const imageId = parseInt(req.params.imageId, 10);

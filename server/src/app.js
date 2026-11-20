@@ -18,6 +18,9 @@ const roleRoutes = require('./routes/roles');
 const positionAnnotationRoutes = require('./routes/positionAnnotations');
 const closeupRoutes = require('./routes/closeups');
 const dashboardRoutes = require('./routes/dashboard');
+const verificationRoutes = require('./routes/verification');
+const serviceTimeRoutes = require('./routes/serviceTime');
+const bundleClaimRoutes = require('./routes/bundleClaims');
 
 const app = express();
 
@@ -60,9 +63,12 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/position-annotations', positionAnnotationRoutes);
 app.use('/api', closeupRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/verification', verificationRoutes);
+app.use('/api/service-time', serviceTimeRoutes);
+app.use('/api/bundle-claims', bundleClaimRoutes);
 
 // Serve uploaded files statically
-const uploadsPath = path.join(__dirname, '../uploads');
+const { UPLOADS_DIR: uploadsPath } = require('./utils/uploadPaths');
 if (!fs.existsSync(uploadsPath)) {
   fs.mkdirSync(uploadsPath, { recursive: true });
 }

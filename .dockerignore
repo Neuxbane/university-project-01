@@ -4,6 +4,8 @@ data
 .git
 .gitignore
 .env
+**/.env
+**/.env.*
 client/dist
 *.md
 docs

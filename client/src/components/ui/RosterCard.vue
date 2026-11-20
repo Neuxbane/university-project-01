@@ -65,7 +65,7 @@
       <span
         class="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-zinc-950/90 text-white border border-white/20 text-xs font-mono font-bold shadow-sm backdrop-blur-sm"
       >
-        {{ reqCount }} titik
+        {{ reqCount }} data baut
       </span>
     </div>
 

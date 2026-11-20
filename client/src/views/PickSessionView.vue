@@ -4,11 +4,11 @@
     <template #topbar>
       <div class="flex items-center justify-between gap-2">
         <router-link
-          to="/pick-list"
+          to="/history"
           class="min-h-[44px] px-2 -ml-2 inline-flex items-center text-sm font-medium text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
         >
           <ArrowLeft class="w-4 h-4 mr-1.5" aria-hidden="true" />
-          Kembali ke Roster
+          Kembali ke Riwayat
         </router-link>
 
         <div class="flex items-center gap-2">
@@ -88,7 +88,7 @@
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30'
                   : 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30'"
               >
-                {{ isComplete ? 'SELESAI' : 'SEDANG DIAMBIL' }}
+                {{ isComplete ? 'SELESAI' : 'BERJALAN' }}
               </span>
               <span class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
                 {{ session.creator.name }} &bull; {{ formatDateTime(session.createdAt) }}
@@ -99,8 +99,22 @@
               {{ session.motorcycleType.displayName }}
             </h1>
             <p class="text-sm text-zinc-600 dark:text-zinc-400 font-mono mt-0.5 truncate">
-              {{ session.package ? session.package.name : 'Lengkap Satu Motor' }}
+              Checklist Paket Full Bike &bull; {{ session.package ? session.package.name : 'Lengkap Satu Motor' }}
             </p>
+
+            <div class="mt-3 max-w-md no-print">
+              <label for="session-buyer" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Nama pembeli / no. nota</label>
+              <input
+                id="session-buyer"
+                v-model="buyerName"
+                type="text"
+                placeholder="Misal: Andi / INV-0231"
+                :disabled="!canChecklist"
+                @change="saveBuyer"
+                class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 disabled:opacity-60"
+              />
+              <p v-if="!canChecklist" class="text-xs font-medium text-amber-800 dark:text-amber-300">Hanya lihat: peran Anda belum diberi akses mencentang checklist.</p>
+            </div>
 
             <div class="mt-3 flex flex-wrap gap-2">
               <StatPill :icon="ListChecks" label="Item" :value="`${session.checkedItems}/${session.totalItems}`" />
@@ -124,7 +138,7 @@
         <div class="relative px-4 sm:px-6 pb-4 sm:pb-5">
           <ProgressBar
             :value="session.progressPercent"
-            :label="isComplete ? 'Semua baut sudah diambil' : 'Terus centang baut yang sudah diambil'"
+            :label="isComplete ? 'Semua barang sudah dicentang' : 'Centang barang yang sudah diambil atau dipasang; sisanya tetap tersimpan di Riwayat'"
             :tone="isComplete ? 'emerald' : 'amber'"
           />
         </div>
@@ -144,6 +158,13 @@
           <p class="text-sm text-emerald-800 dark:text-emerald-400/90 mt-0.5">
             Daftar baut siap diserahkan kepada teknisi atau pelanggan. Cetak surat kerja bila diperlukan.
           </p>
+          <router-link
+            :to="{ path: `/pick-list/${session.motorcycleTypeId}/lokasi`, query: session.packageId ? { packageId: session.packageId, panduan: '1' } : { panduan: '1' } }"
+            class="no-print mt-3 min-h-[44px] px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold inline-flex items-center gap-1.5"
+          >
+            Lanjut ke Panduan Pasang
+            <ArrowRight class="w-4 h-4" aria-hidden="true" />
+          </router-link>
         </div>
       </div>
 
@@ -194,7 +215,7 @@
                 type="button"
                 role="checkbox"
                 :aria-checked="item.checked"
-                :disabled="togglingIds.has(item.id)"
+                :disabled="togglingIds.has(item.id) || !canChecklist"
                 @click="toggleItem(item)"
                 class="w-full text-left cursor-pointer disabled:opacity-70 active:scale-[0.99] transition-transform"
               >
@@ -260,6 +281,7 @@
                   <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate leading-tight">
                     {{ item.positionSummary || 'Seluruh motor' }}
                   </p>
+                  <BoltFlags class="pt-0.5" :critical="Boolean(flagsBySpec[item.boltSpecId]?.isCritical)" :check="Boolean(flagsBySpec[item.boltSpecId]?.needsCheck)" />
                 </div>
               </button>
 
@@ -404,6 +426,7 @@ import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   ArrowLeft,
+  ArrowRight,
   Bike,
   Check,
   CircleCheck,
@@ -430,6 +453,7 @@ import SearchInput from '../components/ui/SearchInput.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import SkeletonCard from '../components/ui/SkeletonCard.vue';
 import StatPill from '../components/ui/StatPill.vue';
+import BoltFlags from '../components/ui/BoltFlags.vue';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 
 const AsyncModelViewer = defineAsyncComponent(() => import('../components/location/ModelViewer.vue'));
@@ -460,6 +484,30 @@ const galleryModal = ref({
   itemSubtitle: '',
   images: [],
 });
+
+// KRITIS / CEK FISIK per bolt size, taken from the location data this page already loads
+const flagsBySpec = computed(() =>
+  Object.fromEntries((locationData.value?.bolts || []).map((b) => [b.boltSpecId, { isCritical: b.isCritical, needsCheck: b.needsCheck }]))
+);
+
+// buyer / receipt of this Paket Full Bike claim, saved when the field changes
+const buyerName = ref('');
+const saveBuyer = async () => {
+  if (!session.value) return;
+  try {
+    const res = await auth.apiFetch(`/api/pick-lists/sessions/${session.value.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ buyerName: buyerName.value }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Gagal menyimpan nama pembeli.');
+    session.value.buyerName = body.buyerName;
+    toast.success('Nama pembeli disimpan');
+  } catch (err) {
+    toast.error(err.message);
+  }
+};
 
 const isComplete = computed(() => {
   if (!session.value) return false;
@@ -545,6 +593,7 @@ const loadSession = async () => {
     const res = await auth.apiFetch(`/api/pick-lists/sessions/${route.params.sessionId}`);
     if (!res.ok) throw new Error('Data sesi checklist tidak ditemukan.');
     session.value = await res.json();
+    buyerName.value = session.value.buyerName || '';
     await loadLocationData(session.value.motorcycleTypeId, session.value.packageId);
   } catch (err) {
     errorMsg.value = err.message === 'Failed to fetch'
@@ -605,17 +654,17 @@ const clearAnnotationSelection = () => {
 };
 
 const toggleSpecCheck = async (boltSpecId) => {
-  if (!session.value || !boltSpecId) return;
+  if (!session.value || !boltSpecId || !canChecklist.value) return;
   const item = session.value.items.find((it) => it.boltSpecId === boltSpecId);
   if (!item) {
-    toast.info('Baut ini tidak termasuk dalam paket checklist aktif.');
+    toast.info('Baut ini tidak termasuk dalam bundling checklist aktif.');
     return;
   }
   await toggleItem(item);
 };
 
 const toggleAnnotationItems = async (ann) => {
-  if (!session.value || !ann || isTogglingPoint.value) return;
+  if (!session.value || !ann || isTogglingPoint.value || !canChecklist.value) return;
   const statusInfo = resolveChecklistStatus(
     ann,
     session.value.items,
@@ -623,7 +672,7 @@ const toggleAnnotationItems = async (ann) => {
     locationData.value?.positionBreakdown
   );
   if (!statusInfo.matchingItems.length) {
-    toast.info('Tidak ada item checklist yang terkait dengan titik ini.');
+    toast.info('Tidak ada item checklist yang terkait dengan penanda ini.');
     return;
   }
 
@@ -635,15 +684,18 @@ const toggleAnnotationItems = async (ann) => {
         await toggleItem(item);
       }
     }
-    const label = ann.label || ann.boltPosition?.name || 'Titik baut';
+    const label = ann.label || ann.boltPosition?.name || 'Penanda baut';
     toast.success(nextChecked ? `Ditandai sudah diambil: ${label}` : `Centang dibatalkan: ${label}`);
   } finally {
     isTogglingPoint.value = false;
   }
 };
 
+// ticking and the buyer name follow the role's "Mulai & centang checklist" access
+const canChecklist = computed(() => auth.can('SESSION_CHECKLIST'));
+
 const toggleItem = async (item) => {
-  if (togglingIds.value.has(item.id)) return;
+  if (togglingIds.value.has(item.id) || !canChecklist.value) return;
   errorMsg.value = '';
   const newChecked = !item.checked;
   item.checked = newChecked;

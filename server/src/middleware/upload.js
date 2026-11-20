@@ -1,9 +1,10 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { UPLOADS_DIR } = require('../utils/uploadPaths');
 
 function createUploader(subfolder) {
-  const uploadDir = path.join(__dirname, '../../uploads', subfolder);
+  const uploadDir = path.join(UPLOADS_DIR, subfolder);
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -36,7 +37,7 @@ function createUploader(subfolder) {
 }
 
 function createModelUploader() {
-  const uploadDir = path.join(__dirname, '../../uploads/models');
+  const uploadDir = path.join(UPLOADS_DIR, 'models');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }

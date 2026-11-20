@@ -1,7 +1,8 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
+const { CLAIM_INCLUDE } = require('../utils/bundleClaims');
 
 const router = express.Router();
 
@@ -32,13 +33,13 @@ const PACKAGE_INCLUDE = {
     },
   },
   _count: {
-    select: { pickSessions: true },
+    select: { pickSessions: true, claims: true },
   },
 };
 
 function sanitizeItems(items) {
   if (!Array.isArray(items) || items.length === 0) {
-    return { error: 'Minimal harus ada 1 item baut di dalam paket.' };
+    return { error: 'Minimal harus ada 1 barang di dalam bundling.' };
   }
 
   const parsed = [];
@@ -46,10 +47,10 @@ function sanitizeItems(items) {
     const boltSpecId = parseInt(item?.boltSpecId, 10);
     const quantity = parseInt(item?.quantity, 10);
     if (!Number.isInteger(boltSpecId) || boltSpecId <= 0) {
-      return { error: 'Spesifikasi baut pada setiap baris item wajib dipilih.' };
+      return { error: 'Barang pada setiap baris bundling wajib dipilih.' };
     }
     if (!Number.isInteger(quantity) || quantity <= 0) {
-      return { error: 'Jumlah baut pada setiap item paket minimal 1 pcs.' };
+      return { error: 'Jumlah setiap barang di bundling minimal 1 pcs.' };
     }
     const sourceReqId = item?.sourceRequirementId ? parseInt(item.sourceRequirementId, 10) : null;
     parsed.push({
@@ -57,13 +58,45 @@ function sanitizeItems(items) {
       quantity,
       sourceRequirementId: Number.isInteger(sourceReqId) ? sourceReqId : null,
       emblemNote: item?.emblemNote ? String(item.emblemNote).trim() : null,
+      isBonus: Boolean(item?.isBonus),
     });
   }
   return { items: parsed };
 }
 
+// Bundling header: motorcycle is optional (a bundling can be sold for any bike), price in Rupiah is optional
+async function parseBundlingHeader(body) {
+  const { motorcycleTypeId, packageType, name, description, price } = body;
+  const trimmedType = packageType ? String(packageType).trim() : '';
+  const trimmedName = name ? String(name).trim() : '';
+  if (!trimmedType || !trimmedName) {
+    return { error: 'Jenis dan nama bundling wajib diisi.', status: 400 };
+  }
+  let mId = null;
+  if (motorcycleTypeId !== undefined && motorcycleTypeId !== null && motorcycleTypeId !== '') {
+    mId = parseInt(motorcycleTypeId, 10);
+    if (!Number.isInteger(mId)) return { error: 'ID tipe motor tidak valid.', status: 400 };
+    const motor = await prisma.motorcycleType.findUnique({ where: { id: mId }, select: { id: true } });
+    if (!motor) return { error: 'Tipe motor tidak ditemukan.', status: 404 };
+  }
+  let parsedPrice = null;
+  if (price !== undefined && price !== null && price !== '') {
+    parsedPrice = Math.round(Number(price));
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) return { error: 'Harga bundling harus angka 0 atau lebih.', status: 400 };
+  }
+  return {
+    data: {
+      motorcycleTypeId: mId,
+      packageType: trimmedType,
+      name: trimmedName,
+      description: description ? String(description).trim() : null,
+      price: parsedPrice,
+    },
+  };
+}
+
 // GET /api/packages
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, requirePermission('MENU_BUNDLING'), async (req, res) => {
   try {
     const { motorcycle_id, status } = req.query;
     const where = {};
@@ -92,7 +125,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // GET /api/packages/:id/items
-router.get('/:id/items', requireAuth, async (req, res) => {
+router.get('/:id/items', requireAuth, requirePermission('MENU_BUNDLING'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) {
@@ -115,7 +148,7 @@ router.get('/:id/items', requireAuth, async (req, res) => {
 });
 
 // GET /api/packages/:id
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, requirePermission('MENU_BUNDLING'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) {
@@ -138,35 +171,22 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/packages (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('PACKAGES_MANAGE'), async (req, res) => {
   try {
-    const { motorcycleTypeId, packageType, name, description, status, items } = req.body;
-    const mId = parseInt(motorcycleTypeId, 10);
-    const trimmedType = packageType ? String(packageType).trim() : '';
-    const trimmedName = name ? String(name).trim() : '';
-
-    if (!Number.isInteger(mId) || !trimmedType || !trimmedName) {
-      return res.status(400).json({ error: 'Tipe motor, jenis paket, dan nama paket wajib diisi.' });
-    }
+    const header = await parseBundlingHeader(req.body);
+    if (header.error) return res.status(header.status).json({ error: header.error });
+    const { status, items } = req.body;
 
     const sanitized = sanitizeItems(items);
     if (sanitized.error) {
       return res.status(400).json({ error: sanitized.error });
     }
 
-    const motor = await prisma.motorcycleType.findUnique({ where: { id: mId }, select: { id: true } });
-    if (!motor) {
-      return res.status(404).json({ error: 'Tipe motor tidak ditemukan.' });
-    }
-
     const validStatus = status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
     const pkg = await prisma.package.create({
       data: {
-        motorcycleTypeId: mId,
-        packageType: trimmedType,
-        name: trimmedName,
-        description: description ? String(description).trim() : null,
+        ...header.data,
         status: validStatus,
         items: {
           create: sanitized.items,
@@ -180,7 +200,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       action: 'CREATE',
       entity: 'PACKAGE',
       entityId: pkg.id,
-      detail: `Membuat paket baut: ${pkg.name} (${pkg.items.length} item)`,
+      detail: `Membuat bundling: ${pkg.name} (${pkg.items.length} barang)`,
     });
 
     res.status(201).json(pkg);
@@ -194,7 +214,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/packages/:id (Admin only)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('PACKAGES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) {
@@ -206,23 +226,13 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Paket baut tidak ditemukan.' });
     }
 
-    const { motorcycleTypeId, packageType, name, description, status, items } = req.body;
-    const mId = parseInt(motorcycleTypeId, 10);
-    const trimmedType = packageType ? String(packageType).trim() : '';
-    const trimmedName = name ? String(name).trim() : '';
-
-    if (!Number.isInteger(mId) || !trimmedType || !trimmedName) {
-      return res.status(400).json({ error: 'Tipe motor, jenis paket, dan nama paket wajib diisi.' });
-    }
+    const header = await parseBundlingHeader(req.body);
+    if (header.error) return res.status(header.status).json({ error: header.error });
+    const { status, items } = req.body;
 
     const sanitized = sanitizeItems(items);
     if (sanitized.error) {
       return res.status(400).json({ error: sanitized.error });
-    }
-
-    const motor = await prisma.motorcycleType.findUnique({ where: { id: mId }, select: { id: true } });
-    if (!motor) {
-      return res.status(404).json({ error: 'Tipe motor tidak ditemukan.' });
     }
 
     const nextStatus = status === 'ACTIVE' || status === 'INACTIVE' ? status : existing.status;
@@ -232,10 +242,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       return tx.package.update({
         where: { id },
         data: {
-          motorcycleTypeId: mId,
-          packageType: trimmedType,
-          name: trimmedName,
-          description: description ? String(description).trim() : null,
+          ...header.data,
           status: nextStatus,
           items: {
             create: sanitized.items,
@@ -250,7 +257,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       action: 'UPDATE',
       entity: 'PACKAGE',
       entityId: updated.id,
-      detail: `Mengubah paket baut: ${updated.name} (${updated.items.length} item)`,
+      detail: `Mengubah bundling: ${updated.name} (${updated.items.length} barang)`,
     });
 
     res.json(updated);
@@ -302,11 +309,11 @@ async function handleTogglePackageStatus(req, res) {
   }
 }
 
-router.patch('/:id/status', requireAuth, requireAdmin, handleTogglePackageStatus);
-router.patch('/:id/deactivate', requireAuth, requireAdmin, handleTogglePackageStatus);
+router.patch('/:id/status', requireAuth, requirePermission('PACKAGES_MANAGE'), handleTogglePackageStatus);
+router.patch('/:id/deactivate', requireAuth, requirePermission('PACKAGES_MANAGE'), handleTogglePackageStatus);
 
 // DELETE /api/packages/:id (Admin only)
-router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('PACKAGES_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) {
@@ -332,6 +339,57 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error deleting package:', error);
     res.status(500).json({ error: 'Gagal menghapus paket baut.' });
+  }
+});
+
+// ---- Buyer claims (started here, ticked off in Riwayat via /api/bundle-claims) ----
+// GET /api/packages/:id/claims - open claims first, then the latest completed ones
+router.get('/:id/claims', requireAuth, requirePermission('MENU_RIWAYAT'), async (req, res) => {
+  try {
+    const packageId = parseInt(req.params.id, 10);
+    const claims = await prisma.bundleClaim.findMany({
+      where: { packageId },
+      include: CLAIM_INCLUDE,
+      orderBy: [{ completedAt: { sort: 'desc', nulls: 'first' } }, { createdAt: 'desc' }],
+      take: 30,
+    });
+    res.json(claims);
+  } catch (error) {
+    console.error('Error fetching bundling claims:', error);
+    res.status(500).json({ error: 'Gagal memuat daftar klaim bundling.' });
+  }
+});
+
+// POST /api/packages/:id/claims - { buyerName } starts a claim with a copy of the bundling items
+router.post('/:id/claims', requireAuth, requirePermission('SESSION_CHECKLIST'), async (req, res) => {
+  try {
+    const packageId = parseInt(req.params.id, 10);
+    const pkg = await prisma.package.findUnique({ where: { id: packageId }, include: { items: true } });
+    if (!pkg) return res.status(404).json({ error: 'Bundling tidak ditemukan.' });
+    if (pkg.status !== 'ACTIVE') return res.status(400).json({ error: 'Bundling ini sedang dinonaktifkan.' });
+    if (!pkg.items.length) return res.status(400).json({ error: 'Bundling ini belum punya barang.' });
+
+    const buyerName = req.body.buyerName ? String(req.body.buyerName).trim() : '';
+    const claim = await prisma.bundleClaim.create({
+      data: {
+        packageId,
+        buyerName: buyerName || null,
+        createdBy: req.user.id,
+        items: { create: pkg.items.map((i) => ({ boltSpecId: i.boltSpecId, quantity: i.quantity, isBonus: i.isBonus })) },
+      },
+      include: CLAIM_INCLUDE,
+    });
+    await logAudit({
+      userId: req.user.id,
+      action: 'CREATE',
+      entity: 'BUNDLE_CLAIM',
+      entityId: claim.id,
+      detail: `Mulai cek klaim bundling ${pkg.name}${buyerName ? ` untuk ${buyerName}` : ''}`,
+    });
+    res.status(201).json(claim);
+  } catch (error) {
+    console.error('Error starting bundling claim:', error);
+    res.status(500).json({ error: 'Gagal memulai cek klaim.' });
   }
 });
 

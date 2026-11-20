@@ -1,13 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const prisma = require('../db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requirePermission, isSuperAdmin } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 
 const router = express.Router();
 
 // GET /api/users/rbac-matrix (Authenticated - dynamically fetched from database)
-router.get('/rbac-matrix', requireAuth, async (req, res) => {
+router.get('/rbac-matrix', requireAuth, requirePermission('USERS_MANAGE', 'ROLES_MANAGE'), async (req, res) => {
   try {
     const roles = await prisma.role.findMany({
       include: {
@@ -43,7 +43,7 @@ router.get('/rbac-matrix', requireAuth, async (req, res) => {
 });
 
 // GET /api/users (Admin only)
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/', requireAuth, requirePermission('USERS_MANAGE'), async (req, res) => {
   try {
     const { q, role, status } = req.query;
 
@@ -96,7 +96,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // POST /api/users (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requirePermission('USERS_MANAGE'), async (req, res) => {
   try {
     const { username, password, name, role, roleId } = req.body;
 
@@ -119,6 +119,9 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 
     if (!targetRole) {
       return res.status(400).json({ error: 'Role yang dipilih tidak ditemukan di database.' });
+    }
+    if (targetRole.name === 'ADMIN' && !isSuperAdmin(req.user)) {
+      return res.status(403).json({ error: 'Hanya super admin yang dapat mengatur akun super admin.' });
     }
 
     if (password.length < 6) {
@@ -174,7 +177,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/users/:id (Admin only)
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requirePermission('USERS_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { name, role, roleId, password } = req.body;
@@ -182,6 +185,9 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     const targetUser = await prisma.user.findUnique({ where: { id } });
     if (!targetUser) {
       return res.status(404).json({ error: 'Pengguna tidak ditemukan.' });
+    }
+    if (targetUser.role === 'ADMIN' && !isSuperAdmin(req.user)) {
+      return res.status(403).json({ error: 'Hanya super admin yang dapat mengatur akun super admin.' });
     }
 
     const updateData = {};
@@ -197,6 +203,9 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 
       if (!targetRole) {
         return res.status(400).json({ error: 'Role tidak ditemukan di database.' });
+      }
+      if (targetRole.name === 'ADMIN' && !isSuperAdmin(req.user)) {
+        return res.status(403).json({ error: 'Hanya super admin yang dapat mengatur akun super admin.' });
       }
 
       // Check if demoting the only active admin
@@ -253,7 +262,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PATCH /api/users/:id/status (Admin only)
-router.patch('/:id/status', requireAuth, requireAdmin, async (req, res) => {
+router.patch('/:id/status', requireAuth, requirePermission('USERS_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
 
@@ -264,6 +273,9 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req, res) => {
     const targetUser = await prisma.user.findUnique({ where: { id } });
     if (!targetUser) {
       return res.status(404).json({ error: 'Pengguna tidak ditemukan.' });
+    }
+    if (targetUser.role === 'ADMIN' && !isSuperAdmin(req.user)) {
+      return res.status(403).json({ error: 'Hanya super admin yang dapat mengatur akun super admin.' });
     }
 
     // Check if deactivating the last active admin
@@ -304,7 +316,7 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/users/:id (Admin only)
-router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/:id', requireAuth, requirePermission('USERS_MANAGE'), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
 
@@ -323,6 +335,10 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 
     if (!targetUser) {
       return res.status(404).json({ error: 'Pengguna tidak ditemukan.' });
+    }
+
+    if (targetUser.role === 'ADMIN' && !isSuperAdmin(req.user)) {
+      return res.status(403).json({ error: 'Hanya super admin yang dapat mengatur akun super admin.' });
     }
 
     if (targetUser.role === 'ADMIN') {

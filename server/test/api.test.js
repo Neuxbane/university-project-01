@@ -1,9 +1,12 @@
+const { uploadsDir, cleanupUploads } = require('./setup');
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const app = require('../src/app');
+const prisma = require('../src/db');
+const { syncPermissionCatalog } = require('../src/utils/permissions');
 
 let server;
 let baseUrl;
@@ -11,6 +14,7 @@ let adminToken;
 let staffToken;
 
 before(async () => {
+  await syncPermissionCatalog(prisma);
   await new Promise((resolve) => {
     server = app.listen(0, '127.0.0.1', () => {
       const port = server.address().port;
@@ -21,7 +25,9 @@ before(async () => {
 });
 
 after(async () => {
-  await new Promise((resolve) => server.close(resolve));
+  if (server) await new Promise((resolve) => server.close(resolve));
+  await prisma.$disconnect();
+  cleanupUploads();
 });
 
 async function apiRequest(path, { method = 'GET', body, token } = {}) {
@@ -158,6 +164,7 @@ describe('Hex Titanium Bolt System API Tests', () => {
       body: {
         motorcycleTypeId: nmax.id,
         notes: 'Uji coba sesi ambil baut staf',
+        buyerName: 'Pembeli Paket',
         items: [
           { boltSpecId: 1, quantity: 2, positionSummary: 'Kaliper Depan' },
         ],
@@ -166,6 +173,9 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(createRes.status, 201);
     const session = createRes.data;
     assert.equal(session.status, 'IN_PROGRESS');
+    assert.equal(session.buyerName, 'Pembeli Paket');
+    const renamed = await apiRequest(`/api/pick-lists/sessions/${session.id}`, { method: 'PATCH', token: staffToken, body: { buyerName: 'INV-0099' } });
+    assert.equal(renamed.data.buyerName, 'INV-0099');
 
     // Check the item
     const itemId = session.items[0].id;
@@ -177,6 +187,15 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(patchRes.status, 200);
     assert.equal(patchRes.data.sessionStatus, 'COMPLETED');
     assert.equal(patchRes.data.isAllChecked, true);
+
+    // Completion time is recorded for the service-time report, cleared when an item is unticked
+    const completed = await apiRequest(`/api/pick-lists/sessions/${session.id}`, { token: staffToken });
+    assert.ok(completed.data.completedAt, 'completedAt is set once every item is checked');
+    await apiRequest(`/api/pick-lists/sessions/${session.id}/items/${itemId}`, { method: 'PATCH', token: staffToken, body: { checked: false } });
+    const reopened = await apiRequest(`/api/pick-lists/sessions/${session.id}`, { token: staffToken });
+    assert.equal(reopened.data.status, 'IN_PROGRESS');
+    assert.equal(reopened.data.completedAt, null);
+    await apiRequest(`/api/pick-lists/sessions/${session.id}/items/${itemId}`, { method: 'PATCH', token: staffToken, body: { checked: true } });
   });
 
   test('7. Multi-photo gallery: add photo, set primary, delete photo for bolt and motorcycle', async () => {
@@ -248,10 +267,7 @@ describe('Hex Titanium Bolt System API Tests', () => {
 
     // 2. Authenticated user can fetch RBAC matrix
     const rbacRes = await apiRequest('/api/users/rbac-matrix', { token: staffToken });
-    assert.equal(rbacRes.status, 200);
-    assert.ok(rbacRes.data.ADMIN);
-    assert.ok(rbacRes.data.STAFF);
-    assert.ok(rbacRes.data.TECHNICIAN);
+    assert.equal(rbacRes.status, 403);
 
     // 3. Admin can list users
     const listRes = await apiRequest('/api/users', { token: adminToken });
@@ -328,14 +344,14 @@ describe('Hex Titanium Bolt System API Tests', () => {
         name: customRoleName,
         displayName: 'Quality Control Gerai',
         description: 'Pemeriksa kualitas baut dan kepatuhan standar teknis',
-        permissionCodes: ['PICKLIST_GENERATE', 'SESSION_CHECKLIST', 'BOLTS_MANAGE'],
+        permissionCodes: ['SESSION_CHECKLIST', 'BOLTS_MANAGE'],
       },
     });
     assert.equal(createRoleRes.status, 201);
     const createdRole = createRoleRes.data;
     assert.equal(createdRole.name, customRoleName);
-    assert.equal(createdRole.permissionCodes.length, 3);
-    assert.ok(createdRole.permissionCodes.includes('BOLTS_MANAGE'));
+    // each "kelola"/checklist feature brings the menu it needs
+    assert.deepEqual([...createdRole.permissionCodes].sort(), ['BOLTS_MANAGE', 'MENU_MASTER_BARANG', 'MENU_RIWAYAT', 'SESSION_CHECKLIST']);
 
     // 3. Update permissions of custom role
     const updateRoleRes = await apiRequest(`/api/roles/${createdRole.id}`, {
@@ -343,12 +359,13 @@ describe('Hex Titanium Bolt System API Tests', () => {
       token: adminToken,
       body: {
         displayName: 'Quality Control & Visual Inspector',
-        permissionCodes: ['PICKLIST_GENERATE', 'SESSION_CHECKLIST', 'BOLTS_MANAGE', 'MEDIA_UPLOAD'],
+        permissionCodes: ['SESSION_CHECKLIST', 'BOLTS_MANAGE', 'MENU_DASHBOARD', 'KODE_TIDAK_ADA'],
       },
     });
     assert.equal(updateRoleRes.status, 200);
-    assert.equal(updateRoleRes.data.permissionCodes.length, 4);
-    assert.ok(updateRoleRes.data.permissionCodes.includes('MEDIA_UPLOAD'));
+    assert.equal(updateRoleRes.data.permissionCodes.length, 5);
+    assert.ok(updateRoleRes.data.permissionCodes.includes('MENU_DASHBOARD'));
+    assert.ok(!updateRoleRes.data.permissionCodes.includes('KODE_TIDAK_ADA'));
 
     // 4. Create user assigned to this dynamic role
     const customUserRes = await apiRequest('/api/users', {
@@ -1018,5 +1035,281 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(productPhoto + illustrationOnly + none, totals.specs);
     assert.ok(data.topSpecs.length <= 10);
     data.topSpecs.slice(1).forEach((s, i) => assert.ok(s.pcs <= data.topSpecs[i].pcs, 'top sizes sorted by pcs'));
+    assert.ok(Array.isArray(data.completeness.motorsWithoutData));
+    assert.ok(data.completeness.rowsToCheck >= 0 && data.completeness.criticalRows >= 0);
+  });
+
+  test('20. Data verification, service-time report and pick-list safety flags', async () => {
+    assert.equal((await apiRequest('/api/verification', { token: staffToken })).status, 403);
+    assert.equal((await apiRequest('/api/service-time', { token: staffToken })).status, 403);
+
+    // Catalog rows whose size was derived from the part code wait for a physical check
+    const { status, data } = await apiRequest('/api/verification', { token: adminToken });
+    assert.equal(status, 200);
+    assert.ok(data.totalToCheck > 0);
+    const row = data.groups[0].rows[0];
+    const verified = await apiRequest('/api/verification', { method: 'PATCH', token: adminToken, body: { ids: [row.id], sizeStatus: 'VERIFIED' } });
+    assert.equal(verified.status, 200);
+    assert.equal(verified.data.updated, 1);
+    assert.equal((await apiRequest('/api/verification', { token: adminToken })).data.totalToCheck, data.totalToCheck - 1);
+    await apiRequest('/api/verification', { method: 'PATCH', token: adminToken, body: { ids: [row.id], sizeStatus: 'CEK_FISIK' } });
+    assert.equal((await apiRequest('/api/verification', { method: 'PATCH', token: adminToken, body: { ids: [] } })).status, 400);
+
+    // Pick list carries the flags per position and per size
+    const checkLoc = await apiRequest(`/api/motorcycles/${data.groups[0].motorcycle.id}/location-map`, { token: staffToken });
+    assert.ok(checkLoc.data.positionBreakdown.some((r) => r.sizeStatus === 'CEK_FISIK'));
+    assert.ok(checkLoc.data.bolts.some((b) => b.needsCheck));
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
+    const genio = motorcycles.find((m) => m.model === 'Genio');
+    const genioLoc = await apiRequest(`/api/motorcycles/${genio.id}/location-map`, { token: staffToken });
+    assert.ok(genioLoc.data.positionBreakdown.some((r) => r.isCritical), 'brake/stand rows are critical');
+    assert.ok(genioLoc.data.bolts.some((b) => b.isCritical));
+
+    // Service time: baseline validated and stored; the session completed in test 6 is counted
+    assert.equal((await apiRequest('/api/service-time/baseline', { method: 'PUT', token: adminToken, body: { minutes: 0 } })).status, 400);
+    assert.equal((await apiRequest('/api/service-time/baseline', { method: 'PUT', token: adminToken, body: { minutes: 30 } })).status, 200);
+    const report = await apiRequest('/api/service-time', { token: adminToken });
+    assert.equal(report.status, 200);
+    assert.equal(report.data.baselineMinutes, 30);
+    assert.ok(report.data.summary.sessions >= 1);
+    assert.notEqual(report.data.summary.improvementPercent, null);
+  });
+
+  test('21. Master Baut size edit: code and size illustration follow the new size', async () => {
+    const { data: specs } = await apiRequest('/api/bolt-specs', { token: adminToken });
+    const spec = specs.find((s) => s.code === 'M3x14');
+    assert.ok(spec, 'catalog size M3x14 exists');
+
+    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: staffToken, body: { diameterMm: 3, lengthMm: 15 } })).status, 403);
+    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 0 } })).status, 400);
+    // a size that already exists is refused instead of creating a duplicate
+    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 16 } })).status, 409);
+
+    const changed = await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 15 } });
+    assert.equal(changed.status, 200);
+    assert.equal(changed.data.code, 'M3x15');
+    assert.equal(Number(changed.data.lengthMm), 15);
+    const drawing = changed.data.images.find((img) => img.url.startsWith('/uploads/bolts/ukuran/'));
+    assert.equal(drawing.url, '/uploads/bolts/ukuran/M3x15.svg');
+    assert.ok(fs.existsSync(path.join(uploadsDir, 'bolts/ukuran/M3x15.svg')));
+    assert.ok(!fs.existsSync(path.join(uploadsDir, 'bolts/ukuran/M3x14.svg')), 'old drawing removed');
+
+    const restored = await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 14 } });
+    assert.equal(restored.data.code, 'M3x14');
+  });
+
+  test('22. Master Barang items and Bundling with price, bonus and buyer claim check', async () => {
+    // Tambah Barang: an existing size is refused and pointed to, a new size and an emblem are added
+    const dup = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BAUT', diameterMm: 6, lengthMm: 16 } });
+    assert.equal(dup.status, 409);
+    assert.equal(dup.data.code, 'M6x16');
+    assert.equal((await apiRequest('/api/bolt-specs/items', { method: 'POST', token: staffToken, body: { itemType: 'BAUT', diameterMm: 6, lengthMm: 99 } })).status, 403);
+    const bolt = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BAUT', diameterMm: 6, lengthMm: 99 } });
+    assert.equal(bolt.status, 201);
+    assert.equal(bolt.data.code, 'M6x99');
+    assert.ok(bolt.data.images.some((img) => img.url === '/uploads/bolts/ukuran/M6x99.svg'));
+    const emblem = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'EMBLEM', name: 'Emblem Uji Titanium' } });
+    assert.equal(emblem.status, 201);
+    assert.equal(emblem.data.itemType, 'EMBLEM');
+    assert.equal(emblem.data.code, 'EMB-EMBLEM-UJI-TITANIUM');
+    assert.equal((await apiRequest(`/api/bolt-specs/${emblem.data.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 6, lengthMm: 10 } })).status, 400);
+    const boltsOnly = await apiRequest('/api/bolt-specs?itemType=BAUT', { token: adminToken });
+    assert.ok(boltsOnly.data.every((s) => s.itemType === 'BAUT'));
+
+    // Bundling without a motorcycle: two bolts plus a bonus emblem, with a price
+    const created = await apiRequest('/api/packages', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        packageType: 'Bundling Lainnya',
+        name: 'Bundling Uji Baut + Emblem',
+        price: 250000,
+        items: [
+          { boltSpecId: bolt.data.id, quantity: 4 },
+          { boltSpecId: dup.data.existingId, quantity: 2 },
+          { boltSpecId: emblem.data.id, quantity: 1, isBonus: true },
+        ],
+      },
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.data.motorcycleTypeId, null);
+    assert.equal(created.data.price, 250000);
+    assert.equal(created.data.items.filter((i) => i.isBonus).length, 1);
+
+    // Buyer claim: staff starts it, ticks every item, the claim completes
+    const claim = await apiRequest(`/api/packages/${created.data.id}/claims`, { method: 'POST', token: staffToken, body: { buyerName: 'Pembeli Uji' } });
+    assert.equal(claim.status, 201);
+    assert.equal(claim.data.items.length, 3);
+    let latest = claim.data;
+    for (const item of claim.data.items) {
+      latest = (await apiRequest(`/api/bundle-claims/${claim.data.id}/items/${item.id}`, { method: 'PATCH', token: staffToken, body: { claimed: true } })).data;
+    }
+    assert.ok(latest.completedAt, 'claim completes when every item is claimed');
+    // a partial claim stays open in Riwayat
+    const unticked = await apiRequest(`/api/bundle-claims/${claim.data.id}/items/${claim.data.items[0].id}`, { method: 'PATCH', token: staffToken, body: { claimed: false } });
+    assert.equal(unticked.data.completedAt, null);
+    const claims = await apiRequest(`/api/packages/${created.data.id}/claims`, { token: staffToken });
+    assert.equal(claims.data.length, 1);
+    const named = await apiRequest(`/api/bundle-claims/${claim.data.id}`, { method: 'PATCH', token: staffToken, body: { buyerName: 'Pembeli Ganti' } });
+    assert.equal(named.data.buyerName, 'Pembeli Ganti');
+    const riwayat = await apiRequest('/api/bundle-claims', { token: staffToken });
+    const open = riwayat.data.find((c) => c.id === claim.data.id);
+    assert.ok(open && !open.completedAt && open.package.name === 'Bundling Uji Baut + Emblem');
+
+    // A motorcycle bundling keeps emblems out of the installation pick list
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: adminToken });
+    const genio = motorcycles.find((m) => m.model === 'Genio');
+    const genioBundle = await apiRequest('/api/packages', {
+      method: 'POST',
+      token: adminToken,
+      body: { motorcycleTypeId: genio.id, packageType: 'Bundling Lainnya', name: 'Bundling Uji Genio', items: [{ boltSpecId: dup.data.existingId, quantity: 2 }, { boltSpecId: emblem.data.id, quantity: 1, isBonus: true }] },
+    });
+    const pick = await apiRequest('/api/pick-lists/generate', { method: 'POST', token: staffToken, body: { motorcycleTypeId: genio.id, packageId: genioBundle.data.id } });
+    assert.equal(pick.status, 200);
+    assert.ok(pick.data.consolidatedTotals.every((b) => b.boltSpec.itemType === 'BAUT'));
+  });
+
+  test('23. Kelola Data photo upload: the newest uploaded photo becomes the main motor photo', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: adminToken });
+    const motor = motorcycles.find((m) => m.model === 'Scoopy');
+    const upload = async (name) => {
+      const form = new FormData();
+      form.append('images', new Blob([Buffer.from('fake-jpeg-bytes')], { type: 'image/jpeg' }), name);
+      const res = await fetch(`${baseUrl}/api/motorcycles/${motor.id}/images`, { method: 'POST', headers: { Authorization: `Bearer ${adminToken}` }, body: form });
+      return { status: res.status, data: await res.json() };
+    };
+    const first = await upload('foto-lama.jpg');
+    assert.equal(first.status, 201);
+    const second = await upload('foto-baru.jpg');
+    assert.equal(second.status, 201);
+    const { data } = await apiRequest(`/api/motorcycles/${motor.id}`, { token: adminToken });
+    const primary = data.images.filter((img) => img.isPrimary);
+    assert.equal(primary.length, 1, 'exactly one main photo');
+    assert.ok(primary[0].url.endsWith('foto-baru.jpg'), 'the newest upload is the main photo');
+    const { data: roster } = await apiRequest('/api/motorcycles', { token: staffToken });
+    assert.ok(roster.find((m) => m.id === motor.id).images[0].url.endsWith('foto-baru.jpg'), 'roster card shows the new photo');
+  });
+
+  test('24. Edit Profil Paket: admin edits the motorcycle profile, staff cannot', async () => {
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: adminToken });
+    const motor = motorcycles.find((m) => m.model === 'Vario' && m.variant.includes('125'));
+    const other = motorcycles.find((m) => m.model === 'Genio');
+    const body = { brand: motor.brand, model: motor.model, variant: motor.variant, yearStart: motor.yearStart, yearEnd: motor.yearEnd, notes: 'Catatan uji' };
+
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: staffToken, body })).status, 403);
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: adminToken, body: { ...body, model: '' } })).status, 400);
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: adminToken, body: { ...body, yearStart: 2020, yearEnd: 2010 } })).status, 400);
+    const dup = await apiRequest(`/api/motorcycles/${motor.id}`, {
+      method: 'PUT', token: adminToken,
+      body: { brand: other.brand, model: other.model, variant: other.variant, yearStart: other.yearStart, yearEnd: other.yearEnd },
+    });
+    assert.equal(dup.status, 409);
+
+    const custom = await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: adminToken, body: { ...body, displayName: 'Honda Vario 125 (profil uji)' } });
+    assert.equal(custom.status, 200);
+    assert.equal(custom.data.displayName, 'Honda Vario 125 (profil uji)');
+    assert.equal(custom.data.notes, 'Catatan uji');
+    const auto = await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: adminToken, body });
+    assert.equal(auto.data.displayName, `${motor.brand} ${motor.model} ${motor.variant} (${motor.yearStart}${motor.yearEnd ? `-${motor.yearEnd}` : ''})`);
+  });
+
+  test('25. Fitur per peran: super admin decides what each role can open and change', async () => {
+    const login = async (username, password) => (await apiRequest('/api/auth/login', { method: 'POST', body: { username, password } })).data;
+    const stamp = Date.now();
+
+    // catalog: menus and features, retired codes gone, dependencies exposed
+    const perms = (await apiRequest('/api/roles/permissions', { token: adminToken })).data;
+    const codes = perms.map((p) => p.code);
+    for (const c of ['MENU_DASHBOARD', 'MENU_PAKET_FULL_BIKE', 'MENU_BUNDLING', 'MENU_RIWAYAT', 'SESSION_CHECKLIST', 'MOTORCYCLES_MANAGE', 'VERIFICATION_MANAGE']) assert.ok(codes.includes(c), c);
+    assert.ok(!codes.includes('PICKLIST_GENERATE') && !codes.includes('MEDIA_UPLOAD'));
+    assert.deepEqual(perms.find((p) => p.code === 'MOTORCYCLES_MANAGE').requires, ['MENU_PAKET_FULL_BIKE']);
+
+    // the client gets the feature list on login and from /me
+    const staff = await login('staff', 'staff123');
+    assert.ok(staff.user.permissionCodes.includes('MENU_PAKET_FULL_BIKE') && staff.user.permissionCodes.includes('SESSION_CHECKLIST'));
+    assert.ok(!staff.user.permissionCodes.includes('MOTORCYCLES_MANAGE'));
+    assert.deepEqual((await login('admin', 'admin123')).user.permissionCodes, ['*']);
+    assert.deepEqual((await apiRequest('/api/auth/me', { token: staff.token })).data.user.permissionCodes.sort(), [...staff.user.permissionCodes].sort());
+
+    // a role that may only look at Paket Full Bike
+    const role = (await apiRequest('/api/roles', { method: 'POST', token: adminToken, body: { name: `LIHAT_${stamp}`, displayName: 'Hanya Lihat', permissionCodes: ['MENU_PAKET_FULL_BIKE'] } })).data;
+    const user = (await apiRequest('/api/users', { method: 'POST', token: adminToken, body: { username: `lihat_${stamp}`, password: 'lihat123', name: 'Uji Lihat', roleId: role.id } })).data;
+    const viewer = await login(`lihat_${stamp}`, 'lihat123');
+    const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: adminToken });
+    const motor = motorcycles.find((m) => m.model === 'Genio');
+    const body = { brand: motor.brand, model: motor.model, variant: motor.variant, yearStart: motor.yearStart, yearEnd: motor.yearEnd, displayName: motor.displayName, notes: motor.notes };
+
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}/location-map`, { token: viewer.token })).status, 200);
+    assert.equal((await apiRequest('/api/pick-lists/sessions', { method: 'POST', token: viewer.token, body: { motorcycleTypeId: motor.id, items: [] } })).status, 403);
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: viewer.token, body })).status, 403);
+    assert.equal((await apiRequest('/api/verification', { token: viewer.token })).status, 403);
+
+    // Hidden menus are also closed at the API, including direct URLs.
+    for (const endpoint of ['/api/dashboard/overview', '/api/bolt-specs', '/api/packages', '/api/pick-lists/sessions', '/api/bundle-claims', '/api/roles', '/api/users/rbac-matrix']) {
+      assert.equal((await apiRequest(endpoint, { token: viewer.token })).status, 403, endpoint);
+    }
+
+    // super admin opens Kelola Data + Verifikasi for the role: same token works right away
+    const opened = await apiRequest(`/api/roles/${role.id}`, { method: 'PUT', token: adminToken, body: { permissionCodes: ['MOTORCYCLES_MANAGE', 'VERIFICATION_MANAGE'] } });
+    assert.deepEqual([...opened.data.permissionCodes].sort(), ['MENU_PAKET_FULL_BIKE', 'MOTORCYCLES_MANAGE', 'VERIFICATION_MANAGE']);
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}`, { method: 'PUT', token: viewer.token, body })).status, 200);
+    assert.equal((await apiRequest('/api/verification', { token: viewer.token })).status, 200);
+    assert.equal((await apiRequest('/api/bolt-specs/items', { method: 'POST', token: viewer.token, body: { itemType: 'EMBLEM', name: 'Uji' } })).status, 403);
+
+    // account managers that are not super admin cannot touch super admin accounts or the super admin role
+    await apiRequest(`/api/roles/${role.id}`, { method: 'PUT', token: adminToken, body: { permissionCodes: ['USERS_MANAGE', 'ROLES_MANAGE'] } });
+    const roles = (await apiRequest('/api/roles', { token: adminToken })).data;
+    const adminRole = roles.find((r) => r.name === 'ADMIN');
+    const adminUser = (await apiRequest('/api/users', { token: adminToken })).data.find((u) => u.username === 'admin');
+    assert.equal((await apiRequest('/api/users', { method: 'POST', token: viewer.token, body: { username: `boss_${stamp}`, password: 'boss1234', name: 'Boss', roleId: adminRole.id } })).status, 403);
+    assert.equal((await apiRequest(`/api/users/${adminUser.id}`, { method: 'PUT', token: viewer.token, body: { name: 'Diubah' } })).status, 403);
+    assert.equal((await apiRequest(`/api/users/${user.id}`, { method: 'PUT', token: viewer.token, body: { roleId: adminRole.id } })).status, 403);
+    assert.equal((await apiRequest(`/api/roles/${adminRole.id}`, { method: 'PUT', token: viewer.token, body: { permissionCodes: [] } })).status, 403);
+    // the super admin role always keeps every feature
+    await apiRequest(`/api/roles/${adminRole.id}`, { method: 'PUT', token: adminToken, body: { permissionCodes: [] } });
+    assert.equal((await apiRequest('/api/verification', { token: adminToken })).status, 200);
+
+    // Closing every feature takes effect for the existing token and survives server catalog sync.
+    await apiRequest(`/api/roles/${role.id}`, { method: 'PUT', token: adminToken, body: { permissionCodes: [] } });
+    await syncPermissionCatalog(prisma);
+    assert.deepEqual((await apiRequest('/api/auth/me', { token: viewer.token })).data.user.permissionCodes, []);
+    assert.equal((await apiRequest('/api/motorcycles', { token: viewer.token })).status, 403);
+    assert.equal((await apiRequest(`/api/motorcycles/${motor.id}/location-map`, { token: viewer.token })).status, 403);
+
+    assert.equal((await apiRequest(`/api/users/${user.id}`, { method: 'DELETE', token: adminToken })).status, 200);
+    assert.equal((await apiRequest(`/api/roles/${role.id}`, { method: 'DELETE', token: adminToken })).status, 200);
+  });
+
+  test('26. Checklist rejects an item from another session without changing either session', async () => {
+    const motor = await prisma.motorcycleType.findFirst({ where: { isActive: true } });
+    const spec = await prisma.boltSpec.findFirst();
+    const body = { motorcycleTypeId: motor.id, items: [{ boltSpecId: spec.id, quantity: 1, checked: false }] };
+    const a = (await apiRequest('/api/pick-lists/sessions', { method: 'POST', token: staffToken, body })).data;
+    const b = (await apiRequest('/api/pick-lists/sessions', { method: 'POST', token: staffToken, body })).data;
+    try {
+      const mismatch = await apiRequest(`/api/pick-lists/sessions/${a.id}/items/${b.items[0].id}`, { method: 'PATCH', token: staffToken, body: { checked: true } });
+      assert.equal(mismatch.status, 404);
+      for (const session of [a, b]) {
+        const detail = (await apiRequest(`/api/pick-lists/sessions/${session.id}`, { token: staffToken })).data;
+        assert.equal(detail.items[0].checked, false);
+        assert.equal(detail.status, 'IN_PROGRESS');
+      }
+    } finally {
+      await prisma.pickSession.deleteMany({ where: { id: { in: [a.id, b.id] } } });
+    }
+  });
+
+  test('27. Importing integration tests without a dedicated test database fails before app startup', () => {
+    const { spawnSync } = require('node:child_process');
+    for (const testUrl of ['', 'postgresql://unused:unused@localhost:5433/hextitanium_db']) {
+      const result = spawnSync(process.execPath, ['-e', "require('./test/api.test.js')"], {
+        cwd: path.join(__dirname, '..'),
+        env: { ...process.env, TEST_DATABASE_URL: testUrl },
+        encoding: 'utf8',
+      });
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Tes diblokir/);
+    }
+    assert.notEqual(path.resolve(uploadsDir), path.resolve(__dirname, '../uploads'));
   });
 });

@@ -70,40 +70,26 @@ function requireRole(allowedRoles) {
   };
 }
 
-function requirePermission(permissionCode) {
+// Any one of the given feature codes is enough. The super admin (role ADMIN) passes everything;
+// other roles pass when the feature is ticked for their role in Kelola Sistem.
+function requirePermission(...codes) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Autentikasi diperlukan.' });
     }
-    if (
-      req.user.role === 'ADMIN' ||
-      req.user.permissionCodes.includes('*') ||
-      req.user.permissionCodes.includes(permissionCode)
-    ) {
+    const granted = req.user.permissionCodes || [];
+    if (req.user.role === 'ADMIN' || granted.includes('*') || codes.some((c) => granted.includes(c))) {
       return next();
     }
-    return res.status(403).json({ error: `Akses ditolak. Memerlukan izin: ${permissionCode}` });
+    return res.status(403).json({ error: 'Akses ditolak. Fitur ini belum dibuka untuk peran Anda.' });
   };
 }
 
-const requireAdmin = (req, res, next) => {
-  if (!req.user) {
-    return res.status(401).json({ error: 'Autentikasi diperlukan.' });
-  }
-  if (
-    req.user.role === 'ADMIN' ||
-    req.user.permissionCodes.includes('*') ||
-    req.user.permissionCodes.includes('USERS_MANAGE') ||
-    req.user.permissionCodes.includes('ROLES_MANAGE')
-  ) {
-    return next();
-  }
-  return res.status(403).json({ error: 'Akses ditolak. Memerlukan hak administrator.' });
-};
+const isSuperAdmin = (user) => user?.role === 'ADMIN';
 
 module.exports = {
   requireAuth,
   requireRole,
   requirePermission,
-  requireAdmin,
+  isSuperAdmin,
 };

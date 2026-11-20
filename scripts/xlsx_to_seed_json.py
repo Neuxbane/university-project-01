@@ -187,11 +187,13 @@ def main():
             req = moto['requirements'].setdefault((pos_name, code), {
                 'position': pos_name, 'specCode': code, 'quantity': 0, 'side': 'NONE',
                 'sortOrder': len(moto['requirements']) + 1,
-                'qtyByScopeZona': defaultdict(int), '_lines': [], '_zona': set(), '_ti': set(),
+                'qtyByScopeZona': defaultdict(int), '_lines': [], '_zona': set(), '_ti': set(), '_levels': set(),
             })
             req['quantity'] += qty
             req['qtyByScopeZona'][f'{scope}|{zona}'] += qty
             req['_zona'].add(zona)
+            if size_level:
+                req['_levels'].add(size_level)
             if a.get('Rekomendasi Ti (penilaian, bukan data OEM)'):
                 req['_ti'].add(str(a['Rekomendasi Ti (penilaian, bukan data OEM)']))
             if jenis in ('Baut', 'Sekrup'):
@@ -235,6 +237,9 @@ def main():
             reqs.append({
                 'position': r['position'], 'specCode': r['specCode'], 'quantity': r['quantity'], 'side': 'NONE',
                 'isOptional': sum(default_qty.values()) == 0, 'sortOrder': r['sortOrder'],
+                # structured flags shown as badges; the same facts stay readable in notes
+                'isCritical': 'YA-KRITIS' in r['_ti'],
+                'sizeStatus': 'CEK_FISIK' if 'E' in r['_levels'] else 'VERIFIED',
                 'defaultQtyByZona': default_qty,
                 'notes': ('OEM: ' + '; '.join(r['_lines'])
                           + f" · Zona: {'/'.join(sorted(r['_zona']))}"

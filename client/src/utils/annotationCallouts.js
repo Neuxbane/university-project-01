@@ -42,7 +42,7 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
         specIds: Array.from(distinctSpecs),
         quantity: totalPosQty,
         extraSpecsCount: Math.max(0, distinctSpecs.size - 1),
-        positionName: annotation.label || annotation.boltPosition?.name || primaryRow.positionName || 'Titik Pasang',
+        positionName: annotation.label || annotation.boltPosition?.name || primaryRow.positionName || 'Posisi Pasang',
       };
     }
   }
@@ -65,7 +65,7 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
     specIds,
     quantity: matchBolt.totalQuantity ?? matchBolt.quantity ?? 0,
     extraSpecsCount: Math.max(0, specIds.length - 1),
-    positionName: annotation.label || annotation.boltPosition?.name || 'Titik Pasang',
+    positionName: annotation.label || annotation.boltPosition?.name || 'Posisi Pasang',
   };
 }
 

@@ -47,7 +47,7 @@
           v-if="activePhoto"
           class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200"
         >
-          {{ activePins.length }} titik baut
+          {{ activePins.length }} penanda baut
         </span>
       </div>
     </div>
@@ -149,7 +149,7 @@
         :x="draftPoint.x"
         :y="draftPoint.y"
         index-number="+"
-        label="Titik Baut Baru"
+        label="Penanda Baut Baru"
         :draft="true"
         @select="() => {}"
       />
@@ -178,7 +178,7 @@
       class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-center justify-between gap-2"
     >
       <p class="text-xs text-zinc-600 dark:text-zinc-400">
-        Belum ada titik baut spesifik yang ditandai pada foto close-up ini.
+        Belum ada penanda baut spesifik yang ditandai pada foto close-up ini.
       </p>
       <button
         v-if="canAnnotate"
@@ -202,7 +202,7 @@
       >
         <div class="flex items-center justify-between gap-2">
           <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-            Titik Baut Baru ({{ draftPoint.x }}%, {{ draftPoint.y }}%)
+            Penanda Baut Baru ({{ draftPoint.x }}%, {{ draftPoint.y }}%)
           </p>
           <button
             type="button"
@@ -285,7 +285,7 @@
       <!-- Existing Pins List + Delete Close-Up Photo -->
       <div class="flex flex-wrap items-center justify-between gap-2">
         <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-          Daftar Titik Baut di Foto Ini ({{ activePins.length }})
+          Daftar Penanda Baut di Foto Ini ({{ activePins.length }})
         </p>
 
         <button
@@ -325,7 +325,7 @@
           <button
             type="button"
             @click="confirmDeletePin = pin"
-            :aria-label="`Hapus titik ${pin.label || pin.boltSpec?.code}`"
+            :aria-label="`Hapus penanda ${pin.label || pin.boltSpec?.code}`"
             class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15 cursor-pointer shrink-0"
           >
             <Trash2 class="w-4 h-4" aria-hidden="true" />
@@ -342,8 +342,8 @@
     <!-- Confirm Delete Pin -->
     <ConfirmDialog
       :open="Boolean(confirmDeletePin)"
-      title="Hapus titik baut ini?"
-      :message="`Titik '${confirmDeletePin?.label || confirmDeletePin?.boltSpec?.code}' akan dihapus dari foto close-up.`"
+      title="Hapus penanda baut ini?"
+      :message="`Penanda '${confirmDeletePin?.label || confirmDeletePin?.boltSpec?.code}' akan dihapus dari foto close-up.`"
       confirm-text="Ya, Hapus"
       :danger="true"
       @confirm="executeDeletePin"
@@ -354,7 +354,7 @@
     <ConfirmDialog
       :open="Boolean(confirmDeletePhoto)"
       title="Hapus foto close-up ini?"
-      message="Foto close-up beserta seluruh titik baut di atasnya akan dihapus permanen."
+      message="Foto close-up beserta seluruh penanda baut di atasnya akan dihapus permanen."
       confirm-text="Ya, Hapus Foto"
       :danger="true"
       @confirm="executeDeletePhoto"

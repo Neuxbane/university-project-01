@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+const { writeSizeIllustration, sizeCaption } = require('../src/utils/sizeIllustration');
+const { PERMISSION_CATALOG } = require('../src/utils/permissions');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
@@ -9,26 +9,16 @@ async function main() {
   console.log('🌱 Starting Hex Titanium Database Seeding...');
 
   // 1. Seed Dynamic Permissions
-  const permissionsData = [
-    { code: 'USERS_MANAGE', name: 'Manajemen Pengguna & Password', category: 'Pengguna', description: 'Membuat akun, reset password, dan mengubah status pengguna' },
-    { code: 'ROLES_MANAGE', name: 'Manajemen Peran & Hak Akses (RBAC)', category: 'Pengguna', description: 'Membuat peran kustom dan mengatur izin aksesnya' },
-    { code: 'MOTORCYCLES_MANAGE', name: 'Kelola Master 20 Tipe Motor & Matriks Baut', category: 'Master Data', description: 'Menambah, mengubah, dan memetakan baut pada motor' },
-    { code: 'BOLTS_MANAGE', name: 'Kelola Master Spesifikasi Baut & Finishing', category: 'Master Data', description: 'Menambah dan mengubah standar dimensi baut' },
-    { code: 'PACKAGES_MANAGE', name: 'Kelola Paket Baut', category: 'Master Data', description: 'Mengatur formula paket Mesin, Pengereman, dan Full Bike' },
-    { code: 'MEDIA_UPLOAD', name: 'Unggah & Hapus Galeri Foto', category: 'Media', description: 'Mengunggah foto spesifikasi baut dan tipe motor' },
-    { code: 'CSV_IMPORT_EXPORT', name: 'Impor & Ekspor Data Massal (CSV)', category: 'Data', description: 'Mengimpor matriks kebutuhan baut melalui file CSV' },
-    { code: 'SYSTEM_BACKUP_RESTORE', name: 'Pencadangan (Backup) & Pemulihan (Restore)', category: 'Sistem', description: 'Mengunduh dump JSON offline dan memulihkan database' },
-    { code: 'AUDIT_LOG_VIEW', name: 'Melihat Catatan Audit Keamanan', category: 'Sistem', description: 'Melihat jejak log aktivitas seluruh pengguna' },
-    { code: 'PICKLIST_GENERATE', name: 'Buat & Cetak Daftar Ambil Baut (Pick-List)', category: 'Operasional', description: 'Menghasilkan konsolidasi baut dan mencetak nota SPK' },
-    { code: 'SESSION_CHECKLIST', name: 'Jalankan Sesi Ambil Baut Interaktif (HP Android)', category: 'Operasional', description: 'Mencentang baut terambil di depan laci rak' },
-  ];
+  // Feature catalog shared with the server (Kelola Sistem > Kelola Peran & Hak Akses)
+  const permissionsData = PERMISSION_CATALOG;
 
   const permissionsMap = {};
   for (const p of permissionsData) {
+    const data = { name: p.name, category: p.category, description: p.description };
     const record = await prisma.permission.upsert({
       where: { code: p.code },
-      update: p,
-      create: p,
+      update: data,
+      create: { code: p.code, ...data },
     });
     permissionsMap[p.code] = record;
   }
@@ -46,16 +36,16 @@ async function main() {
     {
       name: 'STAFF',
       displayName: 'Staf Gerai / Kasir',
-      description: 'Pelayan toko: pencarian motor, pembuatan pick-list baut, dan checklist penyiapan rak.',
+      description: 'Pelayan toko: buka Paket Full Bike dan Bundling, lalu jalankan checklist pembeli di Riwayat.',
       isSystem: false,
-      permissionCodes: ['PICKLIST_GENERATE', 'SESSION_CHECKLIST'],
+      permissionCodes: PERMISSION_CATALOG.filter((p) => p.defaultRoles?.includes('STAFF')).map((p) => p.code),
     },
     {
       name: 'TECHNICIAN',
       displayName: 'Teknisi / Mekanik Bengkel',
-      description: 'Mekanik bengkel: inspeksi titik pemasangan baut pada unit motor dan checklist perakitan.',
+      description: 'Mekanik bengkel: panduan pasang per posisi dan checklist pemasangan baut.',
       isSystem: false,
-      permissionCodes: ['PICKLIST_GENERATE', 'SESSION_CHECKLIST'],
+      permissionCodes: PERMISSION_CATALOG.filter((p) => p.defaultRoles?.includes('TECHNICIAN')).map((p) => p.code),
     },
   ];
 
@@ -241,11 +231,12 @@ async function main() {
         boltSpecId: specsMap[r.specCode].id,
         side: r.side,
       };
-      const data = { quantity: r.quantity, isOptional: r.isOptional, sortOrder: r.sortOrder, notes: r.notes };
+      const data = { quantity: r.quantity, isOptional: r.isOptional, isCritical: r.isCritical, sortOrder: r.sortOrder, notes: r.notes };
+      // sizeStatus only on create: a size the owner already verified must not flip back to CEK_FISIK on reseed
       const row = await prisma.motorBoltRequirement.upsert({
         where: { motorcycleTypeId_boltPositionId_boltSpecId_side: key },
         update: data,
-        create: { ...key, ...data },
+        create: { ...key, ...data, sizeStatus: r.sizeStatus },
       });
       requirementRows.push({ row, source: r });
       requirementCount += 1;
@@ -254,12 +245,12 @@ async function main() {
   }
   console.log(`✅ Seeded ${katalog.motorcycles.length} catalog motorcycles, ${positionCount} positions, ${requirementCount} requirement rows.`);
 
-  // 5c. Packages derived from the workbook: "Paket Default" = all Scope DEFAULT rows (README),
-  //     plus Body (Halus) / Mekanis (Kasar) = the same DEFAULT rows split by the Zona column.
+  // 5c. Bundlings derived from the workbook: "Bundling Full Bike" = all Scope DEFAULT rows (README),
+  //     plus Bodi Halus / Bodi Kasar = the same DEFAULT rows split by the Zona column. Prices are set by the owner.
   const packageDefs = [
-    { name: 'Paket Default', packageType: 'Full Bike', zona: null, description: 'Semua baut bagian terlihat / body luar.' },
-    { name: 'Paket Body (Halus)', packageType: 'Bodi', zona: 'HALUS', description: 'Baut zona halus: panel, cover, lampu, jok, spakbor.' },
-    { name: 'Paket Mekanis (Kasar)', packageType: 'Mekanis', zona: 'KASAR', description: 'Baut zona kasar: cover mesin & CVT, rem, rangka, knalpot, stang.' },
+    { name: 'Bundling Full Bike', packageType: 'Bundling Full Bike', zona: null, description: 'Semua baut bagian terlihat / body luar.' },
+    { name: 'Bodi Halus', packageType: 'Bodi Halus', zona: 'HALUS', description: 'Baut zona halus: panel, cover, lampu, jok, spakbor.' },
+    { name: 'Bodi Kasar', packageType: 'Bodi Kasar', zona: 'KASAR', description: 'Baut zona kasar: cover mesin & CVT, rem, rangka, knalpot, stang.' },
   ];
   let packageCount = 0;
   for (const { moto, catalog, requirementRows } of catalogMotors) {
@@ -286,7 +277,7 @@ async function main() {
       packageCount += 1;
     }
   }
-  console.log(`✅ Seeded ${packageCount} packages (Default / Body Halus / Mekanis Kasar) from Scope & Zona columns.`);
+  console.log(`✅ Seeded ${packageCount} bundlings (Bundling Full Bike / Bodi Halus / Bodi Kasar) from Scope & Zona columns.`);
 
   // 5d. Product photos (colours named by the owner) on every size the catalog uses with a flange head
   const flangeCodes = new Set(katalog.boltPhotos.specCodes);
@@ -305,20 +296,17 @@ async function main() {
   }
   console.log(`✅ Attached ${photoCount} colour photos (Blue Relaxa, Pink, Rosegold, Green) to flange sizes.`);
 
-  // 5e. Size illustrations (scripts/generate_bolt_drawings.py), one file per size spec: ukuran/<code>.svg.
-  // Primary only when the spec has no primary photo yet.
-  const sizeDir = path.join(__dirname, '..', 'uploads', 'bolts', 'ukuran');
+  // 5e. Size illustrations (src/utils/sizeIllustration.js), one file per size spec: uploads/bolts/ukuran/<code>.svg.
+  // Files are (re)written from the spec's size; the image is primary only when the spec has no primary photo yet.
   let sizeImageCount = 0;
   for (const s of katalog.specs) {
-    if (!fs.existsSync(path.join(sizeDir, `${s.code}.svg`))) continue;
     const boltSpecId = specsMap[s.code].id;
-    const url = `/uploads/bolts/ukuran/${s.code}.svg`;
+    const url = writeSizeIllustration(s);
     const exists = await prisma.boltImage.findFirst({ where: { boltSpecId, url } });
     if (exists) continue;
     const hasPrimary = await prisma.boltImage.count({ where: { boltSpecId, isPrimary: true } });
-    const size = Number(s.lengthMm) > 0 ? `M${Number(s.diameterMm)} × ${Number(s.lengthMm)} mm` : `${s.headType} M${Number(s.diameterMm)}`;
     await prisma.boltImage.create({
-      data: { boltSpecId, url, caption: `Ilustrasi ukuran ${size}`, isPrimary: hasPrimary === 0 },
+      data: { boltSpecId, url, caption: sizeCaption(s), isPrimary: hasPrimary === 0 },
     });
     sizeImageCount += 1;
   }

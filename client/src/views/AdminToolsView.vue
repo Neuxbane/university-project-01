@@ -17,6 +17,7 @@
       <!-- Segmented Navigation Tabs -->
       <div class="grid grid-cols-2 sm:inline-flex w-full lg:w-auto p-1 bg-zinc-100 dark:bg-[#18181c] rounded-xl border border-zinc-300 dark:border-zinc-700 gap-1 shrink-0">
         <button
+          v-if="auth.can('USERS_MANAGE', 'ROLES_MANAGE')"
           @click="activeTab = 'users'"
           type="button"
           class="min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap"
@@ -25,6 +26,7 @@
           Pengguna &amp; Akses
         </button>
         <button
+          v-if="auth.can('CSV_IMPORT_EXPORT')"
           @click="activeTab = 'import'"
           type="button"
           class="min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap"
@@ -33,6 +35,7 @@
           Impor Data (CSV)
         </button>
         <button
+          v-if="auth.can('SYSTEM_BACKUP_RESTORE')"
           @click="activeTab = 'backup'"
           type="button"
           class="min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap"
@@ -41,6 +44,7 @@
           Cadangan &amp; Pulihkan
         </button>
         <button
+          v-if="auth.can('AUDIT_LOG_VIEW')"
           @click="activeTab = 'audit'"
           type="button"
           class="min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap"
@@ -73,6 +77,7 @@
       <!-- Sub-Tab Switcher: Accounts vs Roles & Access -->
       <div class="flex flex-wrap items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-3">
         <button
+          v-if="auth.can('USERS_MANAGE')"
           @click="userSubTab = 'accounts'"
           type="button"
           class="min-h-[44px] px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer"
@@ -81,12 +86,13 @@
           Daftar Pengguna ({{ users.length }})
         </button>
         <button
+          v-if="auth.can('ROLES_MANAGE')"
           @click="userSubTab = 'roles'"
           type="button"
           class="min-h-[44px] px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer flex items-center gap-2"
           :class="[userSubTab === 'roles' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold shadow-sm' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800']"
         >
-          <span>Kelola Peran &amp; Hak Akses</span>
+          <span>Fitur per Peran</span>
           <span
             class="text-xs font-mono px-1.5 py-0.5 rounded"
             :class="[userSubTab === 'roles' ? 'bg-white/20 text-white dark:bg-zinc-900/20 dark:text-zinc-900' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200']"
@@ -97,7 +103,7 @@
       </div>
 
       <!-- SUB-TAB 1: ACCOUNTS LIST -->
-      <div v-if="userSubTab === 'accounts'" class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
+      <div v-if="userSubTab === 'accounts' && auth.can('USERS_MANAGE')" class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors">
         <div class="p-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
@@ -238,7 +244,60 @@
       </DetailSheet>
 
       <!-- SUB-TAB 2: DYNAMIC ROLES & ACCESS CONTROL -->
-      <div v-if="userSubTab === 'roles'" class="space-y-5">
+      <div v-if="userSubTab === 'roles' && auth.can('ROLES_MANAGE')" class="space-y-5">
+        <!-- Feature matrix: what each role sees -->
+        <section aria-labelledby="feature-matrix-title" class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm p-4 sm:p-6 transition-colors">
+          <div class="mb-4">
+            <h2 id="feature-matrix-title" class="text-base font-bold text-zinc-900 dark:text-zinc-100">Fitur yang tampil per peran</h2>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+              Centang fitur yang boleh dibuka tiap peran; perubahan langsung tersimpan dan berlaku saat pengguna membuka halaman berikutnya.
+              Fitur "Kelola" ikut membuka menunya. Super admin selalu bisa membuka semua fitur.
+            </p>
+          </div>
+          <div class="overflow-x-auto -mx-4 sm:mx-0">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-zinc-300 dark:border-zinc-700">
+                  <th scope="col" class="text-left px-4 sm:px-3 py-2 text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 min-w-[220px]">Fitur</th>
+                  <th v-for="r in roles" :key="r.id" scope="col" class="px-2 py-2 text-center text-xs font-bold text-zinc-900 dark:text-zinc-100 min-w-[96px]">
+                    {{ r.displayName }}
+                    <span class="block text-[10px] font-mono font-normal text-zinc-500">{{ r.name === 'ADMIN' ? 'super admin' : `${r.userCount} pengguna` }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="(perms, category) in groupedPermissions" :key="category">
+                  <tr>
+                    <th :colspan="roles.length + 1" scope="colgroup" class="text-left px-4 sm:px-3 pt-4 pb-1 text-[11px] font-mono uppercase tracking-wider text-zinc-500">{{ category }}</th>
+                  </tr>
+                  <tr v-for="p in perms" :key="p.code" class="border-t border-zinc-200 dark:border-zinc-800">
+                    <td class="px-4 sm:px-3 py-2">
+                      <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ p.name }}</p>
+                      <p class="text-[11px] text-zinc-600 dark:text-zinc-400">{{ p.description }}</p>
+                    </td>
+                    <td v-for="r in roles" :key="r.id" class="px-2 py-1 text-center">
+                      <span v-if="r.name === 'ADMIN'" class="inline-flex w-11 h-11 items-center justify-center text-emerald-700 dark:text-emerald-400" title="Selalu aktif untuk super admin">
+                        <Check class="w-5 h-5" aria-hidden="true" />
+                        <span class="sr-only">Selalu aktif</span>
+                      </span>
+                      <label v-else class="inline-flex w-11 h-11 items-center justify-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          :checked="r.permissionCodes.includes(p.code)"
+                          :disabled="savingRoleId === r.id"
+                          @change="toggleRoleFeature(r, p, $event.target.checked)"
+                          :aria-label="`${p.name} untuk ${r.displayName}`"
+                          class="w-5 h-5 rounded cursor-pointer disabled:cursor-wait"
+                        />
+                      </label>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <div class="bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-sm p-5 sm:p-6 transition-colors">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
@@ -247,10 +306,10 @@
                 <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Pengaturan Akses</span>
               </div>
               <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Daftar Peran &amp; Izin Akses
+                Daftar Peran
               </h2>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
-                Buat peran baru dan atur menu atau fitur yang boleh diakses tiap peran
+                Buat peran baru (misal: Kasir, Montir Senior), ubah namanya, atau hapus peran yang tidak dipakai
               </p>
             </div>
 
@@ -296,12 +355,12 @@
                 <!-- Permissions Count & Pills -->
                 <div class="pt-2.5 border-t border-zinc-200 dark:border-zinc-800">
                   <div class="flex items-center justify-between text-xs font-mono text-zinc-600 dark:text-zinc-400 mb-1.5">
-                    <span>Izin Akses Aktif</span>
+                    <span>Fitur aktif</span>
                     <span class="text-zinc-900 dark:text-zinc-100 font-bold">
-                      {{ r.permissions.length }} / {{ allPermissions.length }}
+                      {{ r.name === 'ADMIN' ? 'Semua fitur' : `${r.permissions.length} / ${allPermissions.length}` }}
                     </span>
                   </div>
-                  <div class="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
+                  <div v-if="r.name !== 'ADMIN'" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
                     <span
                       v-for="p in r.permissions"
                       :key="p.id"
@@ -320,11 +379,12 @@
 
                 <div class="flex items-center gap-2">
                   <button
+                    v-if="r.name !== 'ADMIN' || auth.isAdmin"
                     @click="openEditRoleModal(r)"
                     type="button"
                     class="min-h-[44px] px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 rounded-lg font-medium cursor-pointer"
                   >
-                    Ubah Izin
+                    {{ r.name === 'ADMIN' ? 'Ubah Nama' : 'Ubah' }}
                   </button>
                   <button
                     v-if="!r.isSystem"
@@ -437,7 +497,7 @@
           </div>
           <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
             <span class="text-zinc-900 dark:text-zinc-100 font-bold">position</span>
-            <span class="text-zinc-600 dark:text-zinc-400 ml-2">Nama titik pasang (misal: Cover Crankcase Kiri / CVT)</span>
+            <span class="text-zinc-600 dark:text-zinc-400 ml-2">Nama posisi pasang (misal: Cover Crankcase Kiri / CVT)</span>
           </div>
           <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-[#18181c] border border-zinc-300 dark:border-zinc-700">
             <span class="text-zinc-900 dark:text-zinc-100 font-bold">bolt_code, quantity</span>
@@ -636,7 +696,7 @@
               required
               class="w-full min-h-[44px] px-3.5 py-2.5 bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 rounded-xl text-zinc-900 dark:text-zinc-100"
             >
-              <option v-for="r in roles" :key="r.id" :value="r.id">
+              <option v-for="r in assignableRoles" :key="r.id" :value="r.id">
                 {{ r.displayName }} ({{ r.name }})
               </option>
             </select>
@@ -727,7 +787,7 @@
               required
               class="w-full min-h-[44px] px-3.5 py-2.5 bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 rounded-xl text-zinc-900 dark:text-zinc-100"
             >
-              <option v-for="r in roles" :key="r.id" :value="r.id">
+              <option v-for="r in assignableRoles" :key="r.id" :value="r.id">
                 {{ r.displayName }} ({{ r.name }})
               </option>
             </select>
@@ -838,15 +898,19 @@
             />
           </div>
 
+          <p v-if="roleForm.name === 'ADMIN'" class="text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+            Super admin selalu bisa membuka semua fitur, jadi daftar fiturnya tidak perlu diatur.
+          </p>
+
           <!-- Permissions Granular Checkboxes -->
-          <div class="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div v-else class="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-800">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <span class="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                  Daftar Hak Akses Fitur
+                  Fitur yang tampil untuk peran ini
                 </span>
                 <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                  {{ roleForm.permissionCodes.length }} dari {{ allPermissions.length }} izin dipilih
+                  {{ roleForm.permissionCodes.length }} dari {{ allPermissions.length }} fitur dipilih
                 </p>
               </div>
 
@@ -892,8 +956,8 @@
                   >
                     <input
                       type="checkbox"
-                      :value="p.code"
-                      v-model="roleForm.permissionCodes"
+                      :checked="roleForm.permissionCodes.includes(p.code)"
+                      @change="roleForm.permissionCodes = applyFeatureToggle(roleForm.permissionCodes, p.code, $event.target.checked)"
                       class="mt-1 w-4 h-4 rounded text-zinc-900 cursor-pointer shrink-0"
                     />
                     <div class="min-w-0">
@@ -947,11 +1011,17 @@ import { useToast } from '../composables/useToast';
 import ConfirmDialog from '../components/ui/ConfirmDialog.vue';
 import DetailSheet from '../components/ui/DetailSheet.vue';
 import StatPill from '../components/ui/StatPill.vue';
-import { Activity, Calendar, Pencil, Power, Shield, Trash2 } from 'lucide-vue-next';
+import { Activity, Calendar, Check, Pencil, Power, Shield, Trash2 } from 'lucide-vue-next';
 
 const auth = useAuthStore();
-const activeTab = ref('users');
-const userSubTab = ref('accounts');
+// open the first part of Kelola Sistem this role may use
+const activeTab = ref(
+  auth.can('USERS_MANAGE', 'ROLES_MANAGE') ? 'users'
+    : auth.can('CSV_IMPORT_EXPORT') ? 'import'
+      : auth.can('SYSTEM_BACKUP_RESTORE') ? 'backup'
+        : 'audit'
+);
+const userSubTab = ref(auth.can('USERS_MANAGE') ? 'accounts' : 'roles');
 const adminErrorMsg = ref('');
 const userModalError = ref('');
 const roleModalError = ref('');
@@ -1029,6 +1099,43 @@ const roleForm = ref({
   permissionCodes: [],
 });
 
+const assignableRoles = computed(() => (auth.isAdmin ? roles.value : roles.value.filter((r) => r.name !== 'ADMIN')));
+
+// ticking a feature also ticks the menu it needs; unticking a menu also unticks the features that need it
+const applyFeatureToggle = (codes, code, on) => {
+  const set = new Set(codes);
+  if (on) {
+    set.add(code);
+    (allPermissions.value.find((p) => p.code === code)?.requires || []).forEach((c) => set.add(c));
+  } else {
+    set.delete(code);
+    allPermissions.value.forEach((p) => { if (p.requires?.includes(code)) set.delete(p.code); });
+  }
+  return allPermissions.value.map((p) => p.code).filter((c) => set.has(c));
+};
+
+const savingRoleId = ref(null);
+const toggleRoleFeature = async (role, perm, on) => {
+  savingRoleId.value = role.id;
+  try {
+    const res = await auth.apiFetch(`/api/roles/${role.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ permissionCodes: applyFeatureToggle(role.permissionCodes, perm.code, on) }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal menyimpan fitur peran.');
+    Object.assign(role, data);
+    await auth.refreshMe({ maxAgeMs: 0 });
+    toast.success(`${perm.name} ${on ? 'dibuka' : 'ditutup'} untuk ${role.displayName}`);
+  } catch (err) {
+    toast.error(err.message === 'Failed to fetch' ? 'Sambungan ke server terputus. Coba lagi.' : err.message);
+    await loadRolesAndPermissions();
+  } finally {
+    savingRoleId.value = null;
+  }
+};
+
 const groupedPermissions = computed(() => {
   const map = {};
   for (const p of allPermissions.value) {
@@ -1050,6 +1157,7 @@ const filteredUsers = computed(() => {
 });
 
 const loadUsers = async () => {
+  if (!auth.can('USERS_MANAGE')) return;
   try {
     const res = await auth.apiFetch('/api/users');
     if (res.ok) {
@@ -1233,7 +1341,8 @@ const openCreateRoleModal = () => {
     name: '',
     displayName: '',
     description: '',
-    permissionCodes: ['PICKLIST_GENERATE', 'SESSION_CHECKLIST'],
+    // same starting point as Staf Gerai; adjust before saving
+    permissionCodes: ['MENU_DASHBOARD', 'MENU_MASTER_BARANG', 'MENU_PAKET_FULL_BIKE', 'MENU_BUNDLING', 'MENU_RIWAYAT', 'MENU_BUKU_PANDUAN', 'SESSION_CHECKLIST'],
   };
   isRoleModalOpen.value = true;
 };
@@ -1467,6 +1576,7 @@ const executeRestore = async () => {
 };
 
 const loadAuditLogs = async () => {
+  if (!auth.can('AUDIT_LOG_VIEW')) return;
   try {
     const res = await auth.apiFetch('/api/audit-logs');
     if (res.ok) {
@@ -1488,11 +1598,9 @@ const onKeyDown = (e) => {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
-  if (auth.isAdmin) {
-    loadUsers();
-    loadRolesAndPermissions();
-    loadAuditLogs();
-  }
+  loadUsers();
+  if (auth.can('USERS_MANAGE', 'ROLES_MANAGE')) loadRolesAndPermissions();
+  loadAuditLogs();
 });
 
 onUnmounted(() => {

@@ -11,88 +11,103 @@
           Dashboard
         </router-link>
         <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">
-          Riwayat Sesi
+          Riwayat
         </h1>
         <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
-          Semua sesi pengambilan baut yang pernah dibuat di gerai.
+          Checklist Paket Full Bike dan Bundling pelanggan. Yang belum selesai (misalnya baru dipasang sebagian) bisa dilanjutkan kapan saja.
         </p>
       </div>
 
-      <router-link
-        to="/pick-list"
-        class="min-h-[48px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm inline-flex items-center justify-center gap-2 transition-all active:scale-[0.98] shrink-0"
-      >
-        <Plus class="w-4 h-4" aria-hidden="true" />
-        Sesi Baru
-      </router-link>
+      <div class="flex flex-wrap gap-2 shrink-0">
+        <router-link
+          to="/pick-list"
+          class="min-h-[44px] px-4 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-[#18181c] dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold text-sm inline-flex items-center gap-1.5"
+        >
+          <Plus class="w-4 h-4" aria-hidden="true" />
+          Checklist Paket Full Bike
+        </router-link>
+        <router-link
+          to="/bundling"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm inline-flex items-center gap-1.5"
+        >
+          <Plus class="w-4 h-4" aria-hidden="true" />
+          Checklist Bundling
+        </router-link>
+      </div>
     </section>
 
     <!-- Filters -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-      <SegmentedControl
-        v-model="filterMode"
-        :options="[
-          { value: 'all', label: 'Semua', count: sessions.length },
-          { value: 'in_progress', label: 'Berjalan', count: inProgressCount },
-          { value: 'completed', label: 'Selesai', count: completedCount },
-        ]"
-      />
+      <div class="flex flex-col sm:flex-row gap-2">
+        <SegmentedControl
+          v-model="kindFilter"
+          :options="[
+            { value: 'all', label: 'Semua', count: records.length },
+            { value: 'session', label: 'Paket Full Bike', count: records.filter((r) => r.kind === 'session').length },
+            { value: 'claim', label: 'Bundling', count: records.filter((r) => r.kind === 'claim').length },
+          ]"
+        />
+        <SegmentedControl
+          v-model="statusFilter"
+          :options="[
+            { value: 'all', label: 'Semua status' },
+            { value: 'open', label: 'Berjalan', count: records.filter((r) => !r.done).length },
+            { value: 'done', label: 'Selesai', count: records.filter((r) => r.done).length },
+          ]"
+        />
+      </div>
       <div class="w-full lg:w-72">
-        <SearchInput v-model="searchQuery" placeholder="Cari motor atau petugas..." aria-label="Cari riwayat sesi" />
+        <SearchInput v-model="searchQuery" placeholder="Cari motor, bundling, pembeli..." aria-label="Cari riwayat" />
       </div>
     </div>
 
     <!-- Loading -->
     <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3" role="status" aria-live="polite">
       <SkeletonCard v-for="n in 6" :key="n" />
-      <span class="sr-only">Memuat riwayat sesi...</span>
+      <span class="sr-only">Memuat riwayat...</span>
     </div>
 
     <!-- Empty -->
     <EmptyState
-      v-else-if="filteredSessions.length === 0"
+      v-else-if="filteredRecords.length === 0"
       :icon="History"
-      :title="sessions.length === 0 ? 'Belum ada sesi' : 'Tidak ada sesi yang cocok'"
-      :description="sessions.length === 0 ? 'Sesi akan muncul di sini setelah kamu mulai ambil baut.' : 'Coba kata kunci atau filter lain.'"
-      :action-label="sessions.length === 0 ? 'Pilih Motor' : 'Tampilkan Semua'"
-      @action="sessions.length === 0 ? $router.push('/pick-list') : resetFilters()"
+      :title="records.length === 0 ? 'Belum ada riwayat' : 'Tidak ada yang cocok'"
+      :description="records.length === 0 ? 'Riwayat muncul setelah tombol Mulai Checklist ditekan di Paket Full Bike atau Bundling.' : 'Coba kata kunci atau filter lain.'"
+      :action-label="records.length === 0 ? 'Buka Bundling' : 'Tampilkan Semua'"
+      @action="records.length === 0 ? $router.push('/bundling') : resetFilters()"
     />
 
-    <!-- Session Grid -->
+    <!-- Records -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
       <router-link
-        v-for="s in filteredSessions"
-        :key="s.id"
-        :to="`/pick-list/${s.id}`"
+        v-for="r in filteredRecords"
+        :key="r.key"
+        :to="r.to"
         class="group bg-white dark:bg-[#121215] rounded-2xl border border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 dark:hover:border-zinc-600 shadow-sm p-4 flex items-center gap-3.5 transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.99]"
       >
-        <ProgressRing
-          :value="s.progressPercent"
-          :size="56"
-          :stroke-width="6"
-          :tone="s.status === 'COMPLETED' ? 'emerald' : 'amber'"
-        />
+        <ProgressRing :value="r.progress" :size="56" :stroke-width="6" :tone="r.done ? 'emerald' : 'amber'" />
         <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2">
-            <span class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400">#{{ s.id }}</span>
+          <div class="flex flex-wrap items-center gap-1.5">
             <span
               class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border"
-              :class="s.status === 'COMPLETED'
+              :class="r.kind === 'claim'
+                ? 'bg-violet-50 text-violet-800 border-violet-300 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30'
+                : 'bg-sky-50 text-sky-800 border-sky-300 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30'"
+            >
+              {{ r.kind === 'claim' ? 'BUNDLING' : 'PAKET FULL BIKE' }}
+            </span>
+            <span
+              class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border"
+              :class="r.done
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30'
                 : 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30'"
             >
-              {{ s.status === 'COMPLETED' ? 'SELESAI' : 'BERJALAN' }}
+              {{ r.done ? 'SELESAI' : 'BERJALAN' }}
             </span>
           </div>
-          <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate mt-0.5">
-            {{ s.motorcycleType.displayName }}
-          </p>
-          <p class="text-xs text-zinc-600 dark:text-zinc-400 font-mono truncate">
-            {{ s.checkedItems }}/{{ s.totalItems }} item &bull; {{ s.creator.name }}
-          </p>
-          <p class="text-[11px] text-zinc-500 dark:text-zinc-500 font-mono truncate mt-0.5">
-            {{ formatDateTime(s.createdAt) }}
-          </p>
+          <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate mt-0.5">{{ r.title }}</p>
+          <p class="text-xs text-zinc-600 dark:text-zinc-400 font-mono truncate">{{ r.detail }}</p>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-500 font-mono truncate mt-0.5">{{ formatDateTime(r.date) }}</p>
         </div>
         <ArrowRight class="w-4 h-4 text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 shrink-0 transition-colors" aria-hidden="true" />
       </router-link>
@@ -113,46 +128,75 @@ import ProgressRing from '../components/ui/ProgressRing.vue';
 
 const auth = useAuthStore();
 const sessions = ref([]);
+const claims = ref([]);
 const isLoading = ref(false);
-const filterMode = ref('all');
+const kindFilter = ref('all');
+const statusFilter = ref('all');
 const searchQuery = ref('');
 
-const inProgressCount = computed(() => sessions.value.filter((s) => s.status === 'IN_PROGRESS').length);
-const completedCount = computed(() => sessions.value.filter((s) => s.status === 'COMPLETED').length);
+// One list for both kinds of usage: Paket Full Bike checklists and Bundling buyer claims
+const records = computed(() => {
+  const fromSessions = sessions.value.map((s) => ({
+    kind: 'session',
+    key: `s${s.id}`,
+    to: `/history/paket/${s.id}`,
+    title: s.package?.name ? `${s.motorcycleType.displayName} · ${s.package.name}` : s.motorcycleType.displayName,
+    detail: `${s.checkedItems}/${s.totalItems} barang dicentang • ${s.buyerName || 'Pembeli belum diisi'}`,
+    search: `${s.motorcycleType?.displayName} ${s.package?.name || ''} ${s.buyerName || ''} ${s.creator?.name || ''} ${s.id}`,
+    done: s.status === 'COMPLETED',
+    progress: s.progressPercent,
+    date: s.createdAt,
+  }));
+  const fromClaims = claims.value.map((c) => {
+    const claimed = c.items.filter((i) => i.claimed).length;
+    return {
+      kind: 'claim',
+      key: `c${c.id}`,
+      to: `/history/klaim/${c.id}`,
+      title: c.package?.name || `Checklist #${c.id}`,
+      detail: `${claimed}/${c.items.length} barang dicentang • ${c.buyerName || 'Pembeli belum diisi'}`,
+      search: `${c.package?.name || ''} ${c.buyerName || ''} ${c.creator?.name || ''} ${c.id}`,
+      done: Boolean(c.completedAt),
+      progress: c.items.length ? Math.round((claimed / c.items.length) * 100) : 0,
+      date: c.createdAt,
+    };
+  });
+  return [...fromSessions, ...fromClaims].sort((a, b) => Number(a.done) - Number(b.done) || new Date(b.date) - new Date(a.date));
+});
 
-const filteredSessions = computed(() => {
+const filteredRecords = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
-  return sessions.value.filter((s) => {
-    if (filterMode.value === 'in_progress' && s.status !== 'IN_PROGRESS') return false;
-    if (filterMode.value === 'completed' && s.status !== 'COMPLETED') return false;
-    if (!q) return true;
-    return (
-      s.motorcycleType?.displayName?.toLowerCase().includes(q) ||
-      s.creator?.name?.toLowerCase().includes(q) ||
-      String(s.id).includes(q)
-    );
+  return records.value.filter((r) => {
+    if (kindFilter.value !== 'all' && r.kind !== kindFilter.value) return false;
+    if (statusFilter.value === 'open' && r.done) return false;
+    if (statusFilter.value === 'done' && !r.done) return false;
+    return !q || r.search.toLowerCase().includes(q);
   });
 });
 
 const resetFilters = () => {
-  filterMode.value = 'all';
+  kindFilter.value = 'all';
+  statusFilter.value = 'all';
   searchQuery.value = '';
 };
 
-const loadSessions = async () => {
+const loadHistory = async () => {
   isLoading.value = true;
   try {
-    const res = await auth.apiFetch('/api/pick-lists/sessions?limit=100');
-    if (!res.ok) throw new Error('Gagal memuat riwayat sesi.');
-    const data = await res.json();
-    sessions.value = Array.isArray(data) ? data : [];
+    const [sRes, cRes] = await Promise.all([
+      auth.apiFetch('/api/pick-lists/sessions?limit=100'),
+      auth.apiFetch('/api/bundle-claims?limit=100'),
+    ]);
+    sessions.value = sRes.ok ? await sRes.json() : [];
+    claims.value = cRes.ok ? await cRes.json() : [];
   } catch (err) {
     console.error('Error loading history:', err);
     sessions.value = [];
+    claims.value = [];
   } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(loadSessions);
+onMounted(loadHistory);
 </script>

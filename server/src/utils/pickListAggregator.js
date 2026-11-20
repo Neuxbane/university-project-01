@@ -86,14 +86,19 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
 
   if (isPackageMode && selectedPackage) {
     for (const item of selectedPackage.items) {
+      if (item.boltSpec?.itemType && item.boltSpec.itemType !== 'BAUT') continue;
       const specId = item.boltSpecId;
       const current = consolidatedMap.get(specId) || {
         boltSpec: item.boltSpec,
         quantity: 0,
         notes: [],
         positionIds: new Set(),
+        isCritical: false,
+        needsCheck: false,
       };
       current.quantity += item.quantity;
+      current.isCritical ||= Boolean(item.sourceRequirement?.isCritical);
+      current.needsCheck ||= item.sourceRequirement?.sizeStatus === 'CEK_FISIK';
       if (item.emblemNote) {
         current.notes.push(item.emblemNote);
       }
@@ -111,6 +116,9 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
         boltSpec: item.boltSpec,
         quantity: item.quantity,
         isOptional: false,
+        isCritical: Boolean(item.sourceRequirement?.isCritical),
+        sizeStatus: item.sourceRequirement?.sizeStatus || 'VERIFIED',
+        notes: item.sourceRequirement?.notes || null,
       });
     }
   } else {
@@ -121,8 +129,12 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
         quantity: 0,
         positions: [],
         positionIds: new Set(),
+        isCritical: false,
+        needsCheck: false,
       };
       current.quantity += reqRow.quantity;
+      current.isCritical ||= reqRow.isCritical;
+      current.needsCheck ||= reqRow.sizeStatus === 'CEK_FISIK';
       current.positions.push(
         `${reqRow.boltPosition.name} (${reqRow.quantity}${reqRow.side !== 'NONE' ? ` ${reqRow.side}` : ''})`
       );
@@ -137,6 +149,9 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
         boltSpec: reqRow.boltSpec,
         quantity: reqRow.quantity,
         isOptional: reqRow.isOptional,
+        isCritical: reqRow.isCritical,
+        sizeStatus: reqRow.sizeStatus,
+        notes: reqRow.notes,
       });
     }
   }
@@ -158,6 +173,8 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
     positionIds: Array.from(entry.positionIds),
     images: entry.boltSpec.images || [],
     boltSpec: entry.boltSpec,
+    isCritical: entry.isCritical, // any position needs certified Ti Gr5 + OEM torque
+    needsCheck: entry.needsCheck, // any position's size still needs a physical check
   }));
 
   consolidatedTotals.sort((a, b) => {
