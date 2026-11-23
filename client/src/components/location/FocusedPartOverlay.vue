@@ -232,6 +232,8 @@ function buildBoltObject(spec, fallbackImages = null) {
   return {
     id: spec.id || spec.boltSpecId,
     code: spec.code || '-',
+    name: spec.name || '',
+    itemType: spec.itemType,
     diameterMm: Number(spec.diameterMm || 0),
     lengthMm: Number(spec.lengthMm || 0),
     images: fallbackImages || spec.images || [],
@@ -274,7 +276,7 @@ const boltItems = computed(() => {
         boltSpecId: row.boltSpec.id,
         code: row.boltSpec.code,
         quantity: row.quantity,
-        label: row.boltSpec.code || row.positionName,
+        label: row.boltSpec.name || row.boltSpec.code || row.positionName,
         bolt: buildBoltObject(row.boltSpec, consolidated?.images?.length ? consolidated.images : row.boltSpec.images),
         checkStatus: getSpecCheckStatus(row.boltSpec.id),
       };

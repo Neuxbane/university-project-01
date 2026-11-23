@@ -16,7 +16,7 @@
       <img
         v-if="primaryImage"
         :src="primaryImage"
-        :alt="code"
+        :alt="name"
         loading="lazy"
         class="w-full h-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.04]"
       />
@@ -26,8 +26,8 @@
         :class="tier.cardTint"
       >
         <Nut class="w-10 h-10 text-zinc-300 mb-1" aria-hidden="true" />
-        <span class="font-mono font-bold text-sm text-zinc-200">
-          {{ dimensionText }}
+        <span class="font-bold text-sm text-zinc-200 line-clamp-3">
+          {{ name }}
         </span>
       </div>
 
@@ -54,11 +54,9 @@
 
     <!-- Short Info Footer (~20% card height) -->
     <div class="px-2.5 py-2 w-full bg-white dark:bg-[#121215] border-t border-zinc-200/80 dark:border-zinc-800">
-      <div class="flex items-center justify-between gap-1.5">
-        <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate leading-tight">
-          {{ dimensionText }} &bull; {{ code }}
-        </span>
-      </div>
+      <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-tight min-h-[2.5em]" :title="`${name} (${code})`">
+        {{ name }}
+      </p>
       <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight">
         {{ positionLabel }}
       </p>
@@ -67,10 +65,10 @@
 </template>
 
 <script setup>
-import { formatLength } from '../../utils/boltSize';
 import { computed } from 'vue';
 import { Nut } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';
+import { itemName } from '../../utils/itemLabel';
 import BoltFlags from './BoltFlags.vue';
 
 const props = defineProps({
@@ -84,23 +82,32 @@ defineEmits(['select']);
 const spec = computed(() => props.item.boltSpec || props.item);
 const code = computed(() => spec.value.code || props.item.code || '-');
 const diameter = computed(() => Number(spec.value.diameterMm ?? props.item.diameterMm ?? 0));
-const length = computed(() => Number(spec.value.lengthMm ?? props.item.lengthMm ?? 0));
-const headType = computed(() => spec.value.headType || props.item.headType || '');
 const quantity = computed(() => props.item.totalQuantity ?? props.item.quantity ?? 0);
 const primaryImage = computed(() => props.item.images?.[0]?.url || spec.value.images?.[0]?.url || null);
 const positionLabel = computed(() => props.item.positionsSummary || props.item.positionName || 'Semua posisi');
-// Master Barang also holds non-bolt goods (emblem): named instead of sized, with their own colour
-const isEmblem = computed(() => (spec.value.itemType || props.item.itemType) === 'EMBLEM');
-const dimensionText = computed(() => (isEmblem.value
-  ? spec.value.name || props.item.name || code.value
-  : `M${diameter.value} × ${formatLength(length.value)}`));
-const EMBLEM_TIER = {
-  key: 'EMBLEM',
-  label: 'Emblem',
-  band: 'bg-emerald-600 dark:bg-emerald-500',
-  badge: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
-  cardTint: 'from-emerald-500/10 to-transparent',
-  ring: 'ring-emerald-500',
+// Master Barang = the shop catalog: every card is named like the catalog. Sized goods (bolt, nut, ring)
+// keep the diameter colour; other goods get a colour per type.
+const name = computed(() => itemName({ ...props.item, ...spec.value, name: spec.value.name || props.item.name }));
+const itemType = computed(() => spec.value.itemType || props.item.itemType || 'BAUT');
+const TYPE_TIERS = {
+  EMBLEM: ['Emblem', 'emerald'],
+  PART: ['Sparepart', 'zinc'],
+  PERAWATAN: ['Perawatan', 'teal'],
+  JASA: ['Jasa', 'rose'],
+  BAUT: ['Baut', 'zinc'],
+  MUR: ['Mur', 'zinc'],
+  RING: ['Ring', 'zinc'],
 };
-const tier = computed(() => (isEmblem.value ? EMBLEM_TIER : getDiameterTier(diameter.value)));
+const TIER_COLORS = {
+  emerald: { band: 'bg-emerald-600 dark:bg-emerald-500', badge: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30', cardTint: 'from-emerald-500/10 to-transparent', ring: 'ring-emerald-500' },
+  teal: { band: 'bg-teal-600 dark:bg-teal-500', badge: 'bg-teal-50 text-teal-800 border-teal-300 dark:bg-teal-500/15 dark:text-teal-300 dark:border-teal-500/30', cardTint: 'from-teal-500/10 to-transparent', ring: 'ring-teal-500' },
+  rose: { band: 'bg-rose-600 dark:bg-rose-500', badge: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30', cardTint: 'from-rose-500/10 to-transparent', ring: 'ring-rose-500' },
+  zinc: { band: 'bg-zinc-500 dark:bg-zinc-400', badge: 'bg-zinc-100 text-zinc-800 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-600', cardTint: 'from-zinc-500/10 to-transparent', ring: 'ring-zinc-500' },
+};
+const tier = computed(() => {
+  const sized = diameter.value > 0 && ['BAUT', 'MUR', 'RING'].includes(itemType.value);
+  if (sized) return getDiameterTier(diameter.value);
+  const [label, color] = TYPE_TIERS[itemType.value] || ['Barang', 'zinc'];
+  return { key: itemType.value, label, ...TIER_COLORS[color] };
+});
 </script>

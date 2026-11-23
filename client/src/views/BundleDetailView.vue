@@ -73,7 +73,7 @@
               <div v-else class="w-16 h-11 rounded-lg bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center shrink-0"><Nut class="w-5 h-5 text-zinc-500" aria-hidden="true" /></div>
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                  {{ itemLabel(item.boltSpec) }}
+                  {{ itemName(item.boltSpec) }}
                   <span v-if="item.isBonus" class="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-mono font-bold align-middle">BONUS</span>
                 </p>
                 <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">{{ item.boltSpec?.code }}<span v-if="item.emblemNote"> &bull; {{ item.emblemNote }}</span></p>
@@ -88,13 +88,13 @@
 </template>
 
 <script setup>
+import { itemName } from '../utils/itemLabel';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ListChecks, Nut } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { getPackageTypeMeta } from '../utils/boltTokens';
-import { formatLength } from '../utils/boltSize';
 import StartChecklistDialog from '../components/ui/StartChecklistDialog.vue';
 
 const route = useRoute();
@@ -112,12 +112,6 @@ const sortedItems = computed(() => [...(bundle.value?.items || [])].sort((a, b) 
 const totalPcs = computed(() => (bundle.value?.items || []).reduce((sum, i) => sum + i.quantity, 0));
 const bonusCount = computed(() => (bundle.value?.items || []).filter((i) => i.isBonus).length);
 
-// bolts/nuts by size, emblems by name
-const itemLabel = (spec) => {
-  if (!spec) return '–';
-  if (spec.itemType && spec.itemType !== 'BAUT') return spec.name || spec.code;
-  return Number(spec.lengthMm) > 0 ? `Baut M${Number(spec.diameterMm)} × ${formatLength(spec.lengthMm)}` : `${spec.headType} M${Number(spec.diameterMm)}`;
-};
 
 const load = async () => {
   isLoading.value = true;

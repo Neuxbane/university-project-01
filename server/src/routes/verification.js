@@ -19,7 +19,7 @@ router.get('/', requireAuth, requirePermission('VERIFICATION_MANAGE'), async (re
           boltPosition: { select: { id: true, name: true, category: true } },
           boltSpec: {
             select: {
-              id: true, code: true, diameterMm: true, lengthMm: true, headType: true,
+              id: true, code: true, name: true, itemType: true, diameterMm: true, lengthMm: true, headType: true,
               images: { orderBy: [{ isPrimary: 'desc' }, { createdAt: 'desc' }], take: 1 },
             },
           },

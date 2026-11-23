@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400" role="img" aria-label="Ilustrasi Jasa: Recolour Emblem Ukuran Sedang 8K">
+<rect width="640" height="400" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="639" height="399" fill="none" stroke="#E4E4E7"/>
+<path d="M250,56 C280,104 284,146 250,156 C216,146 220,104 250,56 Z" fill="#93C5FD" stroke="#18181B" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M320,64 C350,104 354,146 320,156 C286,146 290,104 320,64 Z" fill="#C4B5FD" stroke="#18181B" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M390,72 C420,104 424,146 390,156 C356,146 360,104 390,72 Z" fill="#FCD34D" stroke="#18181B" stroke-width="2.6" stroke-linejoin="round"/>
+<text x="320" y="222" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#18181B">Recolour Emblem Ukuran</text>
+<text x="320" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#18181B">Sedang 8K</text>
+<text x="612" y="364" text-anchor="end" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#52525B">Ilustrasi barang</text>
+<text x="612" y="380" text-anchor="end" font-family="Arial, sans-serif" font-size="12" fill="#52525B">belum ada foto produk</text>
+</svg>

@@ -117,7 +117,7 @@
           <!-- Left: Grouped Area Cards with Inline + Tambah Baut -->
           <section class="space-y-3" aria-label="Daftar area dan baut motor">
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <SearchInput v-model="matrixSearch" placeholder="Cari area atau kode baut..." class="flex-1 min-w-[180px]" />
+              <SearchInput v-model="matrixSearch" placeholder="Cari area atau nama barang..." class="flex-1 min-w-[180px]" />
               <button
                 v-if="auth.can('MOTORCYCLES_MANAGE')"
                 type="button"
@@ -294,15 +294,15 @@
                         <img
                           v-if="req.boltSpec?.images?.length"
                           :src="req.boltSpec.images[0].url"
-                          :alt="req.boltSpec.code"
+                          :alt="itemName(req.boltSpec)"
                           class="w-full h-full object-cover"
                         />
                         <Nut v-else class="w-4 h-4 text-zinc-300" aria-hidden="true" />
                       </div>
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-1.5">
-                          <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                            M{{ Number(req.boltSpec?.diameterMm) }}&times;{{ formatLength(req.boltSpec?.lengthMm) }}
+                          <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                            {{ itemName(req.boltSpec) }}
                           </span>
                           <span class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-mono text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
                             {{ req.quantity }} pcs
@@ -708,7 +708,7 @@
 </template>
 
 <script setup>
-import { formatLength } from '../utils/boltSize';
+import { itemName } from '../utils/itemLabel';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {
@@ -873,7 +873,7 @@ const groupedAreas = computed(() => {
   return all.filter((area) =>
     area.positionName.toLowerCase().includes(q)
     || area.category.toLowerCase().includes(q)
-    || area.requirements.some((r) => (r.boltSpec?.code || '').toLowerCase().includes(q))
+    || area.requirements.some((r) => `${r.boltSpec?.code || ''} ${r.boltSpec?.name || ''}`.toLowerCase().includes(q))
   );
 });
 
@@ -938,7 +938,8 @@ const loadAll = async ({ silent = false } = {}) => {
       auth.apiFetch(`/api/motorcycles/${motorId}`),
       auth.apiFetch(`/api/motorcycles/${motorId}/location-map`),
       auth.apiFetch(`/api/motorcycles/${motorId}/requirements`),
-      auth.apiFetch('/api/bolt-specs?itemType=BAUT'),
+      // goods fitted on a position: bolts, nuts, rings
+      auth.apiFetch('/api/bolt-specs?itemType=BAUT,MUR,RING'),
     ]);
 
     if (!resMotor.ok || !resMap.ok || !resReqs.ok || !resSpecs.ok) {

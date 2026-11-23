@@ -4,7 +4,7 @@
       <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Basis Data Baut</p>
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-1">Verifikasi Full Bike</h1>
       <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-        Ukuran di bawah ini diturunkan dari kode part, belum diukur langsung. Ukur baut asli di motor, lalu tandai benar atau ubah ukurannya.
+        Baris di bawah memakai baut katalog yang ukurannya sama dengan data motor (varian Bighead, atau Smallhead bila tidak ada), atau ukurannya diturunkan dari kode part. Cocokkan ukuran dan jenis kepala dengan baut asli di motor, lalu tandai sesuai atau ganti barangnya di Kelola Data.
       </p>
       <div v-if="data" class="flex flex-wrap gap-2 mt-3">
         <StatPill :icon="Ruler" label="Perlu cek fisik" :value="`${data.totalToCheck} baris`" />
@@ -27,7 +27,7 @@
       <EmptyState
         v-if="!data.groups.length"
         :icon="CircleCheck"
-        title="Semua ukuran sudah dicek"
+        title="Semua baris sudah dicek"
         description="Tidak ada baris kebutuhan baut yang menunggu cek fisik."
       />
 
@@ -56,7 +56,7 @@
               class="min-h-[40px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <CheckCheck class="w-4 h-4" aria-hidden="true" />
-              Tandai semua benar
+              Tandai semua sesuai
             </button>
           </div>
         </header>
@@ -71,7 +71,7 @@
             />
             <div class="min-w-0 flex-1">
               <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                <span class="font-mono">{{ sizeText(row.boltSpec) }}</span> &times; {{ row.quantity }} pcs
+                <span class="font-semibold">{{ itemName(row.boltSpec) }}</span> &times; {{ row.quantity }} pcs
                 <BoltFlags class="ml-1 align-middle" :critical="row.isCritical" />
               </p>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">{{ row.position.name }} &bull; {{ oemText(row.notes) }}</p>
@@ -79,11 +79,11 @@
             <button
               type="button"
               :disabled="busy"
-              @click="verify([row.id], `${sizeText(row.boltSpec)} di ${row.position.name}`)"
+              @click="verify([row.id], `${itemName(row.boltSpec)} di ${row.position.name}`)"
               class="min-h-[44px] px-3.5 rounded-xl border border-emerald-600 text-emerald-800 dark:text-emerald-300 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-500/10 disabled:opacity-50 shrink-0"
             >
               <Check class="w-4 h-4" aria-hidden="true" />
-              Ukuran benar
+              Sudah sesuai
             </button>
           </li>
         </ul>
@@ -113,11 +113,11 @@
 </template>
 
 <script setup>
+import { itemName } from '../utils/itemLabel';
 import { ref, onMounted } from 'vue';
 import { Bike, Check, CheckCheck, CircleCheck, Ruler, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
-import { formatLength } from '../utils/boltSize';
 import StatPill from '../components/ui/StatPill.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import BoltFlags from '../components/ui/BoltFlags.vue';
@@ -130,7 +130,6 @@ const isLoading = ref(true);
 const errorMsg = ref('');
 const busy = ref(false);
 
-const sizeText = (spec) => (Number(spec.lengthMm) > 0 ? `M${Number(spec.diameterMm)} × ${formatLength(spec.lengthMm)}` : `${spec.headType} M${Number(spec.diameterMm)}`);
 const oemText = (notes) => (String(notes || '').split(' · ')[0] || '').replaceAll(' [cek fisik]', '');
 
 const load = async () => {
@@ -161,7 +160,7 @@ const verify = async (ids, label) => {
     });
     const body = await res.json();
     if (!res.ok) throw new Error(body.error || 'Gagal menyimpan verifikasi.');
-    toast.success(`Ukuran ${label} ditandai sudah dicek`);
+    toast.success(`${label} ditandai sudah sesuai`);
     // drop verified rows locally so the list stays where the admin is working
     const done = new Set(ids);
     data.value.groups = data.value.groups

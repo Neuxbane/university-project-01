@@ -11,7 +11,7 @@
           </p>
         </div>
         <div class="text-right text-xs font-mono">
-          <p>Total: <strong>{{ locationData.summary.totalQuantity }} pcs</strong> ({{ locationData.summary.distinctBoltSpecsCount }} ukuran)</p>
+          <p>Total: <strong>{{ locationData.summary.totalQuantity }} pcs</strong> ({{ locationData.summary.distinctBoltSpecsCount }} barang)</p>
           <p>Dicetak: {{ new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) }}</p>
         </div>
       </div>
@@ -20,9 +20,9 @@
         <thead>
           <tr class="border-b border-black font-mono uppercase text-[11px]">
             <th class="py-2 pr-2">#</th>
-            <th class="py-2 pr-2">Kode Baut</th>
+            <th class="py-2 pr-2">Kode</th>
+            <th class="py-2 pr-2">Nama Barang</th>
             <th class="py-2 pr-2">Ukuran</th>
-            <th class="py-2 pr-2">Kepala &amp; Warna</th>
             <th class="py-2 pr-2 text-center">Jumlah</th>
             <th class="py-2">Posisi Pada Motor</th>
           </tr>
@@ -35,8 +35,8 @@
           >
             <td class="py-2 pr-2 font-mono">{{ idx + 1 }}</td>
             <td class="py-2 pr-2 font-mono font-bold">{{ item.code }}</td>
-            <td class="py-2 pr-2 font-mono">M{{ Number(item.diameterMm) }} × {{ formatLength(item.lengthMm, ' mm') }}</td>
-            <td class="py-2 pr-2">{{ item.headType }} &bull; {{ formatOptional(item.finish) }}</td>
+            <td class="py-2 pr-2 font-semibold">{{ itemName(item) }}</td>
+            <td class="py-2 pr-2 font-mono">{{ itemSize(item) || '–' }}</td>
             <td class="py-2 pr-2 text-center font-mono font-bold">{{ item.totalQuantity }} pcs</td>
             <td class="py-2">{{ item.positionsSummary }}</td>
           </tr>
@@ -56,7 +56,7 @@
         :open="checklistDialogOpen"
         kind="paket"
         :name="locationData ? `${locationData.motorcycle.displayName}${locationData.package ? ` · ${locationData.package.name}` : ''}` : ''"
-        :summary="locationData ? `${locationData.bolts.length} ukuran baut · ${locationData.summary?.totalQuantity || 0} pcs` : ''"
+        :summary="locationData ? `${locationData.bolts.length} barang · ${locationData.summary?.totalQuantity || 0} pcs` : ''"
         :loading="isCreatingSession"
         @confirm="startSession"
         @cancel="checklistDialogOpen = false"
@@ -103,7 +103,7 @@
                   <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-mono mt-0.5">
                     {{ locationData?.package ? locationData.package.name : 'Lengkap Satu Motor' }}
                     <span v-if="locationData">
-                      &bull; {{ locationData.summary.totalQuantity }} pcs &bull; {{ locationData.summary.distinctBoltSpecsCount }} ukuran
+                      &bull; {{ locationData.summary.totalQuantity }} pcs &bull; {{ locationData.summary.distinctBoltSpecsCount }} barang
                     </span>
                   </p>
                 </div>
@@ -308,7 +308,7 @@
 
               <SearchInput
                 v-model="boltSearch"
-                placeholder="Cari kode baut, ukuran, atau posisi..."
+                placeholder="Cari nama barang, ukuran, atau posisi..."
                 aria-label="Cari baut"
               />
 
@@ -438,7 +438,7 @@
           <div class="lg:hidden">
             <ActionBar>
               <template #summary>
-                <strong class="text-zinc-900 dark:text-zinc-100">{{ locationData.summary.distinctBoltSpecsCount }} ukuran</strong>
+                <strong class="text-zinc-900 dark:text-zinc-100">{{ locationData.summary.distinctBoltSpecsCount }} barang</strong>
                 <span aria-hidden="true"> &bull; </span>
                 <strong class="text-zinc-900 dark:text-zinc-100">{{ locationData.summary.totalQuantity }} pcs</strong>
               </template>
@@ -471,7 +471,7 @@
 </template>
 
 <script setup>
-import { formatLength, formatOptional } from '../utils/boltSize';
+import { itemName, itemSize } from '../utils/itemLabel';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Map as MapIcon, Nut, Pencil, Printer, Wrench } from 'lucide-vue-next';
@@ -565,6 +565,7 @@ const filteredBolts = computed(() => {
     if (!q) return true;
     return (
       (item.code || '').toLowerCase().includes(q) ||
+      (item.name || '').toLowerCase().includes(q) ||
       (item.positionsSummary || '').toLowerCase().includes(q) ||
       `m${Number(item.diameterMm)}`.includes(q)
     );
@@ -579,6 +580,7 @@ const filteredBreakdown = computed(() => {
     (row.positionName || '').toLowerCase().includes(q) ||
     (row.category || '').toLowerCase().includes(q) ||
     (row.boltSpec?.code || '').toLowerCase().includes(q) ||
+    (row.boltSpec?.name || '').toLowerCase().includes(q) ||
     formatSideLabel(row.side).toLowerCase().includes(q)
   );
 });
@@ -594,7 +596,7 @@ const loadLocationMap = async ({ silent = false } = {}) => {
       auth.apiFetch(`/api/motorcycles/${route.params.motorId}/location-map${pkgQuery}`),
     ];
     if (auth.can('MOTORCYCLES_MANAGE') && allSpecs.value.length === 0) {
-      requests.push(auth.apiFetch('/api/bolt-specs?itemType=BAUT'));
+      requests.push(auth.apiFetch('/api/bolt-specs?itemType=BAUT,MUR,RING'));
     }
     const [res, resSpecs] = await Promise.all(requests);
     const data = await res.json();

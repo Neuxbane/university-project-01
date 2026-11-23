@@ -137,7 +137,7 @@
         :x="pin.x"
         :y="pin.y"
         :index-number="idx + 1"
-        :label="pin.label || pin.boltSpec?.code || 'Baut'"
+        :label="pin.label || itemName(pin.boltSpec)"
         :active="activePin?.id === pin.id"
         :check-status="getPinCheckStatus(pin)"
         @select="onSelectPin(pin)"
@@ -227,12 +227,12 @@
               <option value="">-- Pilih Baut --</option>
               <optgroup v-if="positionSpecs.length" :label="`Baut di ${activePhoto.boltPosition?.name || 'Area Ini'}`">
                 <option v-for="s in positionSpecs" :key="`pos-${s.id}`" :value="s.id">
-                  {{ s.code }} (M{{ Number(s.diameterMm) }}×{{ formatLength(s.lengthMm) }} • {{ s.qty }} pcs)
+                  {{ itemName(s) }} ({{ s.qty }} pcs)
                 </option>
               </optgroup>
-              <optgroup v-if="otherSpecs.length" label="Semua Ukuran Baut Lainnya">
+              <optgroup v-if="otherSpecs.length" label="Barang lainnya">
                 <option v-for="s in otherSpecs" :key="`all-${s.id}`" :value="s.id">
-                  {{ s.code }} (M{{ Number(s.diameterMm) }}×{{ formatLength(s.lengthMm) }})
+                  {{ itemName(s) }}
                 </option>
               </optgroup>
             </select>
@@ -314,10 +314,10 @@
             </span>
             <div class="min-w-0">
               <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                {{ pin.boltSpec?.code }} &bull; {{ pin.quantity }} pcs
+                {{ itemName(pin.boltSpec) }} &bull; {{ pin.quantity }} pcs
               </p>
               <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
-                {{ pin.label || `M${Number(pin.boltSpec?.diameterMm)}×${formatLength(pin.boltSpec?.lengthMm)}` }}
+                {{ pin.label || itemSize(pin.boltSpec) || pin.boltSpec?.code }}
               </p>
             </div>
           </button>
@@ -364,7 +364,7 @@
 </template>
 
 <script setup>
-import { formatLength } from '../../utils/boltSize';
+import { itemName, itemSize } from '../../utils/itemLabel';
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { Camera, Crosshair, Eye, Trash2 } from 'lucide-vue-next';
 import { layoutVisibleCallouts } from '../../utils/annotationCallouts';
@@ -477,7 +477,7 @@ const autoCallouts = computed(() => {
         },
         quantity: pin.quantity,
         extraSpecsCount: 0,
-        positionName: pin.label || `M${Number(pin.boltSpec.diameterMm)}×${formatLength(pin.boltSpec.lengthMm)}`,
+        positionName: pin.label || itemName(pin.boltSpec),
       },
     }));
 

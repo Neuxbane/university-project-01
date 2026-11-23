@@ -428,7 +428,7 @@
                   <img
                     v-if="item.boltSpec?.images?.length"
                     :src="item.boltSpec.images[0].url"
-                    :alt="item.boltSpec.code"
+                    :alt="itemName(item.boltSpec)"
                     class="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -631,6 +631,7 @@
 </template>
 
 <script setup>
+import { itemName } from '../utils/itemLabel';
 import { ref, reactive, computed, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {

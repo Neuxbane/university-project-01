@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400" role="img" aria-label="Ilustrasi Jasa: Jasa Bakar Normal">
+<rect width="640" height="400" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="639" height="399" fill="none" stroke="#E4E4E7"/>
+<path d="M320,34 C354,76 382,106 376,142 C370,178 270,178 264,142 C258,108 290,88 320,34 Z" fill="#E4E4E7" stroke="#18181B" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M320,92 C342,118 348,138 340,156 C332,172 308,172 300,156 C294,136 306,120 320,92 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="2"/>
+<text x="320" y="222" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#18181B">Jasa Bakar Normal</text>
+<text x="612" y="364" text-anchor="end" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#52525B">Ilustrasi barang</text>
+<text x="612" y="380" text-anchor="end" font-family="Arial, sans-serif" font-size="12" fill="#52525B">belum ada foto produk</text>
+</svg>

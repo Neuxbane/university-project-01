@@ -1,3 +1,4 @@
+const { INSTALLABLE_TYPES } = require('./catalog');
 const prisma = require('../db');
 
 /**
@@ -86,7 +87,8 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
 
   if (isPackageMode && selectedPackage) {
     for (const item of selectedPackage.items) {
-      if (item.boltSpec?.itemType && item.boltSpec.itemType !== 'BAUT') continue;
+      // emblems, oils and services in a bundling are sold, not fitted on a position
+      if (item.boltSpec?.itemType && !INSTALLABLE_TYPES.includes(item.boltSpec.itemType)) continue;
       const specId = item.boltSpecId;
       const current = consolidatedMap.get(specId) || {
         boltSpec: item.boltSpec,
@@ -159,6 +161,8 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
   const consolidatedTotals = Array.from(consolidatedMap.values()).map((entry) => ({
     boltSpecId: entry.boltSpec.id,
     code: entry.boltSpec.code,
+    name: entry.boltSpec.name,
+    itemType: entry.boltSpec.itemType,
     diameterMm: entry.boltSpec.diameterMm,
     lengthMm: entry.boltSpec.lengthMm,
     headType: entry.boltSpec.headType,

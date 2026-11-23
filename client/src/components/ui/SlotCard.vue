@@ -26,10 +26,10 @@
 </template>
 
 <script setup>
+import { itemName } from '../../utils/itemLabel';
 import { computed } from 'vue';
 import { Wrench } from 'lucide-vue-next';
 import { formatSideLabel } from '../../utils/boltTokens';
-import { formatLength } from '../../utils/boltSize';
 import BoltFlags from './BoltFlags.vue';
 
 const props = defineProps({
@@ -45,6 +45,6 @@ const quantity = computed(() => props.slotData.quantity || 0);
 const sizeText = computed(() => {
   const spec = props.slotData.boltSpec;
   if (!spec) return '';
-  return Number(spec.lengthMm) > 0 ? `M${Number(spec.diameterMm)} × ${formatLength(spec.lengthMm)}` : `${spec.headType} M${Number(spec.diameterMm)}`;
+  return itemName(spec);
 });
 </script>

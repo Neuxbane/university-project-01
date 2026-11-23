@@ -21,8 +21,8 @@
         :class="tier.cardTint"
       >
         <Nut class="w-10 h-10 text-zinc-200 mb-1" aria-hidden="true" />
-        <span class="font-mono text-xs font-bold text-zinc-100">
-          M{{ Number(bolt.diameterMm) }} &times; {{ formatLength(bolt.lengthMm) }}
+        <span class="text-xs font-bold text-zinc-100 line-clamp-3">
+          {{ itemName(bolt) }}
         </span>
       </div>
 
@@ -35,7 +35,7 @@
         class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[11px] font-mono font-bold border backdrop-blur-sm"
         :class="tier.badge"
       >
-        M{{ Number(bolt.diameterMm) }} &times; {{ formatLength(bolt.lengthMm) }}
+        {{ itemSize(bolt) || itemTypeLabel(bolt.itemType) }}
       </span>
 
       <!-- Top-Right Close Button (44x44 touch target) -->
@@ -60,8 +60,8 @@
         <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate leading-tight">
           {{ positionName }}
         </p>
-        <p class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight">
-          {{ bolt.code }}
+        <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 leading-tight" :title="itemName(bolt)">
+          {{ itemName(bolt) }}
         </p>
       </div>
 
@@ -83,7 +83,7 @@
 </template>
 
 <script setup>
-import { formatLength } from '../../utils/boltSize';
+import { itemName, itemSize, itemTypeLabel } from '../../utils/itemLabel';
 import { computed } from 'vue';
 import { Check, Nut, X } from 'lucide-vue-next';
 import { getDiameterTier } from '../../utils/boltTokens';

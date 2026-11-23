@@ -91,7 +91,7 @@
               <img v-if="item.boltSpec?.images?.[0]?.url" :src="item.boltSpec.images[0].url" :alt="item.boltSpec.code" class="w-14 h-10 rounded-lg object-cover bg-white border border-zinc-200 dark:border-zinc-700 shrink-0" />
               <span class="min-w-0 flex-1">
                 <span class="block text-sm font-bold truncate" :class="item.claimed ? 'line-through text-zinc-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'">
-                  {{ itemLabel(item.boltSpec) }}
+                  {{ itemName(item.boltSpec) }}
                   <span v-if="item.isBonus" class="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-mono font-bold no-underline align-middle">BONUS</span>
                 </span>
                 <span class="block text-xs text-zinc-600 dark:text-zinc-400">{{ item.claimed ? `Dicentang ${formatDateTime(item.claimedAt)}` : 'Belum dicentang' }}</span>
@@ -106,13 +106,13 @@
 </template>
 
 <script setup>
+import { itemName } from '../utils/itemLabel';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ArrowLeft, Check, Eye } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { getPackageTypeMeta } from '../utils/boltTokens';
-import { formatLength } from '../utils/boltSize';
 import { formatDateTime } from '../utils/date';
 import ProgressBar from '../components/ui/ProgressBar.vue';
 
@@ -132,12 +132,6 @@ const typeMeta = computed(() => getPackageTypeMeta(claim.value?.package?.package
 const claimedCount = computed(() => (claim.value?.items || []).filter((i) => i.claimed).length);
 const progress = computed(() => (claim.value?.items.length ? Math.round((claimedCount.value / claim.value.items.length) * 100) : 0));
 
-// bolts/nuts by size, emblems by name
-const itemLabel = (spec) => {
-  if (!spec) return '–';
-  if (spec.itemType && spec.itemType !== 'BAUT') return spec.name || spec.code;
-  return Number(spec.lengthMm) > 0 ? `Baut M${Number(spec.diameterMm)} × ${formatLength(spec.lengthMm)}` : `${spec.headType} M${Number(spec.diameterMm)}`;
-};
 
 const load = async () => {
   isLoading.value = true;

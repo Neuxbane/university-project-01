@@ -168,7 +168,7 @@
       class="px-4 py-2.5 bg-amber-50 dark:bg-amber-500/10 border-t border-amber-300 dark:border-amber-500/30 text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between gap-2"
     >
       <span>
-        Baut <strong>{{ selectedBolt.code }}</strong> belum memiliki penanda lokasi yang ditandai pada gambar ini.
+        <strong>{{ selectedBolt.name || selectedBolt.code }}</strong> belum memiliki penanda lokasi yang ditandai pada gambar ini.
       </span>
       <button
         v-if="canAnnotate"

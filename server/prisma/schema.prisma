@@ -189,8 +189,10 @@ model CloseUpBoltPin {
 model BoltSpec {
   id           Int                    @id @default(autoincrement())
   code         String                 @unique
-  itemType     String                 @default("BAUT") @map("item_type") // Master Barang: BAUT (incl. nuts), EMBLEM
-  name         String?                // display name for non-bolt items (emblem); bolts are named by their size
+  itemType     String                 @default("BAUT") @map("item_type") // BAUT, MUR, RING, EMBLEM, PART, PERAWATAN, JASA
+  name         String?                // product name from the shop catalog (archived size specs have none)
+  catalogNo    Int?                   @map("catalog_no") // catalog row number (code HX-<no>); new items continue the numbering
+  isArchived   Boolean                @default(false) @map("is_archived") // former size specs kept only for Riwayat
   diameterMm   Decimal                @map("diameter_mm") @db.Decimal(5, 2)
   lengthMm     Decimal                @map("length_mm") @db.Decimal(6, 2)
   headType     String                 @map("head_type") // Flange Hex, Button, Taper, dll.
