@@ -31,6 +31,58 @@ const SIBLINGS = [
 ];
 
 /**
+ * Jasa (Master Barang, itemType JASA) that every bundling carries, plus an emblem matched to the motorcycle.
+ * Owner's pick (24 Nov 2026): the titanium bakaran service and one bongkar-pasang labour line per bundling.
+ */
+const JASA_BAKAR = 'Jasa Bakar Per Titanium';
+const JASA_BONGKAR_PASANG = 'Jasa Bongkar Pasang Baut Recolour';
+
+// Emblem matched by model keyword (most specific first), falling back to a brand emblem.
+const EMBLEM_BY_MODEL = [
+  ['genio', 'Emblem Genio'],
+  ['scoopy', 'Emblem Scoopy'],
+  ['vario 125', 'Emblem Vario 125'],
+  ['vario 160', 'Emblem Vario 160'],
+  ['vario 150', 'EMBLEM VARIO 150'],
+  ['vario', 'Emblem Vario'],
+  ['pcx 160', 'Emblem PCX 160'],
+  ['pcx 150', 'Emblem PCX 150'],
+  ['pcx', 'emblem pcx'],
+  ['nmax', 'Emblem Nmax'],
+  ['n-max', 'Emblem Nmax'],
+  ['aerox 155', 'Emblem Aerox 155'],
+  ['aerox', 'Emblem AEROX'],
+  ['xmax', 'Emblem Xmax'],
+  ['beat', 'Emblem BEAT'],
+  ['mio', 'Emblem MIO'],
+  ['lexi', 'Emblem Lexi'],
+  ['stylo', 'Emblem Stylo'],
+  ['wave', 'Emblem Wave'],
+  ['ninja', 'Emblem Ninja'],
+  ['zx-25r', 'Emblem Ninja'],
+  ['mx king', 'emblem mx king'],
+  ['klx', 'Emblem Kawasaki'],
+];
+
+const BRAND_EMBLEM_FALLBACK = {
+  honda: 'Emblem Logo Honda Kotak',
+  yamaha: 'Emblem Logo Yamaha Kotak',
+  kawasaki: 'Emblem Kawasaki',
+  suzuki: 'Emblem Logo OK', // no Suzuki emblem in the catalog; neutral fallback
+};
+
+const norm = (s) => String(s || '').trim().toLowerCase();
+
+/** Catalog emblem name for a motorcycle (model keyword first, then brand). */
+function emblemNameFor(motor) {
+  const haystack = norm(`${motor.brand} ${motor.model} ${motor.variant}`);
+  for (const [keyword, emblemName] of EMBLEM_BY_MODEL) {
+    if (haystack.includes(keyword)) return emblemName;
+  }
+  return BRAND_EMBLEM_FALLBACK[norm(motor.brand)] || null;
+}
+
+/**
  * Workbook rows of one motorcycle fitted with catalog items. Two OEM sizes that end up on the same item in the
  * same position are merged (quantities and Zona quantities added). Rows without a fitting item are dropped.
  */
@@ -86,28 +138,66 @@ async function applyMotorRows(db, moto, motor, rows, specByCode) {
 
 /**
  * Bundling Full Bike / Bodi Halus / Bodi Kasar of a measured motorcycle from the Zona quantities of its rows.
- * Items are rebuilt; name, price and status the owner set are kept.
+ * Every bundling now carries, beside its bolts, a matching emblem and two jasa lines (bakaran + bongkar pasang).
+ * The sell price is the sum of the Master Barang item prices, rounded to the nearest thousand and set by the shop.
+ * Items are rebuilt; name and status the owner set are kept (price is recomputed from the current catalog).
  */
 async function rebuildMotorBundlings(db, moto, motor, requirementRows) {
+  // Extra line items (emblem + jasa) from Master Barang.
+  const extras = await db.boltSpec.findMany({
+    where: { itemType: { in: ['EMBLEM', 'JASA'] }, isArchived: false },
+    select: { id: true, name: true, itemType: true, price: true },
+  });
+  const extraByName = new Map(extras.map((e) => [norm(e.name), e]));
+  const emblem = extraByName.get(norm(emblemNameFor(motor))) || null;
+  const jasaBakar = extraByName.get(norm(JASA_BAKAR)) || null;
+  const jasaBongkarPasang = extraByName.get(norm(JASA_BONGKAR_PASANG)) || null;
+
+  // Master Barang price of each bolt, used to compute the bundling price.
+  const boltIds = [...new Set(requirementRows.map(({ row }) => row.boltSpecId))];
+  const bolts = await db.boltSpec.findMany({
+    where: { id: { in: boltIds } },
+    select: { id: true, price: true },
+  });
+  const priceById = new Map(bolts.map((b) => [b.id, b.price ?? 0]));
+
   let count = 0;
   for (const def of PACKAGE_DEFS) {
-    const items = requirementRows
-      .map(({ row, source }) => {
-        const byZona = source.defaultQtyByZona || {};
-        const quantity = def.zona ? (byZona[def.zona] || 0) : Object.values(byZona).reduce((a, b) => a + b, 0);
-        return { boltSpecId: row.boltSpecId, sourceRequirementId: row.id, quantity, emblemNote: source.position };
-      })
-      .filter((item) => item.quantity > 0);
+    const items = [];
+    let totalPrice = 0;
+    for (const { row, source } of requirementRows) {
+      const byZona = source.defaultQtyByZona || {};
+      const quantity = def.zona ? (byZona[def.zona] || 0) : Object.values(byZona).reduce((a, b) => a + b, 0);
+      if (quantity <= 0) continue;
+      items.push({ boltSpecId: row.boltSpecId, sourceRequirementId: row.id, quantity, emblemNote: source.position });
+      totalPrice += (priceById.get(row.boltSpecId) || 0) * quantity;
+    }
     if (items.length === 0) continue;
+
+    if (emblem) {
+      items.push({ boltSpecId: emblem.id, sourceRequirementId: null, quantity: 1, emblemNote: null });
+      totalPrice += emblem.price ?? 0;
+    }
+    if (jasaBakar) {
+      items.push({ boltSpecId: jasaBakar.id, sourceRequirementId: null, quantity: 1, emblemNote: null });
+      totalPrice += jasaBakar.price ?? 0;
+    }
+    if (jasaBongkarPasang) {
+      items.push({ boltSpecId: jasaBongkarPasang.id, sourceRequirementId: null, quantity: 1, emblemNote: null });
+      totalPrice += jasaBongkarPasang.price ?? 0;
+    }
+
+    const price = Math.round(totalPrice / 1000) * 1000;
 
     const name = `${def.name} ${motor.model} ${motor.variant}`;
     const existing = await db.package.findFirst({ where: { motorcycleTypeId: moto.id, name } });
     if (existing) {
       await db.packageItem.deleteMany({ where: { packageId: existing.id } });
       await db.packageItem.createMany({ data: items.map((item) => ({ ...item, packageId: existing.id })) });
+      await db.package.update({ where: { id: existing.id }, data: { price } });
     } else {
       await db.package.create({
-        data: { packageType: def.packageType, name, description: def.description, status: 'ACTIVE', motorcycleTypeId: moto.id, items: { create: items } },
+        data: { packageType: def.packageType, name, description: def.description, status: 'ACTIVE', motorcycleTypeId: moto.id, price, items: { create: items } },
       });
     }
     count += 1;
