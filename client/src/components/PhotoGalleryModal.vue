@@ -285,7 +285,7 @@
               @click="submitUpload"
               :disabled="isProcessing || (uploadMode === 'file' ? selectedFiles.length === 0 : !inputUrl.trim())"
               type="button"
-              class="min-h-[44px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-40 shrink-0"
+              class="min-h-[44px] px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-40 shrink-0"
             >
               <span v-if="isProcessing">Mengunggah...</span>
               <span v-else>Unggah Foto</span>

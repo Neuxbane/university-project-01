@@ -167,6 +167,7 @@
 </template>
 
 <script setup>
+import { markerCovers, markerLabel } from '../../utils/annotationCallouts';
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { ArrowLeft, Check, MapPin } from 'lucide-vue-next';
 import AutoCalloutCard from './AutoCalloutCard.vue';
@@ -204,13 +205,12 @@ const setCardRef = (key, el) => {
 
 const matchingCloseup = computed(() => {
   const posId = props.annotation?.boltPositionId;
-  if (!posId || !props.closeUpPhotos?.length) return null;
+  if (!posId || props.annotation?.category || !props.closeUpPhotos?.length) return null;
   return props.closeUpPhotos.find((c) => c.boltPositionId === posId) || null;
 });
 
 const areaTitle = computed(() => {
-  return props.annotation?.label
-    || props.annotation?.boltPosition?.name
+  return markerLabel(props.annotation)
     || matchingCloseup.value?.boltPosition?.name
     || 'Detail Posisi Baut';
 });
@@ -264,9 +264,10 @@ const boltItems = computed(() => {
       });
   }
 
-  // Fallback to bolts mapped to this boltPositionId in positionBreakdown / bolts
+  // Bolts of this marker's position, or of every position in its bagian (category marker)
   const posId = props.annotation?.boltPositionId;
-  const rows = (props.positionBreakdown || []).filter((r) => r.positionId === posId && r.boltSpec);
+  const isPart = Boolean(props.annotation?.category);
+  const rows = (props.positionBreakdown || []).filter((r) => r.boltSpec && markerCovers(props.annotation, { positionId: r.positionId, category: r.positionCategory }));
   if (rows.length > 0) {
     return rows.map((row, idx) => {
       const consolidated = (props.bolts || []).find((b) => b.boltSpecId === row.boltSpec.id);
@@ -276,13 +277,15 @@ const boltItems = computed(() => {
         boltSpecId: row.boltSpec.id,
         code: row.boltSpec.code,
         quantity: row.quantity,
-        label: row.boltSpec.name || row.boltSpec.code || row.positionName,
+        // a bagian marker lists bolts from several positions, so say where each one goes
+        label: isPart ? `${row.positionName}: ${row.boltSpec.name || row.boltSpec.code}` : row.boltSpec.name || row.boltSpec.code || row.positionName,
         bolt: buildBoltObject(row.boltSpec, consolidated?.images?.length ? consolidated.images : row.boltSpec.images),
         checkStatus: getSpecCheckStatus(row.boltSpec.id),
       };
     });
   }
 
+  if (isPart) return [];
   return (props.bolts || [])
     .filter((b) => Array.isArray(b.positionIds) && b.positionIds.includes(posId))
     .map((b) => ({

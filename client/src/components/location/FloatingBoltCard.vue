@@ -73,7 +73,7 @@
         class="w-full min-h-[44px] px-2.5 py-1.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
         :class="checkStatus === 'done'
           ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-          : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900'"
+          : 'bg-brand-500 hover:bg-brand-600 text-ink'"
       >
         <Check class="w-3.5 h-3.5 stroke-[2.5]" aria-hidden="true" />
         <span>{{ checkStatus === 'done' ? 'Sudah Diambil' : 'Tandai Diambil' }}</span>

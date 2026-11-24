@@ -28,7 +28,7 @@
         </router-link>
         <router-link
           to="/bundling"
-          class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm inline-flex items-center gap-1.5"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm inline-flex items-center gap-1.5"
         >
           <Plus class="w-4 h-4" aria-hidden="true" />
           Checklist Bundling

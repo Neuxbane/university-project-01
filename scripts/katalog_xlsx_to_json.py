@@ -53,7 +53,7 @@ def title_words(text):
     return ' '.join(w[:1].upper() + w[1:].lower() if not re.search(r'\d', w) else w.upper() for w in text.split())
 
 
-def parse(no, name, category):
+def parse(no, name, category, price):
     kind = item_type(name)
     diameter, length, head = 0, 0, ''
     m = BOLT_SIZE.match(name)
@@ -69,6 +69,9 @@ def parse(no, name, category):
         else:
             head = {'BAUT': 'Baut', 'MUR': 'Mur', 'RING': 'Ring', 'EMBLEM': 'Emblem', 'PERAWATAN': 'Perawatan',
                     'JASA': 'Jasa', 'PART': 'Sparepart'}[kind]
+    parsed_price = None
+    if isinstance(price, (int, float)) and price >= 0:
+        parsed_price = int(price)
     return {
         'no': no,
         'code': f'HX-{no:03d}',
@@ -77,6 +80,7 @@ def parse(no, name, category):
         'diameterMm': diameter,
         'lengthMm': length,
         'headType': head,
+        'price': parsed_price,
         'notes': f'Kategori: {category}' if category and category != 'Tanpa kategori' else None,
     }
 
@@ -106,7 +110,7 @@ def main():
         no, name = ws.cell(r, 1).value, ws.cell(r, 2).value
         if not name:
             continue
-        item = parse(int(no), ' '.join(str(name).split()), ws.cell(r, 3).value)
+        item = parse(int(no), ' '.join(str(name).split()), ws.cell(r, 3).value, ws.cell(r, 4).value)
         link = ws.cell(r, 6).hyperlink.target if ws.cell(r, 6).hyperlink else None
         item['photo'] = None
         if link:
@@ -125,7 +129,7 @@ def main():
             'meta': {
                 'source': 'seeder/Katalog_HexTi_Baut_Titanium.xlsx',
                 'generatedBy': 'scripts/katalog_xlsx_to_json.py',
-                'note': 'Nama dan foto produk dari katalog toko; harga dan stok tidak diimpor.',
+                'note': 'Nama, foto, dan harga produk dari katalog toko; stok tidak diimpor.',
             },
             'items': items,
         }, f, ensure_ascii=False, indent=2)

@@ -374,7 +374,7 @@
           v-if="!isComplete"
           @click="confirmCompleteOpen = true"
           type="button"
-          class="flex-1 sm:flex-initial min-h-[48px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold rounded-xl inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          class="flex-1 sm:flex-initial min-h-[48px] px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold rounded-xl inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <Check class="w-4 h-4" aria-hidden="true" />
           Tandai Semua Diambil
@@ -442,7 +442,7 @@ import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { getDiameterTier } from '../utils/boltTokens';
 import { formatDateTime } from '../utils/date';
-import { resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
+import { markerLabel, resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
 import AppShell from '../components/ui/AppShell.vue';
@@ -689,7 +689,7 @@ const toggleAnnotationItems = async (ann) => {
         await toggleItem(item);
       }
     }
-    const label = ann.label || ann.boltPosition?.name || 'Penanda baut';
+    const label = markerLabel(ann) || 'Penanda baut';
     toast.success(nextChecked ? `Ditandai sudah diambil: ${label}` : `Centang dibatalkan: ${label}`);
   } finally {
     isTogglingPoint.value = false;

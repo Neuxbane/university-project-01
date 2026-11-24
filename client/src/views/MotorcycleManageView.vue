@@ -205,7 +205,7 @@
                   <button
                     type="submit"
                     :disabled="isSubmittingReq || (!newReq.boltPositionId && !newReq.customAreaName.trim()) || !newReq.boltSpecId"
-                    class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                    class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
                   >
                     {{ isSubmittingReq ? '...' : 'Simpan' }}
                   </button>
@@ -376,7 +376,7 @@
                       <button
                         type="submit"
                         :disabled="isSubmittingReq || !inlineAddSpecId"
-                        class="flex-1 min-h-[44px] px-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                        class="flex-1 min-h-[44px] px-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
                       >
                         Simpan
                       </button>
@@ -518,7 +518,7 @@
               <button
                 type="submit"
                 :disabled="isUploadingCloseup || (!closeupUpload.boltPositionId && !closeupUpload.customAreaName.trim()) || !closeupFile"
-                class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
               >
                 {{ isUploadingCloseup ? 'Mengunggah...' : 'Unggah Foto' }}
               </button>
@@ -586,7 +586,7 @@
             <button
               type="submit"
               :disabled="isUploadingMotorPhotos || motorPhotoFiles.length === 0"
-              class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+              class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
             >
               {{ isUploadingMotorPhotos ? 'Mengunggah...' : 'Unggah Foto Motor' }}
             </button>
@@ -846,6 +846,7 @@ const groupedAreas = computed(() => {
 
   for (const ann of annotations.value) {
     const pid = ann.boltPositionId;
+    if (!pid) continue; // bagian markers cover a whole category, not one area
     if (!byPos.has(pid)) {
       byPos.set(pid, {
         positionId: pid,
@@ -1041,13 +1042,19 @@ const executeDeleteArea = async () => {
 
 const onSelectAnnotation = (ann) => {
   activeAnnotation.value = ann;
+  // a bagian marker covers every position of its category
+  const posIds = ann.category
+    ? locationPositions.value.filter((p) => p.category === ann.category).map((p) => p.id)
+    : [ann.boltPositionId];
   focusedBolt.value = consolidatedBolts.value.find(
-    (b) => Array.isArray(b.positionIds) && b.positionIds.includes(ann.boltPositionId)
+    (b) => Array.isArray(b.positionIds) && b.positionIds.some((id) => posIds.includes(id))
   ) || consolidatedBolts.value[0] || null;
 };
 
 const focusPositionOnMap = (boltPositionId) => {
-  const match = annotations.value.find((a) => a.boltPositionId === boltPositionId);
+  const category = locationPositions.value.find((p) => p.id === boltPositionId)?.category;
+  const match = annotations.value.find((a) => a.boltPositionId === boltPositionId)
+    || annotations.value.find((a) => a.category && a.category === category);
   if (match) {
     pendingAnnotationPositionId.value = null;
     onSelectAnnotation(match);
@@ -1097,14 +1104,14 @@ const handleCreateAnnotation = async (payload) => {
   }
 };
 
-const handleUpdateAnnotation = async ({ id, boltPositionId, customAreaName, customAreaCategory, label }) => {
+const handleUpdateAnnotation = async ({ id, boltPositionId, category, customAreaName, customAreaCategory, label }) => {
   if (isSavingAnnotation.value) return;
   isSavingAnnotation.value = true;
   try {
     const res = await auth.apiFetch(`/api/position-annotations/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ boltPositionId, customAreaName, customAreaCategory, label }),
+      body: JSON.stringify({ boltPositionId, category, customAreaName, customAreaCategory, label }),
     });
     const updated = await res.json();
     if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui penanda.');

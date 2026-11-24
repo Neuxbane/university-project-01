@@ -187,7 +187,7 @@
                   type="button"
                   @click="checklistDialogOpen = true"
                   :disabled="isCreatingSession || locationData.bolts.length === 0"
-                  class="hidden lg:inline-flex min-h-[44px] px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold items-center gap-2 cursor-pointer disabled:opacity-40"
+                  class="hidden lg:inline-flex min-h-[44px] px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-bold items-center gap-2 cursor-pointer disabled:opacity-40"
                 >
                   <span>{{ isCreatingSession ? 'Membuka...' : 'Mulai Checklist' }}</span>
                   <ArrowRight class="w-4 h-4" aria-hidden="true" />
@@ -245,7 +245,7 @@
           <!-- LEFT COLUMN: BOLT CARDS / POSITION SLOTS / PACKAGES -->
           <section
             aria-label="Daftar baut dan bundling motor"
-            class="space-y-3"
+            class="space-y-3 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain"
             :class="mobileTab === 'baut' ? 'block' : 'hidden lg:block'"
           >
             <SegmentedControl
@@ -371,7 +371,7 @@
           <!-- RIGHT COLUMN: 3D MODEL VIEWER (lazy-loaded) or 2D LocationCanvas fallback -->
           <section
             aria-label="Tampilan lokasi baut pada motor"
-            class="lg:sticky lg:top-6 space-y-4"
+            class="lg:sticky lg:top-6 space-y-4 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain"
             :class="mobileTab === 'lokasi' ? 'block' : 'hidden lg:block'"
           >
             <ModelManagerPanel
@@ -457,7 +457,7 @@
                 type="button"
                 @click="checklistDialogOpen = true"
                 :disabled="isCreatingSession || locationData.bolts.length === 0"
-                class="flex-1 min-h-[48px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+                class="flex-1 min-h-[48px] px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
               >
                 <span>{{ isCreatingSession ? 'Membuka...' : 'Mulai Checklist' }}</span>
                 <ArrowRight class="w-4 h-4" aria-hidden="true" />
@@ -471,12 +471,14 @@
 </template>
 
 <script setup>
+import { resolveBoltForAnnotation } from '../utils/annotationCallouts';
 import { itemName, itemSize } from '../utils/itemLabel';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Map as MapIcon, Nut, Pencil, Printer, Wrench } from 'lucide-vue-next';
+import { ArrowLeft, ArrowRight, Box, Crosshair, Layers, Map as MapIcon, Nut, Pencil, Printer, Share2, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
+import { buildPickListShareText, shareOrCopy } from '../utils/shareList';
 import { formatSideLabel, getDiameterTier, getCompletenessMeta } from '../utils/boltTokens';
 import AppShell from '../components/ui/AppShell.vue';
 import ItemCard from '../components/ui/ItemCard.vue';
@@ -648,8 +650,11 @@ const findAnnotationForPositions = (posIds, summaryText) => {
     : annotations;
   const searchList = pool.length > 0 ? pool : annotations;
 
-  return searchList.find((a) => posIds.includes(a.boltPositionId))
-    || searchList.find((a) => summaryText.toLowerCase().includes((a.boltPosition?.name || '').toLowerCase()))
+  // a marker of the position itself, else the marker of its bagian, else a name match
+  const categories = new Set((locationData.value?.positions || []).filter((p) => posIds.includes(p.id)).map((p) => p.category));
+  return searchList.find((a) => a.boltPositionId && posIds.includes(a.boltPositionId))
+    || searchList.find((a) => a.category && categories.has(a.category))
+    || searchList.find((a) => a.boltPosition?.name && summaryText.toLowerCase().includes(a.boltPosition.name.toLowerCase()))
     || null;
 };
 
@@ -706,11 +711,12 @@ const onSelectSlot = (slotRow) => {
 const onSelectAnnotation = (ann) => {
   activeAnnotation.value = ann;
   const bolts = locationData.value?.bolts || [];
-  const matchBolt = bolts.find((b) => Array.isArray(b.positionIds) && b.positionIds.includes(ann.boltPositionId))
-    || bolts.find((b) => (b.positionsSummary || '').toLowerCase().includes((ann.boltPosition?.name || '').toLowerCase()));
+  const resolved = resolveBoltForAnnotation(ann, bolts, locationData.value?.positionBreakdown);
+  const matchBolt = bolts.find((b) => resolved?.specIds?.includes(b.boltSpecId))
+    || bolts.find((b) => Array.isArray(b.positionIds) && b.positionIds.includes(ann.boltPositionId));
   selectedBolt.value = matchBolt || bolts[0] || null;
 
-  const cuMatch = (locationData.value?.closeUpPhotos || []).find((c) => c.boltPositionId === ann.boltPositionId);
+  const cuMatch = ann.boltPositionId ? (locationData.value?.closeUpPhotos || []).find((c) => c.boltPositionId === ann.boltPositionId) : null;
   if (cuMatch) {
     selectedCloseupPhotoId.value = cuMatch.id;
   }
@@ -723,6 +729,7 @@ const clearSelection = () => {
 
 const handleCreateAnnotation = async ({
   boltPositionId,
+  category,
   customAreaName,
   customAreaCategory,
   x,
@@ -743,6 +750,7 @@ const handleCreateAnnotation = async ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         boltPositionId,
+        category,
         customAreaName,
         customAreaCategory,
         motorcycleTypeId: locationData.value.motorcycle.id,
@@ -773,6 +781,7 @@ const handleCreateAnnotation = async ({
 const handleUpdateAnnotation = async ({
   id,
   boltPositionId,
+  category,
   customAreaName,
   customAreaCategory,
   label,
@@ -783,7 +792,7 @@ const handleUpdateAnnotation = async ({
     const res = await auth.apiFetch(`/api/position-annotations/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ boltPositionId, customAreaName, customAreaCategory, label }),
+      body: JSON.stringify({ boltPositionId, category, customAreaName, customAreaCategory, label }),
     });
     const updated = await res.json();
     if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui penanda lokasi.');
@@ -903,6 +912,23 @@ const onModelDeleted = async () => {
 
 const handlePrint = () => {
   window.print();
+};
+
+// Share the consolidated bolt list via the phone share sheet, or copy it to the
+// clipboard on desktop so it can be pasted into WhatsApp / chat.
+const handleShare = async () => {
+  if (!locationData.value) return;
+  const text = buildPickListShareText({
+    motorcycle: locationData.value.motorcycle,
+    packageName: locationData.value.package?.name || null,
+    summary: locationData.value.summary,
+    bolts: locationData.value.bolts || [],
+  });
+  await shareOrCopy({
+    title: `Daftar Baut ${locationData.value.motorcycle.displayName}`,
+    text,
+    toast,
+  });
 };
 
 onMounted(loadLocationMap);

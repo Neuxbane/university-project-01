@@ -44,18 +44,45 @@ const norm = (s) => String(s || '').trim().toLowerCase();
 const HEAD_PREFERENCE = [['bighead', 'big', 'bighead bukan disk'], ['smallhead', 'small']];
 const NUT_BY_SIZE_CODE = { 'MUR-M6': 'mur 10 m6 hexagon', 'MUR-M8': 'mur 12 hexagon' };
 
+const variantOf = (bolts) => {
+  for (const heads of HEAD_PREFERENCE) {
+    const hit = bolts.find((it) => heads.includes(norm(it.headType)));
+    if (hit) return hit;
+  }
+  return null;
+};
+
 function pickCatalogItem(items, sizeSpec) {
   const nutName = NUT_BY_SIZE_CODE[sizeSpec.code];
   if (nutName) return items.find((it) => norm(it.name) === nutName) || null;
   const d = Number(sizeSpec.diameterMm);
   const l = Number(sizeSpec.lengthMm);
   if (!(d > 0 && l > 0)) return null;
-  const sameSize = items.filter((it) => it.itemType === 'BAUT' && Number(it.diameterMm) === d && Number(it.lengthMm) === l);
-  for (const heads of HEAD_PREFERENCE) {
-    const hit = sameSize.find((it) => heads.includes(norm(it.headType)));
-    if (hit) return hit;
+  return variantOf(items.filter((it) => it.itemType === 'BAUT' && Number(it.diameterMm) === d && Number(it.lengthMm) === l));
+}
+
+/**
+ * Owner's follow-up (24 Nov 2026): a size the shop does not sell is fitted with the nearest catalog
+ * length of the same Ø (Bighead, else Smallhead), at most 5 mm off; on a tie the shorter bolt wins.
+ * Returns { item, exact } or null (e.g. spring clip nuts, M3x14 has nothing within 5 mm).
+ */
+const NEAREST_MAX_MM = 5;
+function pickNearestCatalogItem(items, sizeSpec) {
+  const exact = pickCatalogItem(items, sizeSpec);
+  if (exact) return { item: exact, exact: true };
+  const d = Number(sizeSpec.diameterMm);
+  const l = Number(sizeSpec.lengthMm);
+  if (!(d > 0 && l > 0)) return null;
+  const byLength = new Map();
+  for (const it of items) {
+    if (it.itemType !== 'BAUT' || Number(it.diameterMm) !== d || !(Number(it.lengthMm) > 0)) continue;
+    const len = Number(it.lengthMm);
+    byLength.set(len, [...(byLength.get(len) || []), it]);
   }
-  return null;
+  const lengths = [...byLength.keys()]
+    .filter((len) => Math.abs(len - l) <= NEAREST_MAX_MM && variantOf(byLength.get(len)))
+    .sort((a, b) => Math.abs(a - l) - Math.abs(b - l) || a - b);
+  return lengths.length ? { item: variantOf(byLength.get(lengths[0])), exact: false } : null;
 }
 
 /**
@@ -72,6 +99,7 @@ async function upsertCatalog(prisma, items = loadCatalogItems()) {
       diameterMm: item.diameterMm,
       lengthMm: item.lengthMm,
       headType: item.headType,
+      price: item.price ?? null,
       notes: item.notes,
       isArchived: false,
     };
@@ -91,4 +119,4 @@ async function upsertCatalog(prisma, items = loadCatalogItems()) {
   return byCode;
 }
 
-module.exports = { INSTALLABLE_TYPES, loadCatalogItems, catalogImage, pickCatalogItem, upsertCatalog };
+module.exports = { INSTALLABLE_TYPES, loadCatalogItems, catalogImage, pickCatalogItem, pickNearestCatalogItem, upsertCatalog };

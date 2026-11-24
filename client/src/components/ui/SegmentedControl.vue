@@ -21,7 +21,7 @@
         v-if="opt.count !== undefined && opt.count !== null"
         class="px-1.5 py-0.5 rounded-md text-[11px] font-mono leading-none"
         :class="modelValue === opt.value
-          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+          ? 'bg-brand-500 text-ink'
           : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'"
       >
         {{ opt.count }}

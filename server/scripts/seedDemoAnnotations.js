@@ -49,7 +49,7 @@ async function seedDemoAnnotations(db = prisma, { overwrite = false } = {}) {
 
   for (const spec of MODEL_SPECS) {
     const motor = await db.motorcycleType.findFirst({
-      where: { displayName: { contains: spec.displayNameMatch, mode: 'insensitive' } },
+      where: { displayName: spec.displayName },
       include: {
         requirements: { select: { boltPositionId: true } },
         models: { orderBy: { createdAt: 'desc' }, take: 1 },

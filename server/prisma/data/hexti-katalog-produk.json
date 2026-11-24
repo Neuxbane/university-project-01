@@ -2,7 +2,7 @@
   "meta": {
     "source": "seeder/Katalog_HexTi_Baut_Titanium.xlsx",
     "generatedBy": "scripts/katalog_xlsx_to_json.py",
-    "note": "Nama dan foto produk dari katalog toko; harga dan stok tidak diimpor."
+    "note": "Nama, foto, dan harga produk dari katalog toko; stok tidak diimpor."
   },
   "items": [
     {
@@ -13,6 +13,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 125000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-001.jpg"
     },
@@ -24,6 +25,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-002.jpg"
     },
@@ -35,6 +37,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 165000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-003.jpg"
     },
@@ -46,6 +49,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -57,6 +61,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 250000,
       "notes": null,
       "photo": null
     },
@@ -68,6 +73,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 175000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-006.jpg"
     },
@@ -79,6 +85,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": null
     },
@@ -90,6 +97,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 175000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-008.jpg"
     },
@@ -101,6 +109,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 190000,
       "notes": null,
       "photo": null
     },
@@ -112,6 +121,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": null
     },
@@ -123,6 +133,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 140000,
       "notes": null,
       "photo": null
     },
@@ -134,6 +145,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": null
     },
@@ -145,6 +157,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": null
     },
@@ -156,6 +169,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 160000,
       "notes": null,
       "photo": null
     },
@@ -167,6 +181,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 160000,
       "notes": null,
       "photo": null
     },
@@ -178,6 +193,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 185000,
       "notes": null,
       "photo": null
     },
@@ -189,6 +205,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 160000,
       "notes": null,
       "photo": null
     },
@@ -200,6 +217,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": null
     },
@@ -211,6 +229,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 185000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-019.jpg"
     },
@@ -222,6 +241,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 165000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-020.jpg"
     },
@@ -233,6 +253,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 65000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-021.jpg"
     },
@@ -244,6 +265,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -255,6 +277,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 60000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-023.jpg"
     },
@@ -266,6 +289,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -277,6 +301,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 13000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-025.jpg"
     },
@@ -288,6 +313,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 13000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-026.jpg"
     },
@@ -299,6 +325,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -310,6 +337,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -321,6 +349,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 15500,
       "notes": null,
       "photo": null
     },
@@ -332,6 +361,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 40000,
       "notes": null,
       "photo": null
     },
@@ -343,6 +373,7 @@
       "diameterMm": 10.0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -354,6 +385,7 @@
       "diameterMm": 10.0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -365,6 +397,7 @@
       "diameterMm": 8.0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -376,6 +409,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 200000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-034.jpg"
     },
@@ -387,6 +421,7 @@
       "diameterMm": 12.0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -398,6 +433,7 @@
       "diameterMm": 10.0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 70000,
       "notes": null,
       "photo": null
     },
@@ -409,6 +445,7 @@
       "diameterMm": 8.0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 70000,
       "notes": null,
       "photo": null
     },
@@ -420,6 +457,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 60000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-038.jpg"
     },
@@ -431,6 +469,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -442,6 +481,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -453,6 +493,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -464,6 +505,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -475,6 +517,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 70000,
       "notes": null,
       "photo": null
     },
@@ -486,6 +529,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 35000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-044.jpg"
     },
@@ -497,6 +541,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-045.jpg"
     },
@@ -508,6 +553,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 300000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-046.jpg"
     },
@@ -519,6 +565,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 300000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-047.jpg"
     },
@@ -530,6 +577,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 35000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-048.jpg"
     },
@@ -541,6 +589,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 25000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-049.jpg"
     },
@@ -552,6 +601,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 60000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-050.jpg"
     },
@@ -563,6 +613,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 100000,
       "notes": null,
       "photo": null
     },
@@ -574,6 +625,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 170000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-052.jpg"
     },
@@ -585,6 +637,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-053.jpg"
     },
@@ -596,6 +649,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-054.jpg"
     },
@@ -607,6 +661,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-055.jpg"
     },
@@ -618,6 +673,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-056.jpg"
     },
@@ -629,6 +685,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-057.jpg"
     },
@@ -640,6 +697,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-058.jpg"
     },
@@ -651,6 +709,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-059.jpg"
     },
@@ -662,6 +721,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-060.jpg"
     },
@@ -673,6 +733,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-061.jpg"
     },
@@ -684,6 +745,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 355000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-062.jpg"
     },
@@ -695,6 +757,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 270000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-063.jpg"
     },
@@ -706,6 +769,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 270000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-064.jpg"
     },
@@ -717,6 +781,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 250000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-065.jpg"
     },
@@ -728,6 +793,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 250000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-066.jpg"
     },
@@ -739,6 +805,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-067.jpg"
     },
@@ -750,6 +817,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-068.jpg"
     },
@@ -761,6 +829,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-069.jpg"
     },
@@ -772,6 +841,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-070.jpg"
     },
@@ -783,6 +853,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-071.jpg"
     },
@@ -794,6 +865,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-072.jpg"
     },
@@ -805,6 +877,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 25000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-073.jpg"
     },
@@ -816,6 +889,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-074.jpg"
     },
@@ -827,6 +901,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 90000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-075.jpg"
     },
@@ -838,6 +913,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -849,6 +925,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-077.jpg"
     },
@@ -860,6 +937,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-078.jpg"
     },
@@ -871,6 +949,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-079.jpg"
     },
@@ -882,6 +961,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -893,6 +973,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-081.jpg"
     },
@@ -904,6 +985,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -915,6 +997,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -926,6 +1009,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -937,6 +1021,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-085.jpg"
     },
@@ -948,6 +1033,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 100000,
       "notes": null,
       "photo": null
     },
@@ -959,6 +1045,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 25000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-087.jpg"
     },
@@ -970,6 +1057,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 25000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-088.jpg"
     },
@@ -981,6 +1069,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -992,6 +1081,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-090.jpg"
     },
@@ -1003,6 +1093,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1014,6 +1105,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1025,6 +1117,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-093.jpg"
     },
@@ -1036,6 +1129,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -1047,6 +1141,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1058,6 +1153,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -1069,6 +1165,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1080,6 +1177,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-098.jpg"
     },
@@ -1091,6 +1189,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1102,6 +1201,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-100.jpg"
     },
@@ -1113,6 +1213,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1124,6 +1225,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -1135,6 +1237,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1146,6 +1249,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1157,6 +1261,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-105.jpg"
     },
@@ -1168,6 +1273,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -1179,6 +1285,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -1190,6 +1297,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-108.jpg"
     },
@@ -1201,6 +1309,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1212,6 +1321,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-110.jpg"
     },
@@ -1223,6 +1333,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-111.jpg"
     },
@@ -1234,6 +1345,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 110000,
       "notes": null,
       "photo": null
     },
@@ -1245,6 +1357,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 110000,
       "notes": null,
       "photo": null
     },
@@ -1256,6 +1369,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1267,6 +1381,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1278,6 +1393,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1289,6 +1405,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1300,6 +1417,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-118.jpg"
     },
@@ -1311,6 +1429,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-119.jpg"
     },
@@ -1322,6 +1441,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-120.jpg"
     },
@@ -1333,6 +1453,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-121.jpg"
     },
@@ -1344,6 +1465,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-122.jpg"
     },
@@ -1355,6 +1477,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 100000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-123.jpg"
     },
@@ -1366,6 +1489,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-124.jpg"
     },
@@ -1377,6 +1501,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -1388,6 +1513,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-126.jpg"
     },
@@ -1399,6 +1525,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1410,6 +1537,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-128.jpg"
     },
@@ -1421,6 +1549,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1432,6 +1561,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1443,6 +1573,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 240000,
       "notes": null,
       "photo": null
     },
@@ -1454,6 +1585,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-132.jpg"
     },
@@ -1465,6 +1597,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-133.jpg"
     },
@@ -1476,6 +1609,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 35000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-134.jpg"
     },
@@ -1487,6 +1621,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -1498,6 +1633,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1509,6 +1645,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 140000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-137.jpg"
     },
@@ -1520,6 +1657,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 115000,
       "notes": null,
       "photo": null
     },
@@ -1531,6 +1669,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -1542,6 +1681,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-140.jpg"
     },
@@ -1553,6 +1693,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 45000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-141.jpg"
     },
@@ -1564,6 +1705,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -1575,6 +1717,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 60000,
       "notes": null,
       "photo": null
     },
@@ -1586,6 +1729,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 480000,
       "notes": null,
       "photo": null
     },
@@ -1597,6 +1741,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-145.jpg"
     },
@@ -1608,6 +1753,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 235000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-146.jpg"
     },
@@ -1619,6 +1765,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 250000,
       "notes": null,
       "photo": null
     },
@@ -1630,6 +1777,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 140000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-148.jpg"
     },
@@ -1641,6 +1789,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-149.jpg"
     },
@@ -1652,6 +1801,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 10000,
       "notes": null,
       "photo": null
     },
@@ -1663,6 +1813,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -1674,6 +1825,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -1685,6 +1837,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -1696,6 +1849,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -1707,6 +1861,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1718,6 +1873,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 500,
       "notes": null,
       "photo": null
     },
@@ -1729,6 +1885,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 3000,
       "notes": null,
       "photo": null
     },
@@ -1740,6 +1897,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 90000,
       "notes": null,
       "photo": null
     },
@@ -1751,6 +1909,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 100000,
       "notes": null,
       "photo": null
     },
@@ -1762,6 +1921,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": null
     },
@@ -1773,6 +1933,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -1784,6 +1945,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 60000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-162.jpg"
     },
@@ -1795,6 +1957,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 73000,
       "notes": null,
       "photo": null
     },
@@ -1806,6 +1969,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 210000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-164.jpg"
     },
@@ -1817,6 +1981,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 125000,
       "notes": null,
       "photo": null
     },
@@ -1828,6 +1993,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 120000,
       "notes": null,
       "photo": null
     },
@@ -1839,6 +2005,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 6000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-167.jpg"
     },
@@ -1850,6 +2017,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -1861,6 +2029,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -1872,6 +2041,7 @@
       "diameterMm": 10.0,
       "lengthMm": 10.0,
       "headType": "Big Drat Kebalik Drat Kiri",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -1883,6 +2053,7 @@
       "diameterMm": 10.0,
       "lengthMm": 10.0,
       "headType": "Bighead",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -1894,6 +2065,7 @@
       "diameterMm": 10.0,
       "lengthMm": 10.0,
       "headType": "Starhead",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -1905,6 +2077,7 @@
       "diameterMm": 10.0,
       "lengthMm": 110.0,
       "headType": "Bighead",
+      "price": 105000,
       "notes": null,
       "photo": null
     },
@@ -1916,6 +2089,7 @@
       "diameterMm": 10.0,
       "lengthMm": 15.0,
       "headType": "Bighead",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -1927,6 +2101,7 @@
       "diameterMm": 10.0,
       "lengthMm": 20.0,
       "headType": "Bighead",
+      "price": 23000,
       "notes": null,
       "photo": null
     },
@@ -1938,6 +2113,7 @@
       "diameterMm": 10.0,
       "lengthMm": 20.0,
       "headType": "Smallhead",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1949,6 +2125,7 @@
       "diameterMm": 10.0,
       "lengthMm": 25.0,
       "headType": "Bighead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -1960,6 +2137,7 @@
       "diameterMm": 10.0,
       "lengthMm": 25.0,
       "headType": "Smallhead",
+      "price": 32000,
       "notes": null,
       "photo": null
     },
@@ -1971,6 +2149,7 @@
       "diameterMm": 10.0,
       "lengthMm": 30.0,
       "headType": "Bighead",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -1982,6 +2161,7 @@
       "diameterMm": 10.0,
       "lengthMm": 30.0,
       "headType": "Smallhead",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -1993,6 +2173,7 @@
       "diameterMm": 10.0,
       "lengthMm": 35.0,
       "headType": "Bighead",
+      "price": 39000,
       "notes": null,
       "photo": null
     },
@@ -2004,6 +2185,7 @@
       "diameterMm": 10.0,
       "lengthMm": 40.0,
       "headType": "Bighead",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-182.jpg"
     },
@@ -2015,6 +2197,7 @@
       "diameterMm": 10.0,
       "lengthMm": 40.0,
       "headType": "Smallhead",
+      "price": 48000,
       "notes": null,
       "photo": null
     },
@@ -2026,6 +2209,7 @@
       "diameterMm": 10.0,
       "lengthMm": 45.0,
       "headType": "Big",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2037,6 +2221,7 @@
       "diameterMm": 10.0,
       "lengthMm": 45.0,
       "headType": "Small",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2048,6 +2233,7 @@
       "diameterMm": 10.0,
       "lengthMm": 50.0,
       "headType": "Bighead",
+      "price": 50000,
       "notes": null,
       "photo": null
     },
@@ -2059,6 +2245,7 @@
       "diameterMm": 10.0,
       "lengthMm": 60.0,
       "headType": "Bighead",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -2070,6 +2257,7 @@
       "diameterMm": 10.0,
       "lengthMm": 60.0,
       "headType": "Smallhead",
+      "price": 60000,
       "notes": null,
       "photo": null
     },
@@ -2081,6 +2269,7 @@
       "diameterMm": 10.0,
       "lengthMm": 70.0,
       "headType": "Bighead",
+      "price": 65000,
       "notes": null,
       "photo": null
     },
@@ -2092,6 +2281,7 @@
       "diameterMm": 10.0,
       "lengthMm": 90.0,
       "headType": "Bighead",
+      "price": 90000,
       "notes": null,
       "photo": null
     },
@@ -2103,6 +2293,7 @@
       "diameterMm": 3.0,
       "lengthMm": 5.0,
       "headType": "Bighead",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -2114,6 +2305,7 @@
       "diameterMm": 3.0,
       "lengthMm": 8.0,
       "headType": "Bighead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2125,6 +2317,7 @@
       "diameterMm": 3.0,
       "lengthMm": 8.0,
       "headType": "Flathead",
+      "price": 22000,
       "notes": null,
       "photo": null
     },
@@ -2136,6 +2329,7 @@
       "diameterMm": 3.0,
       "lengthMm": 8.0,
       "headType": "Smallhead",
+      "price": 33000,
       "notes": null,
       "photo": null
     },
@@ -2147,6 +2341,7 @@
       "diameterMm": 4.0,
       "lengthMm": 10.0,
       "headType": "Bighead",
+      "price": 14000,
       "notes": null,
       "photo": null
     },
@@ -2158,6 +2353,7 @@
       "diameterMm": 4.0,
       "lengthMm": 10.0,
       "headType": "Small",
+      "price": 13000,
       "notes": null,
       "photo": null
     },
@@ -2169,6 +2365,7 @@
       "diameterMm": 4.0,
       "lengthMm": 15.0,
       "headType": "Bighead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2180,6 +2377,7 @@
       "diameterMm": 4.0,
       "lengthMm": 15.0,
       "headType": "Smallhead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2191,6 +2389,7 @@
       "diameterMm": 4.0,
       "lengthMm": 35.0,
       "headType": "Bighead",
+      "price": 21000,
       "notes": null,
       "photo": null
     },
@@ -2202,6 +2401,7 @@
       "diameterMm": 4.0,
       "lengthMm": 45.0,
       "headType": "Bighead",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -2213,6 +2413,7 @@
       "diameterMm": 4.0,
       "lengthMm": 45.0,
       "headType": "Starhead Bigstar",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2224,6 +2425,7 @@
       "diameterMm": 4.0,
       "lengthMm": 50.0,
       "headType": "Smallhead",
+      "price": 37000,
       "notes": null,
       "photo": null
     },
@@ -2235,6 +2437,7 @@
       "diameterMm": 5.0,
       "lengthMm": 10.0,
       "headType": "Bighead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2246,6 +2449,7 @@
       "diameterMm": 5.0,
       "lengthMm": 10.0,
       "headType": "Smallhead",
+      "price": 13000,
       "notes": null,
       "photo": null
     },
@@ -2257,6 +2461,7 @@
       "diameterMm": 5.0,
       "lengthMm": 15.0,
       "headType": "Bighead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2268,6 +2473,7 @@
       "diameterMm": 5.0,
       "lengthMm": 15.0,
       "headType": "Smallhead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2279,6 +2485,7 @@
       "diameterMm": 5.0,
       "lengthMm": 15.0,
       "headType": "Twokey",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -2290,6 +2497,7 @@
       "diameterMm": 5.0,
       "lengthMm": 20.0,
       "headType": "Bighead",
+      "price": 16000,
       "notes": null,
       "photo": null
     },
@@ -2301,6 +2509,7 @@
       "diameterMm": 5.0,
       "lengthMm": 20.0,
       "headType": "Smallhead",
+      "price": 18000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-209.jpg"
     },
@@ -2312,6 +2521,7 @@
       "diameterMm": 5.0,
       "lengthMm": 20.0,
       "headType": "Starhead",
+      "price": 23000,
       "notes": null,
       "photo": null
     },
@@ -2323,6 +2533,7 @@
       "diameterMm": 5.0,
       "lengthMm": 25.0,
       "headType": "Bighead",
+      "price": 17500,
       "notes": null,
       "photo": null
     },
@@ -2334,6 +2545,7 @@
       "diameterMm": 5.0,
       "lengthMm": 25.0,
       "headType": "Smallhead",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -2345,6 +2557,7 @@
       "diameterMm": 5.0,
       "lengthMm": 30.0,
       "headType": "Bighead",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -2356,6 +2569,7 @@
       "diameterMm": 5.0,
       "lengthMm": 40.0,
       "headType": "Bighead",
+      "price": 29000,
       "notes": null,
       "photo": null
     },
@@ -2367,6 +2581,7 @@
       "diameterMm": 5.0,
       "lengthMm": 40.0,
       "headType": "Smallhead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -2378,6 +2593,7 @@
       "diameterMm": 5.0,
       "lengthMm": 50.0,
       "headType": "Bighead",
+      "price": 42000,
       "notes": null,
       "photo": null
     },
@@ -2389,6 +2605,7 @@
       "diameterMm": 6.0,
       "lengthMm": 0,
       "headType": "Flat Galfer",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2400,6 +2617,7 @@
       "diameterMm": 6.0,
       "lengthMm": 10.0,
       "headType": "Smallhead",
+      "price": 15000,
       "notes": null,
       "photo": null
     },
@@ -2411,6 +2629,7 @@
       "diameterMm": 6.0,
       "lengthMm": 10.0,
       "headType": "Starhead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -2422,6 +2641,7 @@
       "diameterMm": 6.0,
       "lengthMm": 100.0,
       "headType": "Bighead",
+      "price": 90000,
       "notes": null,
       "photo": null
     },
@@ -2433,6 +2653,7 @@
       "diameterMm": 6.0,
       "lengthMm": 100.0,
       "headType": "Smallhead",
+      "price": 95000,
       "notes": null,
       "photo": null
     },
@@ -2444,6 +2665,7 @@
       "diameterMm": 6.0,
       "lengthMm": 120.0,
       "headType": "Smallhead",
+      "price": 105000,
       "notes": null,
       "photo": null
     },
@@ -2455,6 +2677,7 @@
       "diameterMm": 6.0,
       "lengthMm": 130.0,
       "headType": "Smallhead",
+      "price": 115000,
       "notes": null,
       "photo": null
     },
@@ -2466,6 +2689,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Bighead",
+      "price": 15000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-224.jpg"
     },
@@ -2477,6 +2701,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Bighead Black",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -2488,6 +2713,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Bordes",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2499,6 +2725,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Mediumhead Big Kecil",
+      "price": 17000,
       "notes": null,
       "photo": null
     },
@@ -2510,6 +2737,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Smallhead",
+      "price": 16000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-228.jpg"
     },
@@ -2521,6 +2749,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Smallhead Twokey",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -2532,6 +2761,7 @@
       "diameterMm": 6.0,
       "lengthMm": 20.0,
       "headType": "Bighead",
+      "price": 16000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-230.jpg"
     },
@@ -2543,6 +2773,7 @@
       "diameterMm": 6.0,
       "lengthMm": 20.0,
       "headType": "Bordes",
+      "price": 47000,
       "notes": null,
       "photo": null
     },
@@ -2554,6 +2785,7 @@
       "diameterMm": 6.0,
       "lengthMm": 20.0,
       "headType": "Mediumhead Big Kecil",
+      "price": 18000,
       "notes": null,
       "photo": null
     },
@@ -2565,6 +2797,7 @@
       "diameterMm": 6.0,
       "lengthMm": 20.0,
       "headType": "Smallhead",
+      "price": 18000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-233.jpg"
     },
@@ -2576,6 +2809,7 @@
       "diameterMm": 6.0,
       "lengthMm": 25.0,
       "headType": "Bighead",
+      "price": 18000,
       "notes": null,
       "photo": null
     },
@@ -2587,6 +2821,7 @@
       "diameterMm": 6.0,
       "lengthMm": 25.0,
       "headType": "Medium Head D13",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -2598,6 +2833,7 @@
       "diameterMm": 6.0,
       "lengthMm": 25.0,
       "headType": "Smallhead",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -2609,6 +2845,7 @@
       "diameterMm": 6.0,
       "lengthMm": 30.0,
       "headType": "Bighead",
+      "price": 22000,
       "notes": null,
       "photo": null
     },
@@ -2620,6 +2857,7 @@
       "diameterMm": 6.0,
       "lengthMm": 30.0,
       "headType": "Bighead Kecil D13",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -2631,6 +2869,7 @@
       "diameterMm": 6.0,
       "lengthMm": 30.0,
       "headType": "Smallhead",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -2642,6 +2881,7 @@
       "diameterMm": 6.0,
       "lengthMm": 30.0,
       "headType": "Starhead Bigstar",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2653,6 +2893,7 @@
       "diameterMm": 6.0,
       "lengthMm": 35.0,
       "headType": "Bighead",
+      "price": 23000,
       "notes": null,
       "photo": null
     },
@@ -2664,6 +2905,7 @@
       "diameterMm": 6.0,
       "lengthMm": 35.0,
       "headType": "Smallhead",
+      "price": 21000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-242.jpg"
     },
@@ -2675,6 +2917,7 @@
       "diameterMm": 6.0,
       "lengthMm": 35.0,
       "headType": "Twokey",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -2686,6 +2929,7 @@
       "diameterMm": 6.0,
       "lengthMm": 40.0,
       "headType": "Bighead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -2697,6 +2941,7 @@
       "diameterMm": 6.0,
       "lengthMm": 40.0,
       "headType": "Smallhead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -2708,6 +2953,7 @@
       "diameterMm": 6.0,
       "lengthMm": 45.0,
       "headType": "Smallhead",
+      "price": 27000,
       "notes": null,
       "photo": null
     },
@@ -2719,6 +2965,7 @@
       "diameterMm": 6.0,
       "lengthMm": 50.0,
       "headType": "Bighead",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -2730,6 +2977,7 @@
       "diameterMm": 6.0,
       "lengthMm": 50.0,
       "headType": "Smallhead",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -2741,6 +2989,7 @@
       "diameterMm": 6.0,
       "lengthMm": 60.0,
       "headType": "Bighead",
+      "price": 33000,
       "notes": null,
       "photo": null
     },
@@ -2752,6 +3001,7 @@
       "diameterMm": 6.0,
       "lengthMm": 60.0,
       "headType": "Smallhead",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -2763,6 +3013,7 @@
       "diameterMm": 6.0,
       "lengthMm": 65.0,
       "headType": "Smallhead",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -2774,6 +3025,7 @@
       "diameterMm": 6.0,
       "lengthMm": 70.0,
       "headType": "Bighead",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2785,6 +3037,7 @@
       "diameterMm": 6.0,
       "lengthMm": 70.0,
       "headType": "Smallhead",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -2796,6 +3049,7 @@
       "diameterMm": 6.0,
       "lengthMm": 80.0,
       "headType": "Smallhead",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -2807,6 +3061,7 @@
       "diameterMm": 6.0,
       "lengthMm": 90.0,
       "headType": "Bighead",
+      "price": 70000,
       "notes": null,
       "photo": null
     },
@@ -2818,6 +3073,7 @@
       "diameterMm": 6.0,
       "lengthMm": 90.0,
       "headType": "Smallhead",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -2829,6 +3085,7 @@
       "diameterMm": 8.0,
       "lengthMm": 10.0,
       "headType": "Bighead",
+      "price": 16000,
       "notes": null,
       "photo": null
     },
@@ -2840,6 +3097,7 @@
       "diameterMm": 8.0,
       "lengthMm": 10.0,
       "headType": "Smallhead",
+      "price": 18000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-258.jpg"
     },
@@ -2851,6 +3109,7 @@
       "diameterMm": 8.0,
       "lengthMm": 100.0,
       "headType": "Big",
+      "price": 110000,
       "notes": null,
       "photo": null
     },
@@ -2862,6 +3121,7 @@
       "diameterMm": 8.0,
       "lengthMm": 110.0,
       "headType": "Bighead",
+      "price": 115000,
       "notes": null,
       "photo": null
     },
@@ -2873,6 +3133,7 @@
       "diameterMm": 8.0,
       "lengthMm": 120.0,
       "headType": "Bighead",
+      "price": 120000,
       "notes": null,
       "photo": null
     },
@@ -2884,6 +3145,7 @@
       "diameterMm": 8.0,
       "lengthMm": 130.0,
       "headType": "Bighead",
+      "price": 125000,
       "notes": null,
       "photo": null
     },
@@ -2895,6 +3157,7 @@
       "diameterMm": 8.0,
       "lengthMm": 15.0,
       "headType": "Bighead",
+      "price": 16500,
       "notes": null,
       "photo": null
     },
@@ -2906,6 +3169,7 @@
       "diameterMm": 8.0,
       "lengthMm": 15.0,
       "headType": "Smallhead",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -2917,6 +3181,7 @@
       "diameterMm": 8.0,
       "lengthMm": 20.0,
       "headType": "Bighead",
+      "price": 17000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-265.jpg"
     },
@@ -2928,6 +3193,7 @@
       "diameterMm": 8.0,
       "lengthMm": 20.0,
       "headType": "Disk Piringan",
+      "price": 16000,
       "notes": null,
       "photo": null
     },
@@ -2939,6 +3205,7 @@
       "diameterMm": 8.0,
       "lengthMm": 20.0,
       "headType": "Disk Starhead",
+      "price": 18000,
       "notes": null,
       "photo": null
     },
@@ -2950,6 +3217,7 @@
       "diameterMm": 8.0,
       "lengthMm": 20.0,
       "headType": "Smallhead",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -2961,6 +3229,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Bighead Bukan Disk",
+      "price": 20000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-269.jpg"
     },
@@ -2972,6 +3241,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Bighead Knob Knock Disk",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -2983,6 +3253,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Disk Burn Starhead",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-271.jpg"
     },
@@ -2994,6 +3265,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Disk Piringan",
+      "price": 17500,
       "notes": null,
       "photo": null
     },
@@ -3005,6 +3277,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Smallhead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -3016,6 +3289,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Starhead Bigstar Disk",
+      "price": 22500,
       "notes": null,
       "photo": null
     },
@@ -3027,6 +3301,7 @@
       "diameterMm": 8.0,
       "lengthMm": 30.0,
       "headType": "Bighead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -3038,6 +3313,7 @@
       "diameterMm": 8.0,
       "lengthMm": 30.0,
       "headType": "Smallhead",
+      "price": 28000,
       "notes": null,
       "photo": null
     },
@@ -3049,6 +3325,7 @@
       "diameterMm": 8.0,
       "lengthMm": 30.0,
       "headType": "Starhead",
+      "price": 50000,
       "notes": null,
       "photo": null
     },
@@ -3060,6 +3337,7 @@
       "diameterMm": 8.0,
       "lengthMm": 35.0,
       "headType": "Bighead",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -3071,6 +3349,7 @@
       "diameterMm": 8.0,
       "lengthMm": 35.0,
       "headType": "Smallhead",
+      "price": 31000,
       "notes": null,
       "photo": null
     },
@@ -3082,6 +3361,7 @@
       "diameterMm": 8.0,
       "lengthMm": 40.0,
       "headType": "Bighead",
+      "price": 33000,
       "notes": null,
       "photo": null
     },
@@ -3093,6 +3373,7 @@
       "diameterMm": 8.0,
       "lengthMm": 40.0,
       "headType": "Smallhead",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -3104,6 +3385,7 @@
       "diameterMm": 8.0,
       "lengthMm": 45.0,
       "headType": "Bighead",
+      "price": 36000,
       "notes": null,
       "photo": null
     },
@@ -3115,6 +3397,7 @@
       "diameterMm": 8.0,
       "lengthMm": 45.0,
       "headType": "Smallhead",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -3126,6 +3409,7 @@
       "diameterMm": 8.0,
       "lengthMm": 50.0,
       "headType": "Bighead",
+      "price": 40000,
       "notes": null,
       "photo": null
     },
@@ -3137,6 +3421,7 @@
       "diameterMm": 8.0,
       "lengthMm": 50.0,
       "headType": "Smallhead",
+      "price": 48000,
       "notes": null,
       "photo": null
     },
@@ -3148,6 +3433,7 @@
       "diameterMm": 8.0,
       "lengthMm": 60.0,
       "headType": "Bighead",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -3159,6 +3445,7 @@
       "diameterMm": 8.0,
       "lengthMm": 65.0,
       "headType": "Bighead",
+      "price": 56000,
       "notes": null,
       "photo": null
     },
@@ -3170,6 +3457,7 @@
       "diameterMm": 8.0,
       "lengthMm": 70.0,
       "headType": "Bighead",
+      "price": 65000,
       "notes": null,
       "photo": null
     },
@@ -3181,6 +3469,7 @@
       "diameterMm": 8.0,
       "lengthMm": 70.0,
       "headType": "Smallhead",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -3192,6 +3481,7 @@
       "diameterMm": 8.0,
       "lengthMm": 80.0,
       "headType": "Bighead",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -3203,6 +3493,7 @@
       "diameterMm": 8.0,
       "lengthMm": 80.0,
       "headType": "Smallhead",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -3214,6 +3505,7 @@
       "diameterMm": 8.0,
       "lengthMm": 90.0,
       "headType": "Bighead",
+      "price": 90000,
       "notes": null,
       "photo": null
     },
@@ -3225,6 +3517,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 165000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-293.jpg"
     },
@@ -3236,6 +3529,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 145000,
       "notes": null,
       "photo": null
     },
@@ -3247,6 +3541,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 145000,
       "notes": null,
       "photo": null
     },
@@ -3258,6 +3553,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": null
     },
@@ -3269,6 +3565,7 @@
       "diameterMm": 6.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 33000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-297.jpg"
     },
@@ -3280,6 +3577,7 @@
       "diameterMm": 6.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -3291,6 +3589,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -3302,6 +3601,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-300.jpg"
     },
@@ -3313,6 +3613,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -3324,6 +3625,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 45000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-302.jpg"
     },
@@ -3335,6 +3637,7 @@
       "diameterMm": 10.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 60000,
       "notes": null,
       "photo": null
     },
@@ -3346,6 +3649,7 @@
       "diameterMm": 10.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 37000,
       "notes": null,
       "photo": null
     },
@@ -3357,6 +3661,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 65000,
       "notes": null,
       "photo": null
     },
@@ -3368,6 +3673,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 48000,
       "notes": null,
       "photo": null
     },
@@ -3379,6 +3685,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -3390,6 +3697,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 23000,
       "notes": null,
       "photo": null
     },
@@ -3401,6 +3709,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -3412,6 +3721,7 @@
       "diameterMm": 8.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 95000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-310.jpg"
     },
@@ -3423,6 +3733,7 @@
       "diameterMm": 16.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 200000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-311.jpg"
     },
@@ -3434,6 +3745,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 160000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-312.jpg"
     },
@@ -3445,6 +3757,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 160000,
       "notes": null,
       "photo": null
     },
@@ -3456,6 +3769,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -3467,6 +3781,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -3478,6 +3793,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 23000,
       "notes": null,
       "photo": null
     },
@@ -3489,6 +3805,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -3500,6 +3817,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 380000,
       "notes": null,
       "photo": null
     },
@@ -3511,6 +3829,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 180000,
       "notes": null,
       "photo": null
     },
@@ -3522,6 +3841,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 65000,
       "notes": null,
       "photo": null
     },
@@ -3533,6 +3853,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 185000,
       "notes": null,
       "photo": null
     },
@@ -3544,6 +3865,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -3555,6 +3877,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 100000,
       "notes": null,
       "photo": null
     },
@@ -3566,6 +3889,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 200000,
       "notes": null,
       "photo": null
     },
@@ -3577,6 +3901,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 275000,
       "notes": null,
       "photo": null
     },
@@ -3588,6 +3913,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 300000,
       "notes": null,
       "photo": null
     },
@@ -3599,6 +3925,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 90000,
       "notes": null,
       "photo": null
     },
@@ -3610,6 +3937,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-328.jpg"
     },
@@ -3621,6 +3949,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 5000,
       "notes": null,
       "photo": null
     },
@@ -3632,6 +3961,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 3000,
       "notes": null,
       "photo": null
     },
@@ -3643,6 +3973,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 10000,
       "notes": null,
       "photo": null
     },
@@ -3654,6 +3985,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 6000,
       "notes": null,
       "photo": null
     },
@@ -3665,6 +3997,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 8000,
       "notes": null,
       "photo": null
     },
@@ -3676,6 +4009,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Jasa",
+      "price": 2500,
       "notes": null,
       "photo": null
     },
@@ -3687,6 +4021,7 @@
       "diameterMm": 6.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 25000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-335.jpg"
     },
@@ -3698,6 +4033,7 @@
       "diameterMm": 8.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 28000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-336.jpg"
     },
@@ -3709,6 +4045,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -3720,6 +4057,7 @@
       "diameterMm": 10.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 30000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-338.jpg"
     },
@@ -3731,6 +4069,7 @@
       "diameterMm": 12.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 22000,
       "notes": null,
       "photo": null
     },
@@ -3742,6 +4081,7 @@
       "diameterMm": 5.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 10000,
       "notes": null,
       "photo": null
     },
@@ -3753,6 +4093,7 @@
       "diameterMm": 6.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 13000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-341.jpg"
     },
@@ -3764,6 +4105,7 @@
       "diameterMm": 8.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 17000,
       "notes": null,
       "photo": null
     },
@@ -3775,6 +4117,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 10000,
       "notes": null,
       "photo": null
     },
@@ -3786,6 +4129,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Bigstar Burn",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -3797,6 +4141,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 525000,
       "notes": null,
       "photo": null
     },
@@ -3808,6 +4153,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 575000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-346.jpg"
     },
@@ -3819,6 +4165,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 130000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-347.jpg"
     },
@@ -3830,6 +4177,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 120000,
       "notes": null,
       "photo": null
     },
@@ -3841,6 +4189,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 110000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-349.jpg"
     },
@@ -3852,6 +4201,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 230000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-350.jpg"
     },
@@ -3863,6 +4213,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 110000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-351.jpg"
     },
@@ -3874,6 +4225,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 110000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-352.jpg"
     },
@@ -3885,6 +4237,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 75000,
       "notes": null,
       "photo": null
     },
@@ -3896,6 +4249,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 80000,
       "notes": null,
       "photo": null
     },
@@ -3907,6 +4261,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-355.jpg"
     },
@@ -3918,6 +4273,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 2600000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-356.jpg"
     },
@@ -3929,6 +4285,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 160000,
       "notes": null,
       "photo": null
     },
@@ -3940,6 +4297,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 175000,
       "notes": null,
       "photo": null
     },
@@ -3951,6 +4309,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 150000,
       "notes": null,
       "photo": null
     },
@@ -3962,6 +4321,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 330000,
       "notes": null,
       "photo": null
     },
@@ -3973,6 +4333,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 355000,
       "notes": null,
       "photo": null
     },
@@ -3984,6 +4345,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -3995,6 +4357,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 250000,
       "notes": null,
       "photo": null
     },
@@ -4006,6 +4369,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Baut",
+      "price": 250000,
       "notes": null,
       "photo": null
     },
@@ -4017,6 +4381,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 52500,
       "notes": null,
       "photo": null
     },
@@ -4028,6 +4393,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 90000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-366.jpg"
     },
@@ -4039,6 +4405,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 70000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-367.jpg"
     },
@@ -4050,6 +4417,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 160000,
       "notes": null,
       "photo": null
     },
@@ -4061,6 +4429,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 300000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-369.jpg"
     },
@@ -4072,6 +4441,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 255000,
       "notes": null,
       "photo": null
     },
@@ -4083,6 +4453,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 35000,
       "notes": null,
       "photo": null
     },
@@ -4094,6 +4465,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Emblem",
+      "price": 40000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-372.jpg"
     },
@@ -4105,6 +4477,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 40000,
       "notes": null,
       "photo": null
     },
@@ -4116,6 +4489,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 60000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-374.jpg"
     },
@@ -4127,6 +4501,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 430000,
       "notes": null,
       "photo": null
     },
@@ -4138,6 +4513,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 190000,
       "notes": null,
       "photo": null
     },
@@ -4149,6 +4525,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 120000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-377.jpg"
     },
@@ -4160,6 +4537,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 140000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-378.jpg"
     },
@@ -4171,6 +4549,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 740000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-379.jpg"
     },
@@ -4182,6 +4561,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 140000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-380.jpg"
     },
@@ -4193,6 +4573,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 135000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-381.jpg"
     },
@@ -4204,6 +4585,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -4215,6 +4597,7 @@
       "diameterMm": 10.0,
       "lengthMm": 23.0,
       "headType": "Bighead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -4226,6 +4609,7 @@
       "diameterMm": 10.0,
       "lengthMm": 25.0,
       "headType": "Bighead Kasar 1.50",
+      "price": 50000,
       "notes": null,
       "photo": null
     },
@@ -4237,6 +4621,7 @@
       "diameterMm": 10.0,
       "lengthMm": 50.0,
       "headType": "Smallhead",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -4248,6 +4633,7 @@
       "diameterMm": 10.0,
       "lengthMm": 75.0,
       "headType": "Bighead",
+      "price": 70000,
       "notes": null,
       "photo": null
     },
@@ -4259,6 +4645,7 @@
       "diameterMm": 3.0,
       "lengthMm": 0,
       "headType": "Screw Drat Kasar",
+      "price": 40000,
       "notes": null,
       "photo": null
     },
@@ -4270,6 +4657,7 @@
       "diameterMm": 4.0,
       "lengthMm": 10.0,
       "headType": "Slim",
+      "price": 14000,
       "notes": null,
       "photo": null
     },
@@ -4281,6 +4669,7 @@
       "diameterMm": 4.0,
       "lengthMm": 20.0,
       "headType": "Bighead",
+      "price": 18000,
       "notes": null,
       "photo": null
     },
@@ -4292,6 +4681,7 @@
       "diameterMm": 4.0,
       "lengthMm": 25.0,
       "headType": "Bighead",
+      "price": 19000,
       "notes": null,
       "photo": null
     },
@@ -4303,6 +4693,7 @@
       "diameterMm": 4.0,
       "lengthMm": 35.0,
       "headType": "Smallhead",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -4314,6 +4705,7 @@
       "diameterMm": 4.0,
       "lengthMm": 40.0,
       "headType": "Bighead",
+      "price": 28000,
       "notes": null,
       "photo": null
     },
@@ -4325,6 +4717,7 @@
       "diameterMm": 4.0,
       "lengthMm": 50.0,
       "headType": "Bighead",
+      "price": 70000,
       "notes": null,
       "photo": null
     },
@@ -4336,6 +4729,7 @@
       "diameterMm": 5.0,
       "lengthMm": 10.0,
       "headType": "Flathead",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -4347,6 +4741,7 @@
       "diameterMm": 5.0,
       "lengthMm": 20.0,
       "headType": "Flat Head",
+      "price": 20000,
       "notes": null,
       "photo": null
     },
@@ -4358,6 +4753,7 @@
       "diameterMm": 6.0,
       "lengthMm": 10.0,
       "headType": "Bighead",
+      "price": 14000,
       "notes": null,
       "photo": null
     },
@@ -4369,6 +4765,7 @@
       "diameterMm": 6.0,
       "lengthMm": 10.0,
       "headType": "Bighead Kecil",
+      "price": 16000,
       "notes": null,
       "photo": null
     },
@@ -4380,6 +4777,7 @@
       "diameterMm": 6.0,
       "lengthMm": 15.0,
       "headType": "Bighead Star Bintang",
+      "price": 30000,
       "notes": null,
       "photo": null
     },
@@ -4391,6 +4789,7 @@
       "diameterMm": 6.0,
       "lengthMm": 20.0,
       "headType": "Starhead",
+      "price": 32000,
       "notes": null,
       "photo": null
     },
@@ -4402,6 +4801,7 @@
       "diameterMm": 6.0,
       "lengthMm": 80.0,
       "headType": "Bighead",
+      "price": 50000,
       "notes": null,
       "photo": null
     },
@@ -4413,6 +4813,7 @@
       "diameterMm": 8.0,
       "lengthMm": 25.0,
       "headType": "Twokey",
+      "price": 36000,
       "notes": null,
       "photo": null
     },
@@ -4424,6 +4825,7 @@
       "diameterMm": 8.0,
       "lengthMm": 30.0,
       "headType": "Twokey",
+      "price": 38000,
       "notes": null,
       "photo": null
     },
@@ -4435,6 +4837,7 @@
       "diameterMm": 8.0,
       "lengthMm": 45.0,
       "headType": "Twokey",
+      "price": 45000,
       "notes": null,
       "photo": null
     },
@@ -4446,6 +4849,7 @@
       "diameterMm": 8.0,
       "lengthMm": 55.0,
       "headType": "Smallhead",
+      "price": 53000,
       "notes": null,
       "photo": null
     },
@@ -4457,6 +4861,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 50000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-405.jpg"
     },
@@ -4468,6 +4873,7 @@
       "diameterMm": 14.0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 55000,
       "notes": null,
       "photo": null
     },
@@ -4479,6 +4885,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Mur",
+      "price": 150000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-407.jpg"
     },
@@ -4490,6 +4897,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 25000,
       "notes": null,
       "photo": null
     },
@@ -4501,6 +4909,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 50000,
       "notes": null,
       "photo": null
     },
@@ -4512,6 +4921,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Perawatan",
+      "price": 17000,
       "notes": null,
       "photo": null
     },
@@ -4523,6 +4933,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 900000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-411.jpg"
     },
@@ -4534,6 +4945,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 450000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-412.jpg"
     },
@@ -4545,6 +4957,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 170000,
       "notes": "Kategori: Ninja 2Tak",
       "photo": null
     },
@@ -4556,6 +4969,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 110000,
       "notes": null,
       "photo": null
     },
@@ -4567,6 +4981,7 @@
       "diameterMm": 8.0,
       "lengthMm": 0,
       "headType": "Ring",
+      "price": 18000,
       "notes": null,
       "photo": null
     },
@@ -4578,6 +4993,7 @@
       "diameterMm": 0,
       "lengthMm": 0,
       "headType": "Sparepart",
+      "price": 580000,
       "notes": null,
       "photo": "/uploads/bolts/katalog/HX-416.jpg"
     }

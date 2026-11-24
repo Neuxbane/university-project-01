@@ -13,7 +13,7 @@
         <router-link
           v-if="auth.can('MENU_PAKET_FULL_BIKE')"
           to="/pick-list"
-          class="min-h-[48px] px-5 py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm inline-flex items-center justify-center gap-2 shrink-0 transition-all active:scale-[0.98]"
+          class="min-h-[48px] px-5 py-3 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm inline-flex items-center justify-center gap-2 shrink-0 transition-all active:scale-[0.98]"
         >
           <Bike class="w-5 h-5" aria-hidden="true" />
           Paket Full Bike

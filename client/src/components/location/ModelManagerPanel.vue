@@ -143,7 +143,7 @@
             type="button"
             @click="uploadSelectedFile"
             :disabled="isUploading"
-            class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+            class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
           >
             {{ isUploading ? 'Mengunggah...' : 'Unggah & Pasang' }}
           </button>
@@ -202,7 +202,7 @@
           type="button"
           @click="uploadPastedOff"
           :disabled="isUploading || !offPreviewCheck.valid"
-          class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40 shrink-0"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40 shrink-0"
         >
           {{ isUploading ? 'Memasang...' : 'Pasang Model OFF' }}
         </button>
@@ -280,7 +280,7 @@
           type="button"
           @click="saveTransform"
           :disabled="isSavingTransform || !transformDirty"
-          class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+          class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
         >
           {{ isSavingTransform ? 'Menyimpan...' : 'Simpan Posisi Model' }}
         </button>

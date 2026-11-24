@@ -4,5 +4,6 @@ dist/
 /data/
 *.log
 .DS_Store
+~$*
 
 Paper.pdf

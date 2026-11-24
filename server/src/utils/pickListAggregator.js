@@ -113,6 +113,7 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
       positionBreakdown.push({
         positionId: linkedPosId || null,
         positionName: item.emblemNote || item.sourceRequirement?.boltPosition?.name || 'Paket Komponen',
+        positionCategory: item.sourceRequirement?.boltPosition?.category || null,
         category: selectedPackage.packageType,
         side: item.sourceRequirement?.side || 'NONE',
         boltSpec: item.boltSpec,
@@ -147,6 +148,7 @@ async function buildPickListData({ motorcycleTypeId, packageId, allowInactive = 
         positionId: reqRow.boltPosition.id,
         positionName: reqRow.boltPosition.name,
         category: reqRow.boltPosition.category,
+        positionCategory: reqRow.boltPosition.category,
         side: reqRow.side,
         boltSpec: reqRow.boltSpec,
         quantity: reqRow.quantity,

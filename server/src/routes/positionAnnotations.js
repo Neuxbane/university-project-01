@@ -3,6 +3,10 @@ const prisma = require('../db');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../middleware/audit');
 const { resolveOrCreatePosition } = require('../utils/positionHelper');
+const { PART_CATEGORIES } = require('../utils/partMarkers');
+
+// a bagian marker names one of the position categories instead of a single position
+const readCategory = (value) => (value && PART_CATEGORIES.includes(String(value)) ? String(value) : null);
 
 const router = express.Router();
 
@@ -11,6 +15,7 @@ router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (re
   try {
     const {
       boltPositionId,
+      category,
       customAreaName,
       customAreaCategory,
       motorcycleTypeId,
@@ -26,8 +31,12 @@ router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (re
       quantity,
     } = req.body;
 
-    if ((!boltPositionId && !customAreaName) || !motorcycleTypeId || x === undefined || y === undefined) {
-      return res.status(400).json({ error: 'Area/posisi baut, tipe motor, dan koordinat (x, y) wajib diisi.' });
+    const partCategory = readCategory(category);
+    if (category && !partCategory) {
+      return res.status(400).json({ error: 'Bagian motor tidak dikenal.' });
+    }
+    if ((!partCategory && !boltPositionId && !customAreaName) || !motorcycleTypeId || x === undefined || y === undefined) {
+      return res.status(400).json({ error: 'Bagian atau area/posisi baut, tipe motor, dan koordinat (x, y) wajib diisi.' });
     }
 
     const motorId = parseInt(motorcycleTypeId, 10);
@@ -66,21 +75,24 @@ router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (re
       return res.status(400).json({ error: 'Spesifikasi baut yang dipilih tidak ditemukan.' });
     }
 
-    let positionExists;
-    try {
-      positionExists = await resolveOrCreatePosition(prisma, {
-        boltPositionId,
-        customAreaName,
-        customAreaCategory,
-        motorcycleTypeId: motorId,
-      });
-    } catch (posErr) {
-      return res.status(posErr.status || 400).json({ error: posErr.message });
+    let positionExists = null;
+    if (!partCategory) {
+      try {
+        positionExists = await resolveOrCreatePosition(prisma, {
+          boltPositionId,
+          customAreaName,
+          customAreaCategory,
+          motorcycleTypeId: motorId,
+        });
+      } catch (posErr) {
+        return res.status(posErr.status || 400).json({ error: posErr.message });
+      }
     }
 
     const created = await prisma.positionAnnotation.create({
       data: {
-        boltPositionId: positionExists.id,
+        boltPositionId: positionExists ? positionExists.id : null,
+        category: partCategory,
         motorcycleTypeId: motorId,
         modelId: parsedModelId,
         x: Number(x),
@@ -98,7 +110,7 @@ router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (re
 
     // Optionally attach bolt requirement in the same unified step
     let createdRequirement = null;
-    if (parsedSpecId !== null) {
+    if (parsedSpecId !== null && positionExists) {
       const existingReq = await prisma.motorBoltRequirement.findFirst({
         where: {
           motorcycleTypeId: motorId,
@@ -135,7 +147,7 @@ router.post('/', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (re
       action: 'CREATE',
       entity: 'POSITION_ANNOTATION',
       entityId: created.id,
-      detail: `Menandai lokasi ${created.boltPosition?.name || created.boltPositionId} pada motor ID ${created.motorcycleTypeId}`,
+      detail: `Menandai lokasi ${created.boltPosition?.name || `bagian ${created.category}`} pada motor ID ${created.motorcycleTypeId}`,
     });
 
     res.status(201).json({ ...created, ...(createdRequirement ? { createdRequirement } : {}) });
@@ -156,6 +168,7 @@ router.put('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (
 
     const {
       boltPositionId,
+      category,
       customAreaName,
       customAreaCategory,
       x,
@@ -167,8 +180,13 @@ router.put('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (
       label,
     } = req.body;
 
+    const partCategory = readCategory(category);
+    if (category && !partCategory) {
+      return res.status(400).json({ error: 'Bagian motor tidak dikenal.' });
+    }
+
     let resolvedPositionId;
-    if (boltPositionId !== undefined || customAreaName !== undefined) {
+    if (!partCategory && (boltPositionId || customAreaName)) {
       try {
         const pos = await resolveOrCreatePosition(prisma, {
           boltPositionId,
@@ -185,7 +203,9 @@ router.put('/:id', requireAuth, requirePermission('MOTORCYCLES_MANAGE'), async (
     const updated = await prisma.positionAnnotation.update({
       where: { id },
       data: {
-        ...(resolvedPositionId !== undefined ? { boltPositionId: resolvedPositionId } : {}),
+        // switching between a bagian marker and a position marker
+        ...(partCategory ? { category: partCategory, boltPositionId: null } : {}),
+        ...(resolvedPositionId !== undefined ? { boltPositionId: resolvedPositionId, category: null } : {}),
         ...(x !== undefined ? { x: Number(x) } : {}),
         ...(y !== undefined ? { y: Number(y) } : {}),
         ...(z !== undefined ? { z: Number(z) } : {}),

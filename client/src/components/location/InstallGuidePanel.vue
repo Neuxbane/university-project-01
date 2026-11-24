@@ -68,7 +68,7 @@
                 type="button"
                 :disabled="!isDirty(pos) || isSavingArrange || !pos.draftName.trim()"
                 @click="savePosition(pos)"
-                class="min-h-[36px] px-3.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold cursor-pointer disabled:opacity-30 disabled:cursor-default shrink-0"
+                class="min-h-[36px] px-3.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-ink text-xs font-semibold cursor-pointer disabled:opacity-30 disabled:cursor-default shrink-0"
               >
                 Simpan
               </button>
@@ -196,6 +196,7 @@
 </template>
 
 <script setup>
+import { markerCovers } from '../../utils/annotationCallouts';
 import { itemName } from '../../utils/itemLabel';
 import { ref, computed, watch, onMounted } from 'vue';
 import { ArrowLeft, Check, ChevronDown, ChevronUp, ListOrdered, Wrench } from 'lucide-vue-next';
@@ -252,13 +253,14 @@ const steps = computed(() => {
     byKey.set(key, step);
   }
   const closeUps = data.closeUpPhotos || [];
-  const markers = new Set((data.annotations || []).map((a) => a.boltPositionId));
   const positionsById = new Map((data.allPositions || []).map((p) => [p.id, p]));
+  const annotations = data.annotations || [];
   return [...byKey.values()].map((s) => ({
     ...s,
     closeUp: closeUps.find((c) => c.boltPositionId === s.positionId) || null,
     notes: positionsById.get(s.positionId)?.notes || '',
-    hasMarker: markers.has(s.positionId),
+    // a position marker, or the marker of its bagian
+    hasMarker: annotations.some((a) => markerCovers(a, { positionId: s.positionId, category: positionsById.get(s.positionId)?.category })),
   }));
 });
 

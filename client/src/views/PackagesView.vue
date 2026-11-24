@@ -21,7 +21,7 @@
           v-if="auth.can('PACKAGES_MANAGE')"
           type="button"
           @click="toggleCreateEditor"
-          class="min-h-[44px] px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
+          class="min-h-[44px] px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
         >
           <Plus v-if="!isEditorOpen || editingPackageId" class="w-4 h-4" aria-hidden="true" />
           <X v-else class="w-4 h-4" aria-hidden="true" />
@@ -206,7 +206,7 @@
               <button
                 type="button"
                 @click="addItemRow"
-                class="min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                class="min-h-[44px] px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus class="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Tambah Barang</span>
@@ -292,7 +292,7 @@
           <button
             type="submit"
             :disabled="isSubmittingPackage"
-            class="min-h-[44px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            class="min-h-[44px] px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-bold inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Check class="w-4 h-4" aria-hidden="true" />
             <span>{{ isSubmittingPackage ? 'Menyimpan...' : (editingPackageId ? 'Simpan Perubahan' : 'Simpan Bundling') }}</span>

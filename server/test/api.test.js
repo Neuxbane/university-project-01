@@ -89,15 +89,15 @@ describe('Hex Titanium Bolt System API Tests', () => {
   });
 
   test('4. POST /api/pick-lists/generate matches the catalog workbook (Honda Genio)', async () => {
-    // Expected values come from the seed data: motor rows from docs/Hex_Ti_Spesifikasi_Baut.xlsx whose size
-    // the shop sells, fitted with the catalog bolt of that size (Bighead, else Smallhead)
+    // Expected values come from the seed data: motor rows from docs/Hex_Ti_Spesifikasi_Baut.xlsx fitted with
+    // the catalog bolt of that size or the nearest catalog length (Bighead, else Smallhead)
     const katalog = require('../prisma/data/hexti-katalog-baut.json');
-    const { loadCatalogItems, pickCatalogItem } = require('../src/utils/catalog');
-    const catalogItems = loadCatalogItems();
+    const { loadCatalogItems } = require('../src/utils/catalog');
+    const { planMotorRows } = require('../src/utils/motorData');
     const source = katalog.motorcycles.find((m) => m.model === 'Genio');
-    const soldRows = source.requirements
-      .map((r) => ({ ...r, item: pickCatalogItem(catalogItems, katalog.specs.find((sp) => sp.code === r.specCode)) }))
-      .filter((r) => r.item);
+    const sizeSpecs = Object.fromEntries(katalog.specs.map((sp) => [sp.code, sp]));
+    const soldRows = planMotorRows(loadCatalogItems(), sizeSpecs, source);
+    assert.ok(soldRows.some((r) => /Ukuran asli/.test(r.notes || '')), 'unsold sizes come back with the nearest catalog length');
     const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
     const genio = motorcycles.find((m) => m.displayName === source.displayName);
     assert.ok(genio, `${source.displayName} should be in seeded data`);
@@ -121,9 +121,9 @@ describe('Hex Titanium Bolt System API Tests', () => {
     // A catalog item used in more than one position must be summed across those positions
     const bySpec = {};
     for (const r of soldRows) {
-      bySpec[r.item.code] = bySpec[r.item.code] || { qty: 0, positions: new Set() };
-      bySpec[r.item.code].qty += r.quantity;
-      bySpec[r.item.code].positions.add(r.position);
+      bySpec[r.itemCode] = bySpec[r.itemCode] || { qty: 0, positions: new Set() };
+      bySpec[r.itemCode].qty += r.quantity;
+      bySpec[r.itemCode].positions.add(r.position);
     }
     const [code, expected] = Object.entries(bySpec).find(([, v]) => v.positions.size > 1);
     const line = data.consolidatedTotals.find((item) => item.code === code);
@@ -1366,5 +1366,47 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.ok(overview.totals.specs >= items.length);
     assert.equal(overview.itemsByType.reduce((sum, t) => sum + t.count, 0), overview.totals.specs);
     assert.ok(overview.imageCoverage.productPhoto >= items.filter((i) => i.photo).length);
+  });
+
+  test('27. Paket Full Bike: real photo, 3D model and one marker per bagian on every motorcycle', async () => {
+    const { photos } = require('../prisma/data/motor-photos.json');
+    const { data: motorcycles } = await apiRequest('/api/motorcycles?includeInactive=true', { token: adminToken });
+    for (const photo of photos) {
+      const motor = motorcycles.find((m) => m.displayName === photo.displayName);
+      assert.ok(motor, photo.displayName);
+      // test 23 uploads a newer main photo for the Scoopy, so only require the real photo to be there
+      assert.ok(motor.images.some((img) => img.url === photo.url), `${photo.displayName} has its real photo`);
+      // tests 11 and 17 upload and delete models on the Beat Deluxe
+      if (motor.model !== 'Beat' || motor.variant !== 'Deluxe') assert.ok(motor.models?.length, `${photo.displayName} has a 3D model`);
+    }
+
+    const genioCard = motorcycles.find((m) => m.displayName === 'Honda Genio CBS / CBS-ISS');
+    assert.match(genioCard.images[0].url, /^\/uploads\/motorcycles\/foto-honda-genio/, 'the real photo is the main picture');
+
+    // estimated rows for an unmeasured motorcycle, copied from the closest measured model
+    const vario160 = motorcycles.find((m) => m.displayName === 'Honda Vario 160 CBS/ABS (2022-2026)');
+    const { data: estimated } = await apiRequest(`/api/motorcycles/${vario160.id}/requirements`, { token: staffToken });
+    assert.ok(estimated.length > 0);
+    assert.ok(estimated.every((r) => r.sizeStatus === 'CEK_FISIK' && /^Perkiraan dari Honda Vario 125/.test(r.notes)));
+
+    // one marker per bagian that has bolts; tapping it covers every position of that category
+    const genio = motorcycles.find((m) => m.displayName === 'Honda Genio CBS / CBS-ISS');
+    const { data: map } = await apiRequest(`/api/motorcycles/${genio.id}/location-map`, { token: staffToken });
+    const parts = map.annotations.filter((a) => a.category);
+    const categories = new Set(map.positionBreakdown.map((r) => r.positionCategory));
+    assert.ok(parts.length > 0 && parts.length <= 8);
+    assert.deepEqual(new Set(parts.map((a) => a.category)), categories, 'one marker for each bagian with bolts');
+    assert.ok(parts.every((a) => a.boltPositionId === null && a.modelId === map.model.id));
+
+    const point = { motorcycleTypeId: genio.id, modelId: map.model.id, x: 0.1, y: 0.5, z: -0.2 };
+    assert.equal((await apiRequest('/api/position-annotations', { method: 'POST', token: adminToken, body: { ...point, category: 'Bagian Asal' } })).status, 400);
+    assert.equal((await apiRequest('/api/position-annotations', { method: 'POST', token: staffToken, body: { ...point, category: 'Rem' } })).status, 403);
+    const created = await apiRequest('/api/position-annotations', { method: 'POST', token: adminToken, body: { ...point, category: 'Rem', label: 'Rem depan & belakang' } });
+    assert.equal(created.status, 201);
+    assert.equal(created.data.boltPositionId, null);
+    assert.equal(created.data.category, 'Rem');
+    const moved = await apiRequest(`/api/position-annotations/${created.data.id}`, { method: 'PUT', token: adminToken, body: { category: 'Knalpot', label: null } });
+    assert.equal(moved.data.category, 'Knalpot');
+    assert.equal((await apiRequest(`/api/position-annotations/${created.data.id}`, { method: 'DELETE', token: adminToken })).status, 200);
   });
 });

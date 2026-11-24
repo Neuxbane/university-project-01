@@ -133,7 +133,8 @@ model MotorcycleModel {
 
 model PositionAnnotation {
   id               Int              @id @default(autoincrement())
-  boltPositionId   Int              @map("bolt_position_id")
+  boltPositionId   Int?             @map("bolt_position_id") // one position, or null for a bagian marker
+  category         String?          // bagian marker: covers every position of this category (Lampu & Meter, Body, ...)
   motorcycleTypeId Int              @map("motorcycle_type_id")
   modelId          Int?             @map("model_id")
   x                Float
@@ -144,7 +145,7 @@ model PositionAnnotation {
   normalZ          Float            @default(1) @map("normal_z")
   label            String?
   createdAt        DateTime         @default(now()) @map("created_at")
-  boltPosition     BoltPosition     @relation(fields: [boltPositionId], references: [id], onDelete: Cascade)
+  boltPosition     BoltPosition?    @relation(fields: [boltPositionId], references: [id], onDelete: Cascade)
   motorcycleType   MotorcycleType   @relation(fields: [motorcycleTypeId], references: [id], onDelete: Cascade)
   model            MotorcycleModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
 
@@ -192,6 +193,7 @@ model BoltSpec {
   itemType     String                 @default("BAUT") @map("item_type") // BAUT, MUR, RING, EMBLEM, PART, PERAWATAN, JASA
   name         String?                // product name from the shop catalog (archived size specs have none)
   catalogNo    Int?                   @map("catalog_no") // catalog row number (code HX-<no>); new items continue the numbering
+  price        Int?                   @map("price") // product price in Rupiah from the shop catalog (Katalog_HexTi_Baut_Titanium.xlsx)
   isArchived   Boolean                @default(false) @map("is_archived") // former size specs kept only for Riwayat
   diameterMm   Decimal                @map("diameter_mm") @db.Decimal(5, 2)
   lengthMm     Decimal                @map("length_mm") @db.Decimal(6, 2)

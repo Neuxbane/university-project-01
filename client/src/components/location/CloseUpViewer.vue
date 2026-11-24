@@ -184,7 +184,7 @@
         v-if="canAnnotate"
         type="button"
         @click="pinMode = true"
-        class="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer"
+        class="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer"
       >
         Tandai Baut Sekarang
       </button>
@@ -270,7 +270,7 @@
             <button
               type="submit"
               :disabled="isSavingPin || !draftSpecId"
-              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
             >
               {{ isSavingPin ? '...' : 'Simpan' }}
             </button>

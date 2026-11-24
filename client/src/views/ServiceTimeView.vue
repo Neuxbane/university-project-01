@@ -28,7 +28,7 @@
         <button
           type="submit"
           :disabled="isSaving"
-          class="min-h-[44px] px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer disabled:opacity-50"
+          class="min-h-[44px] px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold cursor-pointer disabled:opacity-50"
         >
           {{ isSaving ? 'Menyimpan...' : 'Simpan baseline' }}
         </button>

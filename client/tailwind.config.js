@@ -27,6 +27,22 @@ export default {
           100: '#f4f4f5',
           50: '#fafafa',
         },
+        // Brand palette from the "Logo baru" — orange-on-ink, kept as an accent
+        // so the app stays clean & white-dominant.
+        brand: {
+          50: '#FFF5EB',
+          100: '#FFE9D1',
+          200: '#FFD0A3',
+          300: '#FFB066',
+          400: '#FF8A29',
+          500: '#F07000', // primary brand orange (logo)
+          600: '#E56201', // hover (logo secondary orange)
+          700: '#B84A07',
+          800: '#923A0B',
+          900: '#5B250C', // deep logo brown
+          950: '#361505',
+        },
+        ink: '#0A0806', // warm near-black from the logo
       },
       boxShadow: {
         'glow-subtle': '0 0 20px -5px rgba(255, 255, 255, 0.04)',
