@@ -34,7 +34,7 @@
             aria-hidden="true"
           ></span>
           <span>
-            Server {{ isBackendOnline ? 'Terhubung' : 'Terputus' }} &bull; Port <strong>{{ backendPort }}</strong>
+            Server {{ isBackendOnline ? 'Terhubung' : 'Terputus' }}<template v-if="backendHost"> &bull; <strong>{{ backendHost }}</strong></template>
           </span>
         </div>
       </div>
@@ -153,7 +153,7 @@ import ThemeToggle from '../components/ThemeToggle.vue';
 const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
-const { backendPort, isBackendOnline } = useSystemInfo();
+const { backendHost, isBackendOnline } = useSystemInfo();
 
 const sessionExpired = computed(() => route.query.expired === '1');
 const username = ref('');

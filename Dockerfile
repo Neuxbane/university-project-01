@@ -6,8 +6,6 @@ COPY client/package*.json ./
 RUN npm install
 
 COPY client/ ./
-ARG VITE_BACKEND_PORT=3000
-ENV VITE_BACKEND_PORT=$VITE_BACKEND_PORT
 RUN npm run build
 
 # Stage 2: Backend (Node.js + Express + Prisma) & Production App
@@ -23,9 +21,9 @@ RUN npx prisma generate
 
 COPY server/ ./
 
-# Copy built frontend from Stage 1 into /app/client/dist
-# This matches server/src/app.js path: path.join(__dirname, '../../client/dist')
-COPY --from=ui-builder /app/client/dist /app/client/dist
+# Copy built frontend from Stage 1 into /app/server/public
+# This matches server/src/app.js path: path.join(__dirname, '../public')
+COPY --from=ui-builder /app/server/public /app/server/public
 
 # Ensure uploads directory exists
 RUN mkdir -p /app/server/uploads
