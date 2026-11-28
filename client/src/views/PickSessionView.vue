@@ -197,7 +197,7 @@
               ]"
             />
             <div class="w-full sm:w-56">
-              <SearchInput v-model="searchQuery" placeholder="Cari kode atau ukuran..." aria-label="Cari baut dalam checklist" />
+              <SearchInput v-model="searchQuery" placeholder="Cari nama barang atau ukuran..." aria-label="Cari barang dalam checklist" />
             </div>
           </div>
 
@@ -235,8 +235,8 @@
                     :class="tierOf(item).cardTint"
                   >
                     <Nut class="w-9 h-9 text-zinc-300 mb-1" aria-hidden="true" />
-                    <span class="font-mono font-bold text-sm text-zinc-200">
-                      M{{ Number(item.boltSpec.diameterMm) }} × {{ formatLength(item.boltSpec.lengthMm) }}
+                    <span class="font-bold text-sm text-zinc-200 line-clamp-3 px-2 text-center">
+                      {{ itemName(item.boltSpec) }}
                     </span>
                   </div>
 
@@ -271,12 +271,13 @@
                 <!-- ~20% Compact Short Label -->
                 <div class="px-2.5 py-2 space-y-0.5">
                   <p
-                    class="font-mono text-xs font-bold truncate leading-tight"
+                    class="text-xs font-bold line-clamp-2 leading-tight"
                     :class="item.checked
                       ? 'line-through text-zinc-500 dark:text-zinc-500'
                       : 'text-zinc-900 dark:text-zinc-100'"
+                    :title="`${itemName(item.boltSpec)} (${item.boltSpec.code})`"
                   >
-                    M{{ Number(item.boltSpec.diameterMm) }}×{{ formatLength(item.boltSpec.lengthMm) }} &bull; {{ item.boltSpec.code }}
+                    {{ itemName(item.boltSpec) }}
                   </p>
                   <p class="text-[11px] text-zinc-600 dark:text-zinc-400 truncate leading-tight">
                     {{ item.positionSummary || 'Seluruh motor' }}
@@ -291,7 +292,7 @@
                   v-if="item.boltSpec?.images && item.boltSpec.images.length > 0"
                   @click.stop="openBoltPhoto(item.boltSpec)"
                   type="button"
-                  :aria-label="`Lihat foto baut ${item.boltSpec.code}`"
+                  :aria-label="`Lihat foto ${itemName(item.boltSpec)}`"
                   class="min-w-[40px] min-h-[40px] rounded-xl bg-zinc-950/80 border border-white/20 text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-zinc-900 transition-colors cursor-pointer"
                 >
                   <ImageIcon class="w-4 h-4" aria-hidden="true" />
@@ -373,7 +374,7 @@
           v-if="!isComplete"
           @click="confirmCompleteOpen = true"
           type="button"
-          class="flex-1 sm:flex-initial min-h-[48px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold rounded-xl inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          class="flex-1 sm:flex-initial min-h-[48px] px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold rounded-xl inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <Check class="w-4 h-4" aria-hidden="true" />
           Tandai Semua Diambil
@@ -421,7 +422,7 @@
 </template>
 
 <script setup>
-import { formatLength, formatOptional } from '../utils/boltSize';
+import { itemName, itemSize, itemTypeLabel } from '../utils/itemLabel';
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import {
@@ -441,7 +442,7 @@ import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { getDiameterTier } from '../utils/boltTokens';
 import { formatDateTime } from '../utils/date';
-import { resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
+import { markerLabel, resolveBoltForAnnotation, resolveChecklistStatus } from '../utils/annotationCallouts';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
 import LocationCanvas from '../components/location/LocationCanvas.vue';
 import AppShell from '../components/ui/AppShell.vue';
@@ -534,6 +535,7 @@ const filteredItems = computed(() => {
     if (!q) return true;
     const haystack = [
       item.boltSpec?.code,
+      item.boltSpec?.name,
       item.boltSpec?.headType,
       item.boltSpec?.finish,
       item.positionSummary,
@@ -544,7 +546,10 @@ const filteredItems = computed(() => {
   });
 });
 
-const tierOf = (item) => getDiameterTier(item.boltSpec?.diameterMm);
+// sized goods keep the diameter colour; a catalog item without a size shows its type instead
+const tierOf = (item) => (Number(item.boltSpec?.diameterMm) > 0
+  ? getDiameterTier(item.boltSpec.diameterMm)
+  : { ...getDiameterTier(0), label: itemTypeLabel(item.boltSpec?.itemType) });
 
 const openMotorPhoto = (motor) => {
   galleryModal.value = {
@@ -559,9 +564,9 @@ const openMotorPhoto = (motor) => {
 const openBoltPhoto = (boltSpec) => {
   galleryModal.value = {
     isOpen: true,
-    categoryTitle: 'Foto Spesifikasi Baut Titanium',
-    itemTitle: boltSpec.code,
-    itemSubtitle: `${boltSpec.headType || ''} M${Number(boltSpec.diameterMm)} × ${formatLength(boltSpec.lengthMm, 'mm')} • ${formatOptional(boltSpec.finish)}`,
+    categoryTitle: 'Foto Barang',
+    itemTitle: itemName(boltSpec),
+    itemSubtitle: [boltSpec.code, itemTypeLabel(boltSpec.itemType), itemSize(boltSpec)].filter(Boolean).join(' • '),
     images: boltSpec.images || [],
   };
 };
@@ -684,7 +689,7 @@ const toggleAnnotationItems = async (ann) => {
         await toggleItem(item);
       }
     }
-    const label = ann.label || ann.boltPosition?.name || 'Penanda baut';
+    const label = markerLabel(ann) || 'Penanda baut';
     toast.success(nextChecked ? `Ditandai sudah diambil: ${label}` : `Centang dibatalkan: ${label}`);
   } finally {
     isTogglingPoint.value = false;

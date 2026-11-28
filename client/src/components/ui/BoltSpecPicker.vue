@@ -27,8 +27,8 @@
             <Nut v-else class="w-4 h-4 text-zinc-300" aria-hidden="true" />
           </div>
           <div class="min-w-0 flex-1">
-            <span class="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
-              {{ itemLabel(selectedSpec) }}
+            <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+              {{ itemName(selectedSpec) }}
             </span>
             <span class="text-[11px] font-mono text-zinc-500 ml-1.5 truncate">
               {{ selectedSpec.code }}
@@ -109,16 +109,15 @@
             <Nut v-else class="w-4 h-4 text-zinc-300" aria-hidden="true" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="font-mono text-xs font-bold leading-tight">
-              {{ itemLabel(spec) }}
-              <span class="font-normal opacity-75 ml-1">{{ spec.headType }}</span>
+            <p class="text-xs font-bold leading-tight">
+              {{ itemName(spec) }}
             </p>
-            <p class="font-mono text-[10px] opacity-75 truncate">{{ spec.code }}</p>
+            <p class="font-mono text-[10px] opacity-75 truncate">{{ spec.code }} &bull; {{ itemTypeLabel(spec.itemType) }}</p>
           </div>
         </button>
 
         <p v-if="filteredSpecs.length === 0" class="py-3 text-center text-xs text-zinc-500">
-          Ukuran baut tidak ditemukan.
+          Barang tidak ditemukan.
         </p>
       </div>
     </div>
@@ -126,21 +125,16 @@
 </template>
 
 <script setup>
-import { formatLength } from '../../utils/boltSize';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { ChevronDown, Nut, X } from 'lucide-vue-next';
-
-// Master Barang item: bolts/nuts by size, emblems (and other goods) by name
-const itemLabel = (spec) => (spec.itemType && spec.itemType !== 'BAUT'
-  ? spec.name || spec.code
-  : `M${Number(spec.diameterMm)}×${formatLength(spec.lengthMm)}`);
+import { itemName, itemTypeLabel } from '../../utils/itemLabel';
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: '' },
   specs: { type: Array, default: () => [] },
   inputId: { type: String, default: 'bolt-spec-picker' },
   label: { type: String, default: '' },
-  placeholder: { type: String, default: '-- Pilih Baut (Foto & Ukuran) --' },
+  placeholder: { type: String, default: '-- Pilih barang (cari nama atau ukuran) --' },
   allowClear: { type: Boolean, default: true },
 });
 

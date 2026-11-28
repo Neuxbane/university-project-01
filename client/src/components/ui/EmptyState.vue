@@ -11,7 +11,7 @@
       <button
         type="button"
         @click="$emit('action')"
-        class="min-h-[44px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer active:scale-[0.98] transition-all"
+        class="min-h-[44px] px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold cursor-pointer active:scale-[0.98] transition-all"
       >
         {{ actionLabel }}
       </button>

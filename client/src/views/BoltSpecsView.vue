@@ -11,7 +11,7 @@
           Master Barang
         </h1>
         <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
-          Semua barang toko: baut dan mur (satu kartu satu ukuran, dipakai semua merek motor) serta emblem. Ketuk kartu untuk melihat foto{{ auth.can('BOLTS_MANAGE') ? ' atau mengubah ukurannya' : '' }}.
+          Semua barang toko sesuai katalog: baut, mur, ring, emblem, sparepart, oli, dan jasa. Ketuk kartu untuk melihat foto{{ auth.can('BOLTS_MANAGE') ? ' atau mengubah nama dan ukurannya' : '' }}.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2 shrink-0">
@@ -20,7 +20,7 @@
           v-if="auth.can('BOLTS_MANAGE')"
           type="button"
           @click="toggleAddForm"
-          class="min-h-[44px] px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
+          class="min-h-[44px] px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
         >
           <X v-if="showAddForm" class="w-4 h-4" aria-hidden="true" />
           <Plus v-else class="w-4 h-4" aria-hidden="true" />
@@ -29,7 +29,7 @@
       </div>
     </section>
 
-    <!-- Tambah Barang (admin): checks the size/name against Master Barang before saving -->
+    <!-- Tambah Barang: the name is checked against Master Barang before saving -->
     <section
       v-if="auth.can('BOLTS_MANAGE') && showAddForm"
       aria-labelledby="add-item-title"
@@ -37,44 +37,38 @@
     >
       <div>
         <h2 id="add-item-title" class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Tambah Barang</h2>
-        <p class="text-xs text-zinc-600 dark:text-zinc-400">Untuk melengkapi ukuran baut yang belum ada, atau menambah emblem. Sistem mengecek dulu apakah barangnya sudah tersedia.</p>
+        <p class="text-xs text-zinc-600 dark:text-zinc-400">Untuk barang yang belum ada di katalog. Sistem mengecek dulu apakah namanya sudah tersedia. Barang tanpa foto mendapat gambar ilustrasi; foto bisa ditambah setelah disimpan.</p>
       </div>
       <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Jenis barang">
-        <FilterChip v-for="k in ITEM_KINDS" :key="k.value" :label="k.label" :active="addForm.kind === k.value" @click="addForm.kind = k.value" />
+        <FilterChip v-for="k in ITEM_TYPES" :key="k.value" :label="k.label" :active="addForm.itemType === k.value" @click="addForm.itemType = k.value" />
       </div>
       <form @submit.prevent="submitAddItem" class="flex flex-wrap items-end gap-3">
-        <template v-if="addForm.kind === 'EMBLEM'">
-          <div class="flex-1 min-w-[220px]">
-            <label for="add-name" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Nama emblem</label>
-            <input id="add-name" v-model="addForm.name" type="text" required placeholder="Misal: Emblem Honda Wing Titanium" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100" />
-          </div>
-          <div class="flex-1 min-w-[220px]">
-            <label for="add-notes" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Catatan (opsional)</label>
-            <input id="add-notes" v-model="addForm.notes" type="text" placeholder="Misal: warna biru, ukuran 6 cm" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100" />
-          </div>
-        </template>
-        <template v-else>
+        <div class="flex-1 min-w-[240px]">
+          <label for="add-name" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Nama barang</label>
+          <input id="add-name" v-model="addForm.name" type="text" required :placeholder="NAME_HINTS[addForm.itemType]" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100" />
+        </div>
+        <template v-if="isSizedType(addForm.itemType)">
           <div>
             <label for="add-diameter" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Diameter Ø (mm)</label>
-            <input id="add-diameter" v-model.number="addForm.diameterMm" type="number" min="1" max="30" step="0.5" required class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100" />
+            <input id="add-diameter" v-model.number="addForm.diameterMm" type="number" min="1" max="30" step="0.5" placeholder="opsional" class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100" />
           </div>
-          <div v-if="addForm.kind === 'BAUT'">
+          <div v-if="addForm.itemType === 'BAUT'">
             <label for="add-length" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Panjang (mm)</label>
-            <input id="add-length" v-model.number="addForm.lengthMm" type="number" min="1" max="300" step="0.5" required class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100" />
+            <input id="add-length" v-model.number="addForm.lengthMm" type="number" min="1" max="300" step="0.5" placeholder="opsional" class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100" />
           </div>
         </template>
         <button
           type="submit"
-          :disabled="!addCode || Boolean(existingItem) || isAdding"
-          class="min-h-[44px] px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-default"
+          :disabled="!addForm.name.trim() || Boolean(existingItem) || isAdding"
+          class="min-h-[44px] px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-default"
         >
-          {{ isAdding ? 'Menyimpan...' : addCode ? `Simpan ${addCode}` : 'Simpan' }}
+          {{ isAdding ? 'Menyimpan...' : 'Simpan barang' }}
         </button>
         <p v-if="existingItem" role="status" class="basis-full text-sm text-amber-800 dark:text-amber-300">
-          <strong>{{ existingItem.code }}</strong> sudah ada di Master Barang.
+          <strong>{{ existingItem.name }}</strong> sudah ada di Master Barang ({{ existingItem.code }}).
           <button type="button" @click="openGallery(existingItem)" class="underline font-semibold cursor-pointer">Buka barangnya</button>
         </p>
-        <p v-else-if="addCode" class="basis-full text-xs text-emerald-700 dark:text-emerald-400">{{ addCode }} belum ada, bisa ditambahkan.</p>
+        <p v-else-if="addForm.name.trim()" class="basis-full text-xs text-emerald-700 dark:text-emerald-400">Nama ini belum ada, bisa ditambahkan.</p>
         <p v-if="addError" role="alert" class="basis-full text-xs font-medium text-rose-700 dark:text-rose-400">{{ addError }}</p>
       </form>
     </section>
@@ -98,14 +92,14 @@
     <!-- Loading -->
     <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3" role="status" aria-live="polite">
       <SkeletonCard v-for="n in 10" :key="n" />
-      <span class="sr-only">Memuat koleksi baut...</span>
+      <span class="sr-only">Memuat Master Barang...</span>
     </div>
 
-    <!-- Specs Grid -->
+    <!-- Items Grid -->
     <div v-else class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="w-full sm:max-w-sm">
-          <SearchInput v-model="specSearch" placeholder="Cari ukuran (M6x16) atau nama emblem..." aria-label="Cari barang" />
+          <SearchInput v-model="specSearch" placeholder="Cari nama barang atau ukuran (M6x20)..." aria-label="Cari barang" />
         </div>
         <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400">
           {{ filteredSpecs.length }} dari {{ specs.length }} barang
@@ -126,12 +120,21 @@
 
       <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         <ItemCard
-          v-for="s in filteredSpecs"
+          v-for="s in visibleSpecs"
           :key="s.id"
-          :item="{ ...s, quantity: s.itemType === 'EMBLEM' ? s._count?.packageItems || 0 : s._count?.requirements || 0 }"
-          :quantity-label="s.itemType === 'EMBLEM' ? 'bundling' : 'posisi'"
+          :item="{ ...s, positionName: [s.code, itemSize(s)].filter(Boolean).join(' • '), quantity: isInstallable(s) ? s._count?.requirements || 0 : s._count?.packageItems || 0 }"
+          :quantity-label="isInstallable(s) ? 'posisi' : 'bundling'"
           @select="openGallery"
         />
+      </div>
+      <div v-if="visibleSpecs.length < filteredSpecs.length" class="flex justify-center">
+        <button
+          type="button"
+          @click="pageSize += PAGE_STEP"
+          class="min-h-[44px] px-5 py-2 rounded-xl border border-zinc-400 dark:border-zinc-700 text-sm font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+        >
+          Tampilkan {{ Math.min(PAGE_STEP, filteredSpecs.length - visibleSpecs.length) }} barang lagi
+        </button>
       </div>
     </div>
 
@@ -139,10 +142,8 @@
       v-if="selectedSpecForGallery"
       :is-open="Boolean(selectedSpecForGallery)"
       category-title="Foto Barang"
-      :item-title="selectedSpecForGallery.itemType === 'EMBLEM' ? selectedSpecForGallery.name || selectedSpecForGallery.code : selectedSpecForGallery.code"
-      :item-subtitle="selectedSpecForGallery.itemType === 'EMBLEM'
-        ? `Emblem • ${selectedSpecForGallery.notes || selectedSpecForGallery.code}`
-        : `${selectedSpecForGallery.headType} M${Number(selectedSpecForGallery.diameterMm)} × ${formatLength(selectedSpecForGallery.lengthMm, 'mm')} • ${formatMaterialFinish(selectedSpecForGallery)}`"
+      :item-title="itemName(selectedSpecForGallery)"
+      :item-subtitle="[selectedSpecForGallery.code, itemTypeLabel(selectedSpecForGallery.itemType), itemSize(selectedSpecForGallery), selectedSpecForGallery.notes].filter(Boolean).join(' • ')"
       :images="selectedSpecForGallery.images || []"
       :can-manage="auth.can('BOLTS_MANAGE')"
       :upload-endpoint="`/api/bolt-specs/${selectedSpecForGallery.id}/images`"
@@ -152,53 +153,64 @@
       @close="selectedSpecForGallery = null"
       @updated="onGalleryUpdated"
     >
-      <!-- Admin: edit the size right here; the code and the size illustration follow it -->
-      <template v-if="auth.can('BOLTS_MANAGE') && selectedSpecForGallery.itemType !== 'EMBLEM'" #details>
+      <!-- Ubah Barang: name, and the size of a bolt/nut/ring; a generated picture follows the change -->
+      <template v-if="auth.can('BOLTS_MANAGE')" #details>
         <form
-          @submit.prevent="saveSize"
+          @submit.prevent="saveItem"
           class="p-3 sm:p-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#18181c] flex flex-wrap items-end gap-3"
         >
           <p class="basis-full flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            <Ruler class="w-4 h-4" aria-hidden="true" />
-            Ubah ukuran
+            <Pencil class="w-4 h-4" aria-hidden="true" />
+            Ubah barang
           </p>
-          <div>
-            <label for="size-diameter" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Diameter Ø (mm)</label>
+          <div class="flex-1 min-w-[220px]">
+            <label for="edit-name" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Nama barang</label>
             <input
-              id="size-diameter"
-              v-model.number="sizeForm.diameterMm"
-              type="number"
-              min="1"
-              max="30"
-              step="0.5"
+              id="edit-name"
+              v-model="editForm.name"
+              type="text"
               required
-              class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
+              class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100"
             />
           </div>
-          <div v-if="!isNut">
-            <label for="size-length" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Panjang (mm)</label>
-            <input
-              id="size-length"
-              v-model.number="sizeForm.lengthMm"
-              type="number"
-              min="1"
-              max="300"
-              step="0.5"
-              required
-              class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
-            />
-          </div>
-          <p v-else class="text-xs text-zinc-600 dark:text-zinc-400 pb-3">Mur tidak punya panjang.</p>
+          <template v-if="isSizedType(selectedSpecForGallery.itemType)">
+            <div>
+              <label for="edit-diameter" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Diameter Ø (mm)</label>
+              <input
+                id="edit-diameter"
+                v-model.number="editForm.diameterMm"
+                type="number"
+                min="1"
+                max="30"
+                step="0.5"
+                placeholder="–"
+                class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+            <div v-if="selectedSpecForGallery.itemType === 'BAUT'">
+              <label for="edit-length" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Panjang (mm)</label>
+              <input
+                id="edit-length"
+                v-model.number="editForm.lengthMm"
+                type="number"
+                min="1"
+                max="300"
+                step="0.5"
+                placeholder="–"
+                class="w-28 min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-[#121215] border border-zinc-400 dark:border-zinc-700 text-sm font-mono text-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+          </template>
           <button
             type="submit"
-            :disabled="!sizeChanged || isSavingSize"
-            class="min-h-[44px] px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-default"
+            :disabled="!itemChanged || isSavingItem"
+            class="min-h-[44px] px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-default"
           >
-            {{ isSavingSize ? 'Menyimpan...' : sizeChanged ? `Simpan jadi ${previewCode}` : 'Simpan ukuran' }}
+            {{ isSavingItem ? 'Menyimpan...' : 'Simpan perubahan' }}
           </button>
-          <p v-if="sizeError" role="alert" class="basis-full text-xs font-medium text-rose-700 dark:text-rose-400">{{ sizeError }}</p>
+          <p v-if="editError" role="alert" class="basis-full text-xs font-medium text-rose-700 dark:text-rose-400">{{ editError }}</p>
           <p v-else class="basis-full text-[11px] text-zinc-500 dark:text-zinc-400">
-            Dipakai di {{ selectedSpecForGallery._count?.requirements || 0 }} posisi motor; kode dan gambar ilustrasi ikut berubah.
+            Dipakai di {{ selectedSpecForGallery._count?.requirements || 0 }} posisi motor dan {{ selectedSpecForGallery._count?.packageItems || 0 }} isi bundling.
           </p>
         </form>
       </template>
@@ -207,11 +219,11 @@
 </template>
 
 <script setup>
-import { formatLength, formatMaterialFinish } from '../utils/boltSize';
-import { ref, reactive, computed, onMounted } from 'vue';
-import { Nut, Plus, Ruler, X } from 'lucide-vue-next';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { Nut, Pencil, Plus, Ruler, X } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
+import { ITEM_TYPES, itemName, itemSize, itemTypeLabel } from '../utils/itemLabel';
 import PhotoGalleryModal from '../components/PhotoGalleryModal.vue';
 import SearchInput from '../components/ui/SearchInput.vue';
 import StatPill from '../components/ui/StatPill.vue';
@@ -229,56 +241,54 @@ const selectedSpecForGallery = ref(null);
 const isLoading = ref(false);
 const errorMsg = ref('');
 
+// sized goods carry Ø (and a bolt its length); bolts, nuts and rings are the ones fitted on a motor position
+const isSizedType = (type) => ['BAUT', 'MUR', 'RING'].includes(type);
+const isInstallable = (spec) => isSizedType(spec.itemType);
+const normName = (name) => String(name || '').replace(/\s+/g, ' ').trim().toLowerCase();
+
 const typeFilter = ref('all');
 const typeChips = computed(() => [
   { value: 'all', label: 'Semua', count: specs.value.length },
-  { value: 'BAUT', label: 'Baut & mur', count: specs.value.filter((s) => s.itemType !== 'EMBLEM').length },
-  { value: 'EMBLEM', label: 'Emblem', count: specs.value.filter((s) => s.itemType === 'EMBLEM').length },
+  ...ITEM_TYPES
+    .map((t) => ({ ...t, count: specs.value.filter((s) => s.itemType === t.value).length }))
+    .filter((t) => t.count > 0),
 ]);
 
-// Tambah Barang: the code is derived the same way as on the server, so duplicates show up while typing
-const ITEM_KINDS = [
-  { value: 'BAUT', label: 'Baut' },
-  { value: 'MUR', label: 'Mur' },
-  { value: 'MUR_PEGAS', label: 'Mur pegas (klip)' },
-  { value: 'EMBLEM', label: 'Emblem' },
-];
+// Tambah Barang
+const NAME_HINTS = {
+  BAUT: 'Misal: M6x20 Bighead',
+  MUR: 'Misal: Mur 10 M6 Hexagon',
+  RING: 'Misal: Ring Titanium M6 Drat 10',
+  EMBLEM: 'Misal: Emblem Vario 160',
+  PART: 'Misal: Cover Kunci Kontak Vario 160',
+  PERAWATAN: 'Misal: Cairan Peluntur Baut A',
+  JASA: 'Misal: Jasa Bakar Emblem',
+};
 const showAddForm = ref(false);
 const isAdding = ref(false);
 const addError = ref('');
-const addForm = reactive({ kind: 'BAUT', diameterMm: null, lengthMm: null, name: '', notes: '' });
-const addCode = computed(() => {
-  if (addForm.kind === 'EMBLEM') {
-    const slug = addForm.name.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    return slug ? `EMB-${slug}` : '';
-  }
-  const d = Number(addForm.diameterMm);
-  if (!d) return '';
-  if (addForm.kind === 'BAUT') return Number(addForm.lengthMm) ? `M${d}x${Number(addForm.lengthMm)}` : '';
-  return `${addForm.kind === 'MUR_PEGAS' ? 'MUR-PEGAS' : 'MUR'}-M${d}`;
+const addForm = reactive({ itemType: 'BAUT', name: '', diameterMm: null, lengthMm: null });
+const existingItem = computed(() => {
+  const name = normName(addForm.name);
+  return name ? specs.value.find((s) => normName(s.name) === name) || null : null;
 });
-const existingItem = computed(() => (addCode.value ? specs.value.find((s) => s.code === addCode.value) || null : null));
 
 const toggleAddForm = () => {
   showAddForm.value = !showAddForm.value;
   addError.value = '';
 };
 
-const sortSpecs = () => specs.value.sort((a, b) =>
-  Number(a.itemType === 'EMBLEM') - Number(b.itemType === 'EMBLEM')
-  || Number(a.diameterMm) - Number(b.diameterMm)
-  || Number(a.lengthMm) - Number(b.lengthMm)
-  || String(a.code).localeCompare(String(b.code)));
+const sortSpecs = () => specs.value.sort((a, b) => (a.catalogNo ?? 1e9) - (b.catalogNo ?? 1e9) || String(a.code).localeCompare(String(b.code)));
 
 const submitAddItem = async () => {
-  if (!addCode.value || existingItem.value) return;
+  if (!addForm.name.trim() || existingItem.value) return;
   isAdding.value = true;
   addError.value = '';
   try {
     const res = await auth.apiFetch('/api/bolt-specs/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ itemType: addForm.kind, diameterMm: addForm.diameterMm, lengthMm: addForm.lengthMm, name: addForm.name, notes: addForm.notes }),
+      body: JSON.stringify({ ...addForm }),
     });
     const data = await res.json();
     if (res.status === 409) {
@@ -290,8 +300,8 @@ const submitAddItem = async () => {
     if (!res.ok) throw new Error(data.error || 'Gagal menambah barang.');
     specs.value.push(data);
     sortSpecs();
-    toast.success(`${data.code} ditambahkan ke Master Barang`);
-    Object.assign(addForm, { diameterMm: null, lengthMm: null, name: '', notes: '' });
+    toast.success(`${data.name} ditambahkan ke Master Barang`);
+    Object.assign(addForm, { name: '', diameterMm: null, lengthMm: null });
     openGallery(specs.value.find((s) => s.id === data.id));
   } catch (err) {
     addError.value = err.message;
@@ -300,40 +310,24 @@ const submitAddItem = async () => {
   }
 };
 
-const sizeForm = reactive({ diameterMm: null, lengthMm: null });
-const isSavingSize = ref(false);
-const sizeError = ref('');
-
 const filteredSpecs = computed(() => {
-  // "M6x16", "m6 x 16" and "6x16" all find the same size
+  // "M6x20", "m6 x 20" and "6x20" all find the same size
   const q = specSearch.value.trim().toLowerCase().replace(/\s+/g, '').replace('×', 'x');
-  const byType = typeFilter.value === 'all'
-    ? specs.value
-    : specs.value.filter((s) => (typeFilter.value === 'EMBLEM' ? s.itemType === 'EMBLEM' : s.itemType !== 'EMBLEM'));
+  const byType = typeFilter.value === 'all' ? specs.value : specs.value.filter((s) => s.itemType === typeFilter.value);
   if (!q) return byType;
   return byType.filter((s) =>
     s.code?.toLowerCase().includes(q) ||
     s.name?.toLowerCase().replace(/\s+/g, '').includes(q) ||
-    s.headType?.toLowerCase().includes(q) ||
-    s.notes?.toLowerCase().includes(q) ||
-    s.finish?.toLowerCase().includes(q)
+    itemSize(s).toLowerCase().replace(/\s+/g, '').replace('×', 'x').includes(q) ||
+    s.notes?.toLowerCase().includes(q)
   );
 });
 
-const isNut = computed(() => Number(selectedSpecForGallery.value?.lengthMm) <= 0);
-const sizeChanged = computed(() => {
-  const spec = selectedSpecForGallery.value;
-  if (!spec) return false;
-  return Number(sizeForm.diameterMm) !== Number(spec.diameterMm)
-    || (!isNut.value && Number(sizeForm.lengthMm) !== Number(spec.lengthMm));
-});
-// mirrors sizeCode() on the server (M6x16, MUR-M8, MUR-PEGAS-M5)
-const previewCode = computed(() => {
-  const spec = selectedSpecForGallery.value;
-  if (!spec) return '';
-  if (!isNut.value) return `M${Number(sizeForm.diameterMm)}x${Number(sizeForm.lengthMm)}`;
-  return `${String(spec.headType).toLowerCase().includes('pegas') ? 'MUR-PEGAS' : 'MUR'}-M${Number(sizeForm.diameterMm)}`;
-});
+// 400+ catalog items: render in pages so the grid stays quick on the shop's phones
+const PAGE_STEP = 60;
+const pageSize = ref(PAGE_STEP);
+const visibleSpecs = computed(() => filteredSpecs.value.slice(0, pageSize.value));
+watch([specSearch, typeFilter], () => { pageSize.value = PAGE_STEP; });
 
 const loadData = async () => {
   errorMsg.value = '';
@@ -353,11 +347,24 @@ const loadData = async () => {
   }
 };
 
+// Ubah Barang
+const editForm = reactive({ name: '', diameterMm: null, lengthMm: null });
+const isSavingItem = ref(false);
+const editError = ref('');
+const sizeOrNull = (v) => (Number(v) > 0 ? Number(v) : null);
+const itemChanged = computed(() => {
+  const spec = selectedSpecForGallery.value;
+  if (!spec) return false;
+  return normName(editForm.name) !== normName(spec.name)
+    || sizeOrNull(editForm.diameterMm) !== sizeOrNull(spec.diameterMm)
+    || sizeOrNull(editForm.lengthMm) !== sizeOrNull(spec.lengthMm);
+});
+
 const openGallery = (spec) => {
-  selectedSpecForGallery.value = specs.value.find((s) => s.id === spec.id) || spec;
-  sizeForm.diameterMm = Number(spec.diameterMm);
-  sizeForm.lengthMm = Number(spec.lengthMm);
-  sizeError.value = '';
+  const found = specs.value.find((s) => s.id === spec.id) || spec;
+  selectedSpecForGallery.value = found;
+  Object.assign(editForm, { name: found.name || '', diameterMm: sizeOrNull(found.diameterMm), lengthMm: sizeOrNull(found.lengthMm) });
+  editError.value = '';
 };
 
 const onGalleryUpdated = (updatedImages) => {
@@ -366,27 +373,25 @@ const onGalleryUpdated = (updatedImages) => {
   }
 };
 
-const saveSize = async () => {
+const saveItem = async () => {
   const spec = selectedSpecForGallery.value;
-  if (!spec || !sizeChanged.value) return;
-  isSavingSize.value = true;
-  sizeError.value = '';
+  if (!spec || !itemChanged.value) return;
+  isSavingItem.value = true;
+  editError.value = '';
   try {
-    const res = await auth.apiFetch(`/api/bolt-specs/${spec.id}/size`, {
+    const res = await auth.apiFetch(`/api/bolt-specs/${spec.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ diameterMm: sizeForm.diameterMm, lengthMm: sizeForm.lengthMm }),
+      body: JSON.stringify({ name: editForm.name, diameterMm: editForm.diameterMm || 0, lengthMm: editForm.lengthMm || 0 }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gagal mengubah ukuran baut.');
-    const oldCode = spec.code;
+    if (!res.ok) throw new Error(data.error || 'Gagal mengubah barang.');
     Object.assign(spec, data);
-    sortSpecs();
-    toast.success(oldCode === data.code ? `Ukuran ${data.code} disimpan` : `${oldCode} diubah menjadi ${data.code}`);
+    toast.success(`${data.name} disimpan`);
   } catch (err) {
-    sizeError.value = err.message;
+    editError.value = err.message;
   } finally {
-    isSavingSize.value = false;
+    isSavingItem.value = false;
   }
 };
 

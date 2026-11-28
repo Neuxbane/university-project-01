@@ -18,12 +18,9 @@
           </svg>
         </button>
 
-        <router-link to="/pick-list" class="min-h-[44px] px-1.5 flex items-center gap-2 min-w-0">
-          <div class="w-7 h-7 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-black text-[11px] shrink-0">
-            HX
-          </div>
-          <span class="font-bold text-xs tracking-wider uppercase text-zinc-900 dark:text-zinc-100 truncate">
-            HEX TITANIUM
+        <router-link to="/pick-list" class="min-h-[44px] px-1.5 flex items-center min-w-0" aria-label="Hex Titanium — Beranda">
+          <span class="inline-flex items-center rounded-lg bg-white dark:bg-white px-2 py-1 border border-zinc-200 dark:border-zinc-700 shrink-0">
+            <img src="/logo.png" alt="Hex Titanium" class="h-6 w-auto object-contain" />
           </span>
         </router-link>
       </div>
@@ -66,22 +63,17 @@
       <div class="p-4 flex-1 overflow-y-auto">
         <!-- Logo & Close button on Mobile -->
         <div class="flex items-center justify-between pb-4 mb-3 border-b border-zinc-200 dark:border-zinc-800">
-          <router-link :to="auth.homePath" class="flex items-center gap-2.5 min-h-[44px]">
-            <div class="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-black text-xs tracking-tighter shadow-sm shrink-0">
-              HX
-            </div>
-            <div>
-              <span class="font-bold text-xs tracking-wider uppercase text-zinc-900 dark:text-zinc-100 block leading-tight">
-                HEX TITANIUM
+          <router-link :to="auth.homePath" class="flex flex-col items-start gap-2.5 min-h-[44px]">
+            <span class="inline-flex items-center rounded-xl bg-white dark:bg-white px-2.5 py-1.5 border border-zinc-200 dark:border-zinc-700">
+              <img src="/logo.png" alt="Hex Titanium" class="h-7 w-auto object-contain" />
+            </span>
+            <div class="flex items-center gap-1.5 text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
+              <span>SISTEM GERAI</span>
+              <span aria-hidden="true">&bull;</span>
+              <span class="inline-flex items-center gap-1" :class="isBackendOnline ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="isBackendOnline ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-rose-600 dark:bg-rose-500'" aria-hidden="true"></span>
+                <span>{{ isBackendOnline ? 'Terhubung' : 'Terputus' }}</span>
               </span>
-              <div class="flex items-center gap-1.5 mt-0.5 text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
-                <span>SISTEM GERAI</span>
-                <span aria-hidden="true">&bull;</span>
-                <span class="inline-flex items-center gap-1" :class="isBackendOnline ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
-                  <span class="w-1.5 h-1.5 rounded-full" :class="isBackendOnline ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-rose-600 dark:bg-rose-500'" aria-hidden="true"></span>
-                  <span>{{ isBackendOnline ? 'Terhubung' : 'Terputus' }}</span>
-                </span>
-              </div>
             </div>
           </router-link>
 
@@ -105,7 +97,7 @@
             v-if="auth.can('MENU_DASHBOARD')"
             to="/dashboard"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/dashboard' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path === '/dashboard' ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
@@ -119,7 +111,7 @@
             v-if="auth.can('MENU_MASTER_BARANG')"
             to="/bolt-specs"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/bolt-specs' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path === '/bolt-specs' ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -132,7 +124,7 @@
             v-if="auth.can('VERIFICATION_MANAGE')"
             to="/verifikasi"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/verifikasi' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path === '/verifikasi' ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -146,7 +138,7 @@
             v-if="auth.can('MENU_PAKET_FULL_BIKE')"
             to="/pick-list"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[($route.path.startsWith('/pick-list') || $route.path.startsWith('/motorcycles') || $route.path.startsWith('/pasang')) ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[($route.path.startsWith('/pick-list') || $route.path.startsWith('/motorcycles') || $route.path.startsWith('/pasang')) ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
@@ -158,7 +150,7 @@
             v-if="auth.can('MENU_BUNDLING')"
             to="/bundling"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/bundling') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path.startsWith('/bundling') ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
@@ -170,7 +162,7 @@
             v-if="auth.can('MENU_RIWAYAT')"
             to="/history"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/history') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path.startsWith('/history') ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -184,7 +176,7 @@
             v-if="auth.can('REPORT_SERVICE_TIME')"
             to="/laporan/waktu"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/laporan') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path.startsWith('/laporan') ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -198,7 +190,7 @@
             v-if="auth.canOpenSystem"
             to="/admin/import"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path.startsWith('/admin') ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path.startsWith('/admin') ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
@@ -210,7 +202,7 @@
             v-if="auth.can('MENU_BUKU_PANDUAN')"
             to="/help/manual"
             class="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all"
-            :class="[$route.path === '/help/manual' ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
+            :class="[$route.path === '/help/manual' ? 'bg-brand-500 text-ink font-semibold shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60']"
           >
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>

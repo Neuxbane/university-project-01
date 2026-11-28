@@ -23,7 +23,7 @@
               v-if="auth.can('MOTORCYCLES_MANAGE')"
               type="button"
               @click="toggleAddForm"
-              class="min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+              class="min-h-[44px] px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <span aria-hidden="true">{{ showAddForm ? '−' : '+' }}</span>
               <span>{{ showAddForm ? 'Tutup Form' : 'Tambah Tipe Motor' }}</span>
@@ -154,7 +154,7 @@
             <button
               type="submit"
               :disabled="isSubmittingMotor"
-              class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-bold cursor-pointer disabled:opacity-40"
+              class="w-full min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-bold cursor-pointer disabled:opacity-40"
             >
               {{ isSubmittingMotor ? 'Menyimpan...' : 'Simpan Motor' }}
             </button>

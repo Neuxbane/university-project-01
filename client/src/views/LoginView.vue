@@ -12,9 +12,9 @@
       <!-- Brand Header -->
       <div class="text-center">
         <div
-          class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold font-mono text-base tracking-tight shadow-sm"
+          class="inline-flex items-center justify-center rounded-xl bg-white dark:bg-white px-3 py-2 border border-zinc-200 dark:border-zinc-700 shadow-sm"
         >
-          HX
+          <img src="/logo.png" alt="Hex Titanium" class="h-12 w-auto object-contain" />
         </div>
         <h1 class="mt-4 text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           Sistem Bengkel Hex Titanium
@@ -116,7 +116,7 @@
         <button
           type="submit"
           :disabled="isLoading"
-          class="w-full min-h-[48px] py-3 px-4 rounded-xl text-sm font-semibold text-white dark:text-zinc-950 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white shadow-sm transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          class="w-full min-h-[48px] py-3 px-4 rounded-xl text-sm font-semibold text-ink bg-brand-500 hover:bg-brand-600 dark:bg-brand-500 dark:hover:bg-brand-600 shadow-sm transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <svg
             v-if="isLoading"

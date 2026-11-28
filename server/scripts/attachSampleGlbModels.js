@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 /**
- * Attaches generated offline .glb 3D models to matching motorcycles
- * (geometry only — zero pre-seeded 3D annotations; admin marks 3D points via editor).
+ * Attaches a generated offline .glb 3D model to every motorcycle listed in generateMotorcycleGlb.js
+ * (shape by motorcycle type) and places the bagian markers (one per category of bolt positions)
+ * on it. Models, markers and annotations the admin already has are kept.
  */
 
 const path = require('path');
 const prisma = require('../src/db');
 const { generateAllModels } = require('./generateMotorcycleGlb');
+const { createPartMarkers } = require('../src/utils/partMarkers');
 
 async function attachSampleGlbModels(db = prisma, { overwrite = false } = {}) {
   const modelsDir = path.join(__dirname, '../uploads/models');
   const manifest = generateAllModels(modelsDir);
 
   let attachedModels = 0;
+  let partMarkers = 0;
 
   for (const entry of manifest) {
     const motor = await db.motorcycleType.findFirst({
-      where: {
-        displayName: { contains: entry.displayNameMatch, mode: 'insensitive' },
-      },
+      where: { displayName: entry.displayName },
       include: {
         models: { orderBy: { createdAt: 'desc' }, take: 1 },
       },
@@ -34,7 +35,7 @@ async function attachSampleGlbModels(db = prisma, { overwrite = false } = {}) {
     }
 
     if (!modelRecord) {
-      await db.motorcycleModel.create({
+      modelRecord = await db.motorcycleModel.create({
         data: {
           motorcycleTypeId: motor.id,
           modelUrl: entry.modelUrl,
@@ -44,15 +45,19 @@ async function attachSampleGlbModels(db = prisma, { overwrite = false } = {}) {
       });
       attachedModels++;
     }
+    // marker points fit the generated model only, not a model the admin uploaded
+    if (modelRecord.modelUrl === entry.modelUrl) {
+      partMarkers += await createPartMarkers(db, motor.id, modelRecord.id, entry.anchors);
+    }
   }
 
-  return { attachedModels };
+  return { attachedModels, partMarkers };
 }
 
 if (require.main === module) {
   attachSampleGlbModels(prisma)
     .then((res) => {
-      console.log(`✅ Attached ${res.attachedModels} .glb models (0 pre-seeded annotations).`);
+      console.log(`✅ Attached ${res.attachedModels} .glb models and ${res.partMarkers} bagian markers.`);
     })
     .catch((err) => {
       console.error('❌ Failed to attach sample .glb models:', err);

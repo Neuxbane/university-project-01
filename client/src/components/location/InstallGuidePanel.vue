@@ -68,7 +68,7 @@
                 type="button"
                 :disabled="!isDirty(pos) || isSavingArrange || !pos.draftName.trim()"
                 @click="savePosition(pos)"
-                class="min-h-[36px] px-3.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold cursor-pointer disabled:opacity-30 disabled:cursor-default shrink-0"
+                class="min-h-[36px] px-3.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-ink text-xs font-semibold cursor-pointer disabled:opacity-30 disabled:cursor-default shrink-0"
               >
                 Simpan
               </button>
@@ -120,7 +120,7 @@
           <strong>Posisi kritis.</strong> Pakai titanium Gr5 bersertifikat dan kencangkan sesuai torsi OEM.
         </div>
         <div v-if="step.needsCheck" class="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/30 text-sm text-amber-900 dark:text-amber-300">
-          <strong>Ukur dulu.</strong> Ukuran baut di posisi ini belum dipastikan; cocokkan dengan baut asli sebelum memasang.
+          <strong>Cek dulu.</strong> Ukuran atau jenis kepala baut di posisi ini belum dipastikan; cocokkan dengan baut asli sebelum memasang.
         </div>
 
         <ul class="space-y-2" aria-label="Baut di posisi ini">
@@ -132,7 +132,7 @@
               class="w-16 h-11 rounded-lg object-cover bg-white border border-zinc-200 dark:border-zinc-700 shrink-0"
             />
             <div class="min-w-0 flex-1 space-y-0.5">
-              <p class="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100">{{ sizeText(row.boltSpec) }}</p>
+              <p class="text-base font-bold text-zinc-900 dark:text-zinc-100">{{ itemName(row.boltSpec) }}</p>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 truncate">
                 <span v-if="row.side && row.side !== 'NONE'" class="font-semibold">{{ formatSideLabel(row.side) }} &bull; </span>{{ oemText(row.notes) }}
               </p>
@@ -196,12 +196,13 @@
 </template>
 
 <script setup>
+import { markerCovers } from '../../utils/annotationCallouts';
+import { itemName } from '../../utils/itemLabel';
 import { ref, computed, watch, onMounted } from 'vue';
 import { ArrowLeft, Check, ChevronDown, ChevronUp, ListOrdered, Wrench } from 'lucide-vue-next';
 import { useAuthStore } from '../../stores/auth';
 import { useToast } from '../../composables/useToast';
 import { formatSideLabel } from '../../utils/boltTokens';
-import { formatLength } from '../../utils/boltSize';
 import ProgressBar from '../ui/ProgressBar.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import BoltFlags from '../ui/BoltFlags.vue';
@@ -229,7 +230,6 @@ const isArranging = ref(props.startArranging && auth.can('MOTORCYCLES_MANAGE'));
 const arrangeRows = ref([]);
 const isSavingArrange = ref(false);
 
-const sizeText = (spec) => (Number(spec.lengthMm) > 0 ? `M${Number(spec.diameterMm)} × ${formatLength(spec.lengthMm)}` : `${spec.headType} M${Number(spec.diameterMm)}`);
 // requirement notes look like "OEM: 96001-06035-07 Flange x13 · Zona: KASAR · ..."; the OEM part is what helps at the bike
 const oemText = (notes) => (String(notes || '').split(' · ')[0] || '').replaceAll(' [cek fisik]', '');
 
@@ -253,13 +253,14 @@ const steps = computed(() => {
     byKey.set(key, step);
   }
   const closeUps = data.closeUpPhotos || [];
-  const markers = new Set((data.annotations || []).map((a) => a.boltPositionId));
   const positionsById = new Map((data.allPositions || []).map((p) => [p.id, p]));
+  const annotations = data.annotations || [];
   return [...byKey.values()].map((s) => ({
     ...s,
     closeUp: closeUps.find((c) => c.boltPositionId === s.positionId) || null,
     notes: positionsById.get(s.positionId)?.notes || '',
-    hasMarker: markers.has(s.positionId),
+    // a position marker, or the marker of its bagian
+    hasMarker: annotations.some((a) => markerCovers(a, { positionId: s.positionId, category: positionsById.get(s.positionId)?.category })),
   }));
 });
 

@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
-const { writeSizeIllustration, sizeCaption } = require('../src/utils/sizeIllustration');
+const { loadCatalogItems, upsertCatalog } = require('../src/utils/catalog');
+const { planMotorRows, applyMotorRows, rebuildMotorBundlings, copySiblingRows } = require('../src/utils/motorData');
 const { PERMISSION_CATALOG } = require('../src/utils/permissions');
 const bcrypt = require('bcryptjs');
 
@@ -170,26 +171,18 @@ async function main() {
   }
   console.log(`✅ Seeded ${motorcyclesData.length} existing motorcycle types (no sample bolt data).`);
 
-  // 5. Catalog data from docs/Hex_Ti_Spesifikasi_Baut.xlsx
-  //    (converted once by scripts/xlsx_to_seed_json.py into prisma/data/hexti-katalog-baut.json)
-  const katalog = require('./data/hexti-katalog-baut.json');
+  // 5. Master Barang = the shop's product catalog (seeder/Katalog_HexTi_Baut_Titanium.xlsx, converted by
+  //    scripts/katalog_xlsx_to_json.py): every product by name with its catalog photo or a generated picture.
+  const catalogItems = loadCatalogItems();
+  const catalogSpecs = await upsertCatalog(prisma, catalogItems);
+  console.log(`✅ Seeded ${catalogItems.length} Master Barang items from the shop catalog.`);
 
-  // 5a. Bolt specifications: one per size, shared by every brand (M{diameter}x{length}; nuts MUR-M{d} / MUR-PEGAS-M{d}, length 0)
-  const specsMap = {};
-  for (const s of katalog.specs) {
-    const data = {
-      code: s.code,
-      diameterMm: s.diameterMm,
-      lengthMm: s.lengthMm,
-      headType: s.headType,
-      threadPitch: s.threadPitch,
-      material: s.material,
-      finish: s.finish,
-      notes: s.notes,
-    };
-    specsMap[s.code] = await prisma.boltSpec.upsert({ where: { code: s.code }, update: data, create: data });
-  }
-  console.log(`✅ Seeded ${katalog.specs.length} bolt specifications from the catalog workbook.`);
+  // Motor data (positions, bolt sizes per position, Zona) from docs/Hex_Ti_Spesifikasi_Baut.xlsx
+  // (converted by scripts/xlsx_to_seed_json.py). Each size row is fitted with the catalog bolt of that size,
+  // else the nearest catalog length (Bighead, else Smallhead; M6/M8 nuts with the hexagon nut), and marked
+  // CEK FISIK; rows with nothing close enough are left out (owner's decisions, 23-24 Nov 2026).
+  const katalog = require('./data/hexti-katalog-baut.json');
+  const sizeSpecs = Object.fromEntries(katalog.specs.map((sp) => [sp.code, sp]));
 
   // 5b. Catalog motorcycles with their own positions and requirement matrix
   const catalogMotors = [];
@@ -223,115 +216,33 @@ async function main() {
       positionCount += 1;
     }
 
-    const requirementRows = [];
-    for (const r of m.requirements) {
-      const key = {
-        motorcycleTypeId: moto.id,
-        boltPositionId: positionsByName[r.position].id,
-        boltSpecId: specsMap[r.specCode].id,
-        side: r.side,
-      };
-      const data = { quantity: r.quantity, isOptional: r.isOptional, isCritical: r.isCritical, sortOrder: r.sortOrder, notes: r.notes };
-      // sizeStatus only on create: a size the owner already verified must not flip back to CEK_FISIK on reseed
-      const row = await prisma.motorBoltRequirement.upsert({
-        where: { motorcycleTypeId_boltPositionId_boltSpecId_side: key },
-        update: data,
-        create: { ...key, ...data, sizeStatus: r.sizeStatus },
-      });
-      requirementRows.push({ row, source: r });
-      requirementCount += 1;
-    }
+    const plannedRows = planMotorRows(catalogItems, sizeSpecs, m);
+    const requirementRows = await applyMotorRows(prisma, moto, m, plannedRows, catalogSpecs);
+    requirementCount += requirementRows.length;
     catalogMotors.push({ moto, catalog: m, requirementRows });
   }
   console.log(`✅ Seeded ${katalog.motorcycles.length} catalog motorcycles, ${positionCount} positions, ${requirementCount} requirement rows.`);
 
   // 5c. Bundlings derived from the workbook: "Bundling Full Bike" = all Scope DEFAULT rows (README),
   //     plus Bodi Halus / Bodi Kasar = the same DEFAULT rows split by the Zona column. Prices are set by the owner.
-  const packageDefs = [
-    { name: 'Bundling Full Bike', packageType: 'Bundling Full Bike', zona: null, description: 'Semua baut bagian terlihat / body luar.' },
-    { name: 'Bodi Halus', packageType: 'Bodi Halus', zona: 'HALUS', description: 'Baut zona halus: panel, cover, lampu, jok, spakbor.' },
-    { name: 'Bodi Kasar', packageType: 'Bodi Kasar', zona: 'KASAR', description: 'Baut zona kasar: cover mesin & CVT, rem, rangka, knalpot, stang.' },
-  ];
   let packageCount = 0;
   for (const { moto, catalog, requirementRows } of catalogMotors) {
-    for (const def of packageDefs) {
-      const items = requirementRows
-        .map(({ row, source }) => {
-          const byZona = source.defaultQtyByZona || {};
-          const quantity = def.zona ? (byZona[def.zona] || 0) : Object.values(byZona).reduce((a, b) => a + b, 0);
-          return { boltSpecId: row.boltSpecId, sourceRequirementId: row.id, quantity, emblemNote: source.position };
-        })
-        .filter((item) => item.quantity > 0);
-      if (items.length === 0) continue;
-
-      const name = `${def.name} ${catalog.model} ${catalog.variant}`;
-      const pkgData = { packageType: def.packageType, name, description: def.description, status: 'ACTIVE' };
-      const existingPkg = await prisma.package.findFirst({ where: { motorcycleTypeId: moto.id, name } });
-      if (existingPkg) {
-        await prisma.package.update({ where: { id: existingPkg.id }, data: pkgData });
-        await prisma.packageItem.deleteMany({ where: { packageId: existingPkg.id } });
-        await prisma.packageItem.createMany({ data: items.map((item) => ({ ...item, packageId: existingPkg.id })) });
-      } else {
-        await prisma.package.create({ data: { ...pkgData, motorcycleTypeId: moto.id, items: { create: items } } });
-      }
-      packageCount += 1;
-    }
+    packageCount += await rebuildMotorBundlings(prisma, moto, catalog, requirementRows);
   }
   console.log(`✅ Seeded ${packageCount} bundlings (Bundling Full Bike / Bodi Halus / Bodi Kasar) from Scope & Zona columns.`);
 
-  // 5d. Product photos (colours named by the owner) on every size the catalog uses with a flange head
-  const flangeCodes = new Set(katalog.boltPhotos.specCodes);
-  let photoCount = 0;
-  for (const s of katalog.specs) {
-    if (!flangeCodes.has(s.code)) continue;
-    for (const img of katalog.boltPhotos.images) {
-      const exists = await prisma.boltImage.findFirst({ where: { boltSpecId: specsMap[s.code].id, url: img.url } });
-      if (!exists) {
-        await prisma.boltImage.create({
-          data: { boltSpecId: specsMap[s.code].id, url: img.url, caption: img.caption, isPrimary: img.isPrimary },
-        });
-        photoCount += 1;
-      }
-    }
-  }
-  console.log(`✅ Attached ${photoCount} colour photos (Blue Relaxa, Pink, Rosegold, Green) to flange sizes.`);
+  // 5c'. Unmeasured motorcycles get the rows of the closest measured model as an estimate (CEK FISIK)
+  const siblings = await copySiblingRows(prisma);
+  console.log(`✅ Estimated Paket Full Bike rows for ${siblings.length} motorcycles from a similar measured model.`);
 
-  // 5e. Size illustrations (src/utils/sizeIllustration.js), one file per size spec: uploads/bolts/ukuran/<code>.svg.
-  // Files are (re)written from the spec's size; the image is primary only when the spec has no primary photo yet.
-  let sizeImageCount = 0;
-  for (const s of katalog.specs) {
-    const boltSpecId = specsMap[s.code].id;
-    const url = writeSizeIllustration(s);
-    const exists = await prisma.boltImage.findFirst({ where: { boltSpecId, url } });
-    if (exists) continue;
-    const hasPrimary = await prisma.boltImage.count({ where: { boltSpecId, isPrimary: true } });
-    await prisma.boltImage.create({
-      data: { boltSpecId, url, caption: sizeCaption(s), isPrimary: hasPrimary === 0 },
-    });
-    sizeImageCount += 1;
-  }
-  console.log(`✅ Attached size illustrations to ${sizeImageCount} size specifications.`);
-
-  // 5f. Motorcycle side views (uploads/motorcycles) and 3D .glb models (uploads/models, scripts/generateMotorcycleGlb.js)
+  // 5d. Real photo per motorcycle (prisma/data/motor-photos.json) and 3D .glb models (scripts/generateMotorcycleGlb.js)
   //     for the motorcycles they were made for. Existing images, models and admin 3D annotations are kept.
-  const motorMedia = [
-    { match: 'Yamaha NMAX 155 Connected', url: '/uploads/motorcycles/yamaha-nmax-155.svg', caption: 'Tampak Samping Kiri (Titik CVT & Bodi)' },
-    { match: 'Honda Vario 160 CBS/ABS', url: '/uploads/motorcycles/honda-vario-160.svg', caption: 'Tampak Samping Kiri & Bak Mesin eSP+' },
-    { match: 'Yamaha Aerox 155 Connected', url: '/uploads/motorcycles/yamaha-aerox-155.svg', caption: 'Tampak Samping Kiri Sport Matic VVA' },
-  ];
-  let motorImageCount = 0;
-  for (const media of motorMedia) {
-    const motor = await prisma.motorcycleType.findFirst({ where: { displayName: { contains: media.match, mode: 'insensitive' } } });
-    if (!motor || await prisma.motorcycleImage.findFirst({ where: { motorcycleTypeId: motor.id, url: media.url } })) continue;
-    const hasPrimary = await prisma.motorcycleImage.count({ where: { motorcycleTypeId: motor.id, isPrimary: true } });
-    await prisma.motorcycleImage.create({
-      data: { motorcycleTypeId: motor.id, url: media.url, caption: media.caption, isPrimary: hasPrimary === 0 },
-    });
-    motorImageCount += 1;
-  }
+  const { attachMotorPhotos } = require('../scripts/attachMotorPhotos');
+  const photoSummary = await attachMotorPhotos(prisma);
+  const motorImageCount = photoSummary.attached;
   const { attachSampleGlbModels } = require('../scripts/attachSampleGlbModels');
   const glbSummary = await attachSampleGlbModels(prisma, { overwrite: false });
-  console.log(`✅ Attached ${motorImageCount} motorcycle photos and ${glbSummary.attachedModels} 3D .glb models (existing models & annotations preserved).`);
+  console.log(`✅ Attached ${motorImageCount} motorcycle photos, ${glbSummary.attachedModels} 3D .glb models and ${glbSummary.partMarkers} bagian markers (existing models & annotations preserved).`);
 
   if (process.argv.includes('--with-demo-annotations')) {
     const { seedDemoAnnotations } = require('../scripts/seedDemoAnnotations');

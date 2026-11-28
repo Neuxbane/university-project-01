@@ -102,8 +102,8 @@
         <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Memuat model 3D motor...</p>
       </div>
 
-      <!-- Top-Right 3D Controls (hidden while FocusedPartOverlay is open) -->
-      <div v-if="!(activeAnnotation && !annotationMode)" class="absolute top-3 right-3 z-30 flex items-center gap-2">
+      <!-- Top-Right 3D Controls (hidden while the close-up photo overlay is open) -->
+      <div v-if="!showCloseUpOverlay" class="absolute top-3 right-3 z-30 flex items-center gap-2">
         <button
           type="button"
           @click="onManualResetClick"
@@ -164,14 +164,29 @@
         </div>
       </template>
 
-      <!-- Projected 3D Hotspot Markers (hidden when focused or occluded) -->
-      <template v-if="!(activeAnnotation && !annotationMode)">
+      <!-- Tapped marker: name + back to the whole motorcycle; its item list is shown under the model -->
+      <div
+        v-if="activeAnnotation && !annotationMode && !showCloseUpOverlay"
+        class="absolute top-3 left-3 z-30 max-w-[60%] flex items-center gap-2 pl-3 pr-1 py-1 rounded-xl bg-amber-50/95 dark:bg-zinc-900/95 border border-amber-300 dark:border-amber-500/40 shadow-md backdrop-blur-sm"
+      >
+        <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ markerLabel(activeAnnotation) || 'Posisi' }}</span>
+        <button
+          type="button"
+          @click="closeFocus"
+          class="min-h-[36px] px-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 whitespace-nowrap cursor-pointer"
+        >
+          Semua bagian
+        </button>
+      </div>
+
+      <!-- Projected 3D Hotspot Markers (hidden behind the close-up photo overlay or when occluded) -->
+      <template v-if="!showCloseUpOverlay">
         <template v-for="proj in projectedHotspots" :key="proj.annotation.id">
           <button
             v-if="proj.visible && !proj.occluded"
             type="button"
             @click.stop="onHotspotClick(proj.annotation)"
-            :aria-label="`Penanda ${proj.index}: ${proj.annotation.label || proj.annotation.boltPosition?.name || 'Baut'}`"
+            :aria-label="`Penanda ${proj.index}: ${markerLabel(proj.annotation) || 'Baut'}`"
             :aria-pressed="activeAnnotation?.id === proj.annotation.id"
             class="absolute -translate-x-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full cursor-pointer transition-transform duration-100 focus-visible:ring-2 focus-visible:ring-amber-400 z-20"
             :class="activeAnnotation?.id === proj.annotation.id ? 'scale-110 z-30' : 'hover:scale-110'"
@@ -219,7 +234,7 @@
         leave-to-class="opacity-0 scale-[0.98]"
       >
         <FocusedPartOverlay
-          v-if="activeAnnotation && !annotationMode"
+          v-if="showCloseUpOverlay"
           :annotation="activeAnnotation"
           :close-up-photos="closeUpPhotos"
           :motorcycle="motorcycle"
@@ -249,6 +264,19 @@
       </div>
     </div>
 
+    <!-- Item list of the tapped marker, under the model so the 3D view and the list scroll separately -->
+    <PartBoltList
+      v-if="activeAnnotation && !annotationMode && !showCloseUpOverlay"
+      ref="partListRef"
+      :annotation="activeAnnotation"
+      :position-breakdown="positionBreakdown"
+      :bolts="bolts"
+      :session-items="sessionItems"
+      :is-toggling-check="isTogglingCheck"
+      @close="closeFocus"
+      @toggle-spec-check="$emit('toggle-spec-check', $event)"
+    />
+
     <!-- Compact Empty 3D Annotations Bar (below 3D viewport so model stays unobstructed) -->
     <div
       v-if="!isModelLoading && annotations3D.length === 0 && !annotationMode"
@@ -261,15 +289,48 @@
         v-if="canAnnotate"
         type="button"
         @click.stop="$emit('enable-annotation')"
-        class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer transition-colors shrink-0"
+        class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer transition-colors shrink-0"
       >
         Tandai Lokasi Sekarang
       </button>
     </div>
 
-    <!-- Position checklist: always visible so the list never disappears -->
+    <!-- Daftar per Bagian: one tappable entry per part; tapping lists its bolts (no need to tap the 3D) -->
     <div
-      v-if="!annotationMode && positions.length > 0"
+      v-if="!annotationMode && partGroups.length > 0"
+      class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215]"
+    >
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <p class="text-xs font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+          Bagian Motor ({{ partGroups.length }})
+        </p>
+        <span class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
+          Ketuk untuk melihat bautnya
+        </span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button
+          v-for="part in partGroups"
+          :key="part.category"
+          type="button"
+          @click="selectPart(part.category)"
+          :aria-pressed="activeAnnotation?.category === part.category"
+          class="min-h-[44px] px-3 py-2 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer"
+          :class="activeAnnotation?.category === part.category
+            ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40'
+            : 'bg-zinc-50 dark:bg-[#18181c] border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600'"
+        >
+          <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ part.label }}</span>
+          <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
+            {{ part.pcs }} pcs
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Daftar Posisi (admin, annotation mode): per-position marking aid moved out of the main view -->
+    <div
+      v-if="annotationMode && canAnnotate && positions.length > 0"
       class="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215]"
     >
       <div class="flex items-center justify-between gap-2 mb-2">
@@ -281,34 +342,24 @@
         </span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <component
-          :is="canAnnotate ? 'button' : 'div'"
+        <button
           v-for="p in positions"
           :key="`pos-${p.id}`"
-          :type="canAnnotate ? 'button' : undefined"
-          @click="canAnnotate ? startAnnotatePosition(p) : undefined"
-          class="min-h-[44px] px-3 py-2 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors"
-          :class="[
-            canAnnotate ? 'cursor-pointer' : '',
-            hasAnnotation(p.id)
-              ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30'
-              : canAnnotate
-                ? 'bg-zinc-50 dark:bg-[#18181c] border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'
-                : 'bg-zinc-50 dark:bg-[#18181c] border-zinc-200 dark:border-zinc-800'
-          ]"
+          type="button"
+          @click="startAnnotatePosition(p)"
+          class="min-h-[44px] px-3 py-2 rounded-xl border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer"
+          :class="hasAnnotation(p.id)
+            ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30'
+            : 'bg-zinc-50 dark:bg-[#18181c] border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'"
         >
           <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{{ p.name }}</span>
           <span
             class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
-            :class="hasAnnotation(p.id)
-              ? 'bg-emerald-600 text-white'
-              : canAnnotate
-                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'"
+            :class="hasAnnotation(p.id) ? 'bg-emerald-600 text-white' : 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'"
           >
-            {{ hasAnnotation(p.id) ? 'SUDAH' : canAnnotate ? 'TANDAI' : 'BELUM' }}
+            {{ hasAnnotation(p.id) ? 'SUDAH' : 'TANDAI' }}
           </span>
-        </component>
+        </button>
       </div>
     </div>
 
@@ -336,6 +387,7 @@
 </template>
 
 <script setup>
+import { markerCovers, markerLabel, PART_LABELS } from '../../utils/annotationCallouts';
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -357,6 +409,7 @@ import {
 } from '../../utils/cinematicCamera';
 import LocationCanvas from './LocationCanvas.vue';
 import FocusedPartOverlay from './FocusedPartOverlay.vue';
+import PartBoltList from './PartBoltList.vue';
 import AutoCalloutCard from './AutoCalloutCard.vue';
 import LeaderLine from './LeaderLine.vue';
 import AnnotationEditor from './AnnotationEditor.vue';
@@ -416,13 +469,53 @@ const draftProjected = ref(null);
 const pendingPositionId = ref(null);
 const effectiveInitialPositionId = computed(() => pendingPositionId.value || props.initialPositionId || null);
 
-const annotatedPositionIds = computed(
-  () => new Set(annotations3D.value.map((a) => a.boltPositionId))
-);
+// positions with a marker of their own or a marker for their whole bagian
+const annotatedPositionIds = computed(() => new Set(
+  (props.positions || [])
+    .filter((p) => annotations3D.value.some((a) => markerCovers(a, { positionId: p.id, category: p.category })))
+    .map((p) => p.id)
+));
 const annotatedPositionCount = computed(
   () => (props.positions || []).filter((p) => annotatedPositionIds.value.has(p.id)).length
 );
 const hasAnnotation = (positionId) => annotatedPositionIds.value.has(positionId);
+
+// Bagian (part) list shown under the model: one tappable entry per category of bolt positions.
+// Tapping one selects it and lists its bolts, so staff don't have to tap the marker on the 3D.
+const PART_ORDER = Object.keys(PART_LABELS);
+const partGroups = computed(() => {
+  const map = new Map();
+  for (const row of props.positionBreakdown || []) {
+    const cat = row.positionCategory || row.category;
+    if (!cat) continue;
+    if (!map.has(cat)) map.set(cat, { category: cat, positionIds: new Set(), specIds: new Set(), pcs: 0 });
+    const g = map.get(cat);
+    g.positionIds.add(row.positionId ?? row.positionName);
+    if (row.boltSpec?.id) g.specIds.add(row.boltSpec.id);
+    g.pcs += Number(row.quantity || 0);
+  }
+  return [...map.values()].map((g) => ({
+    category: g.category,
+    label: PART_LABELS[g.category] || g.category,
+    positionCount: g.positionIds.size,
+    specCount: g.specIds.size,
+    pcs: g.pcs,
+  })).sort((a, b) => {
+    const ia = PART_ORDER.indexOf(a.category);
+    const ib = PART_ORDER.indexOf(b.category);
+    if (ia === -1 && ib === -1) return a.label.localeCompare(b.label);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+});
+
+// Selecting a part from the list focuses its 3D marker (so it highlights) and opens its bolt list.
+const selectPart = (category) => {
+  const ann = annotations3D.value.find((a) => a.category === category)
+    || { id: `part-${category}`, category, label: PART_LABELS[category] || category };
+  onHotspotClick(ann);
+};
 
 const startAnnotatePosition = (position) => {
   pendingPositionId.value = position.id;
@@ -1315,6 +1408,30 @@ function initThree() {
 const onHotspotClick = (ann) => {
   emit('select-annotation', ann);
 };
+
+// The close-up photo overlay (bolt pins on a part photo) only opens for a position that has one;
+// any other marker keeps the 3D model visible and lists its items under it.
+const showCloseUpOverlay = computed(() => {
+  const ann = props.activeAnnotation;
+  if (!ann || props.annotationMode || ann.category || !ann.boltPositionId) return false;
+  return (props.closeUpPhotos || []).some((c) => c.boltPositionId === ann.boltPositionId && c.pins?.length);
+});
+
+const partListRef = ref(null);
+const closeFocus = () => {
+  emit('clear-selection');
+  onManualResetClick();
+};
+
+// tapping a marker brings its item list into view (on a phone the list sits below the model)
+watch(
+  () => props.activeAnnotation?.id,
+  async (id) => {
+    if (!id || showCloseUpOverlay.value) return;
+    await nextTick();
+    partListRef.value?.headerRef?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+);
 
 watch(isDark, updateSceneBackground);
 

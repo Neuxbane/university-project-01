@@ -89,9 +89,15 @@ describe('Hex Titanium Bolt System API Tests', () => {
   });
 
   test('4. POST /api/pick-lists/generate matches the catalog workbook (Honda Genio)', async () => {
-    // Expected values come from the seed data converted from docs/Hex_Ti_Spesifikasi_Baut.xlsx
+    // Expected values come from the seed data: motor rows from docs/Hex_Ti_Spesifikasi_Baut.xlsx fitted with
+    // the catalog bolt of that size or the nearest catalog length (Bighead, else Smallhead)
     const katalog = require('../prisma/data/hexti-katalog-baut.json');
+    const { loadCatalogItems } = require('../src/utils/catalog');
+    const { planMotorRows } = require('../src/utils/motorData');
     const source = katalog.motorcycles.find((m) => m.model === 'Genio');
+    const sizeSpecs = Object.fromEntries(katalog.specs.map((sp) => [sp.code, sp]));
+    const soldRows = planMotorRows(loadCatalogItems(), sizeSpecs, source);
+    assert.ok(soldRows.some((r) => /Ukuran asli/.test(r.notes || '')), 'unsold sizes come back with the nearest catalog length');
     const { data: motorcycles } = await apiRequest('/api/motorcycles', { token: staffToken });
     const genio = motorcycles.find((m) => m.displayName === source.displayName);
     assert.ok(genio, `${source.displayName} should be in seeded data`);
@@ -106,16 +112,18 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.equal(data.motorcycle.id, genio.id);
     assert.ok(data.positionBreakdown.length > 0, 'Position breakdown should not be empty');
 
-    // Total pcs must equal the workbook total for this catalog
-    const expectedTotal = source.requirements.reduce((sum, r) => sum + r.quantity, 0);
+    // Total pcs must equal the workbook total of the sizes the shop sells
+    const expectedTotal = soldRows.reduce((sum, r) => sum + r.quantity, 0);
     assert.equal(data.summary.totalQuantity, expectedTotal);
+    // every fitted catalog bolt still needs its head variant confirmed
+    assert.ok(data.consolidatedTotals.every((b) => b.needsCheck && b.name));
 
-    // A spec used in more than one position must be summed across those positions
+    // A catalog item used in more than one position must be summed across those positions
     const bySpec = {};
-    for (const r of source.requirements) {
-      bySpec[r.specCode] = bySpec[r.specCode] || { qty: 0, positions: new Set() };
-      bySpec[r.specCode].qty += r.quantity;
-      bySpec[r.specCode].positions.add(r.position);
+    for (const r of soldRows) {
+      bySpec[r.itemCode] = bySpec[r.itemCode] || { qty: 0, positions: new Set() };
+      bySpec[r.itemCode].qty += r.quantity;
+      bySpec[r.itemCode].positions.add(r.position);
     }
     const [code, expected] = Object.entries(bySpec).find(([, v]) => v.positions.size > 1);
     const line = data.consolidatedTotals.find((item) => item.code === code);
@@ -1029,8 +1037,8 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.ok(totals.totalPcs > 0);
     assert.equal(sum(data.pcsByMotorcycle, 'pcs'), totals.totalPcs, 'per-motorcycle pcs add up to the total');
     assert.equal(sum(data.pcsByCategory, 'pcs'), totals.totalPcs, 'per-area pcs add up to the total');
-    assert.equal(sum(data.specsByDiameter, 'count'), totals.specs);
-    assert.equal(sum(data.specsByBrandCount, 'count'), totals.specsInUse, 'every used size is counted once');
+    assert.equal(sum(data.specsByDiameter, 'count'), specs.filter((s) => s.itemType === 'BAUT' && Number(s.diameterMm) > 0).length, 'sized bolts per diameter');
+    assert.equal(sum(data.itemsByType, 'count'), totals.specs, 'every item counted once per type');
     const { productPhoto, illustrationOnly, none } = data.imageCoverage;
     assert.equal(productPhoto + illustrationOnly + none, totals.specs);
     assert.ok(data.topSpecs.length <= 10);
@@ -1075,46 +1083,59 @@ describe('Hex Titanium Bolt System API Tests', () => {
     assert.notEqual(report.data.summary.improvementPercent, null);
   });
 
-  test('21. Master Baut size edit: code and size illustration follow the new size', async () => {
+  test('21. Ubah Barang: name and size of a catalog item; a generated picture follows, a product photo stays', async () => {
     const { data: specs } = await apiRequest('/api/bolt-specs', { token: adminToken });
-    const spec = specs.find((s) => s.code === 'M3x14');
-    assert.ok(spec, 'catalog size M3x14 exists');
+    const spec = specs.find((s) => s.name === 'M6x25 Bighead');
+    assert.ok(spec, 'catalog item M6x25 Bighead exists');
+    assert.ok(spec.images.some((img) => img.url === '/uploads/bolts/ukuran/M6x25.svg'), 'no catalog photo: shared size drawing');
 
-    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: staffToken, body: { diameterMm: 3, lengthMm: 15 } })).status, 403);
-    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 0 } })).status, 400);
-    // a size that already exists is refused instead of creating a duplicate
-    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 16 } })).status, 409);
+    const body = { name: 'M6x26 Bighead Uji', diameterMm: 6, lengthMm: 26 };
+    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}`, { method: 'PATCH', token: staffToken, body })).status, 403);
+    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}`, { method: 'PATCH', token: adminToken, body: { ...body, name: ' ' } })).status, 400);
+    // a name that already exists is refused instead of creating a duplicate
+    assert.equal((await apiRequest(`/api/bolt-specs/${spec.id}`, { method: 'PATCH', token: adminToken, body: { ...body, name: 'm6x30  BIGHEAD' } })).status, 409);
 
-    const changed = await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 15 } });
+    const changed = await apiRequest(`/api/bolt-specs/${spec.id}`, { method: 'PATCH', token: adminToken, body });
     assert.equal(changed.status, 200);
-    assert.equal(changed.data.code, 'M3x15');
-    assert.equal(Number(changed.data.lengthMm), 15);
-    const drawing = changed.data.images.find((img) => img.url.startsWith('/uploads/bolts/ukuran/'));
-    assert.equal(drawing.url, '/uploads/bolts/ukuran/M3x15.svg');
-    assert.ok(fs.existsSync(path.join(uploadsDir, 'bolts/ukuran/M3x15.svg')));
-    assert.ok(!fs.existsSync(path.join(uploadsDir, 'bolts/ukuran/M3x14.svg')), 'old drawing removed');
+    assert.equal(changed.data.code, spec.code, 'catalog code stays');
+    assert.equal(changed.data.name, 'M6x26 Bighead Uji');
+    assert.equal(Number(changed.data.lengthMm), 26);
+    assert.ok(changed.data.images.some((img) => img.url === '/uploads/bolts/ukuran/M6x26.svg'));
+    assert.ok(fs.existsSync(path.join(uploadsDir, 'bolts/ukuran/M6x26.svg')));
+    const restored = await apiRequest(`/api/bolt-specs/${spec.id}`, { method: 'PATCH', token: adminToken, body: { name: 'M6x25 Bighead', diameterMm: 6, lengthMm: 25 } });
+    assert.ok(restored.data.images.some((img) => img.url === '/uploads/bolts/ukuran/M6x25.svg'));
 
-    const restored = await apiRequest(`/api/bolt-specs/${spec.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 3, lengthMm: 14 } });
-    assert.equal(restored.data.code, 'M3x14');
+    // a catalog product photo is kept when the item is renamed
+    const withPhoto = specs.find((s) => s.name === 'M6x20 Bighead');
+    const photo = withPhoto.images.find((img) => img.isPrimary).url;
+    assert.match(photo, /^\/uploads\/bolts\/katalog\/HX-\d{3}\.jpg$/);
+    const renamed = await apiRequest(`/api/bolt-specs/${withPhoto.id}`, { method: 'PATCH', token: adminToken, body: { name: 'M6x20 Bighead (uji)' } });
+    assert.equal(renamed.data.images.find((img) => img.isPrimary).url, photo);
+    await apiRequest(`/api/bolt-specs/${withPhoto.id}`, { method: 'PATCH', token: adminToken, body: { name: 'M6x20 Bighead' } });
   });
 
   test('22. Master Barang items and Bundling with price, bonus and buyer claim check', async () => {
-    // Tambah Barang: an existing size is refused and pointed to, a new size and an emblem are added
-    const dup = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BAUT', diameterMm: 6, lengthMm: 16 } });
+    // Tambah Barang: an existing name is refused and pointed to; a new bolt and an emblem continue the catalog numbering
+    const dup = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BAUT', name: ' m6x20   BIGHEAD ' } });
     assert.equal(dup.status, 409);
-    assert.equal(dup.data.code, 'M6x16');
-    assert.equal((await apiRequest('/api/bolt-specs/items', { method: 'POST', token: staffToken, body: { itemType: 'BAUT', diameterMm: 6, lengthMm: 99 } })).status, 403);
-    const bolt = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BAUT', diameterMm: 6, lengthMm: 99 } });
+    assert.match(dup.data.code, /^HX-\d{3}$/);
+    assert.equal((await apiRequest('/api/bolt-specs/items', { method: 'POST', token: staffToken, body: { itemType: 'BAUT', name: 'M6x99 Bighead Uji', diameterMm: 6, lengthMm: 99 } })).status, 403);
+    assert.equal((await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BARANG', name: 'Tanpa jenis' } })).status, 400);
+    const bolt = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'BAUT', name: 'M6x99 Bighead Uji', diameterMm: 6, lengthMm: 99 } });
     assert.equal(bolt.status, 201);
-    assert.equal(bolt.data.code, 'M6x99');
+    assert.ok(bolt.data.catalogNo > 416, 'new items continue after the 416 catalog rows');
+    assert.equal(bolt.data.code, `HX-${bolt.data.catalogNo}`);
     assert.ok(bolt.data.images.some((img) => img.url === '/uploads/bolts/ukuran/M6x99.svg'));
-    const emblem = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'EMBLEM', name: 'Emblem Uji Titanium' } });
+    const emblem = await apiRequest('/api/bolt-specs/items', { method: 'POST', token: adminToken, body: { itemType: 'EMBLEM', name: 'Emblem Uji Titanium', diameterMm: 6 } });
     assert.equal(emblem.status, 201);
     assert.equal(emblem.data.itemType, 'EMBLEM');
-    assert.equal(emblem.data.code, 'EMB-EMBLEM-UJI-TITANIUM');
-    assert.equal((await apiRequest(`/api/bolt-specs/${emblem.data.id}/size`, { method: 'PATCH', token: adminToken, body: { diameterMm: 6, lengthMm: 10 } })).status, 400);
+    assert.equal(Number(emblem.data.diameterMm), 0, 'only bolts, nuts and rings carry a size');
+    assert.equal(emblem.data.images[0].url, `/uploads/bolts/katalog/${emblem.data.code}.svg`);
+    assert.ok(fs.existsSync(path.join(uploadsDir, `bolts/katalog/${emblem.data.code}.svg`)));
     const boltsOnly = await apiRequest('/api/bolt-specs?itemType=BAUT', { token: adminToken });
     assert.ok(boltsOnly.data.every((s) => s.itemType === 'BAUT'));
+    const fitted = await apiRequest('/api/bolt-specs?itemType=MUR,RING', { token: adminToken });
+    assert.ok(fitted.data.length > 0 && fitted.data.every((s) => s.itemType === 'MUR' || s.itemType === 'RING'));
 
     // Bundling without a motorcycle: two bolts plus a bonus emblem, with a price
     const created = await apiRequest('/api/packages', {
@@ -1166,7 +1187,8 @@ describe('Hex Titanium Bolt System API Tests', () => {
     });
     const pick = await apiRequest('/api/pick-lists/generate', { method: 'POST', token: staffToken, body: { motorcycleTypeId: genio.id, packageId: genioBundle.data.id } });
     assert.equal(pick.status, 200);
-    assert.ok(pick.data.consolidatedTotals.every((b) => b.boltSpec.itemType === 'BAUT'));
+    assert.ok(pick.data.consolidatedTotals.length > 0);
+    assert.ok(pick.data.consolidatedTotals.every((b) => ['BAUT', 'MUR', 'RING'].includes(b.boltSpec.itemType)));
   });
 
   test('23. Kelola Data photo upload: the newest uploaded photo becomes the main motor photo', async () => {
@@ -1311,5 +1333,80 @@ describe('Hex Titanium Bolt System API Tests', () => {
       assert.match(result.stderr, /Tes diblokir/);
     }
     assert.notEqual(path.resolve(uploadsDir), path.resolve(__dirname, '../uploads'));
+  });
+
+  test('26. Master Barang is the shop catalog: names, photos, generated pictures and dashboard totals', async () => {
+    const { items } = require('../prisma/data/hexti-katalog-produk.json');
+    const { data: specs } = await apiRequest('/api/bolt-specs', { token: staffToken });
+    const catalog = specs.filter((s) => s.catalogNo && s.catalogNo <= 416);
+    assert.equal(catalog.length, items.length);
+    for (const item of items) {
+      const spec = catalog.find((s) => s.code === item.code);
+      assert.ok(spec, `${item.code} ${item.name}`);
+      assert.equal(spec.name, item.name);
+      assert.equal(spec.itemType, item.itemType);
+      const primary = spec.images.find((img) => img.isPrimary);
+      assert.ok(primary, `${item.code} has a picture`);
+      if (item.photo) assert.equal(primary.url, item.photo);
+    }
+    const kinds = new Set(catalog.map((s) => s.itemType));
+    for (const t of ['BAUT', 'MUR', 'RING', 'EMBLEM', 'PART', 'PERAWATAN', 'JASA']) assert.ok(kinds.has(t), t);
+    // no photo: bolts reuse the size drawing, other goods get their own illustration
+    const plainBolt = catalog.find((s) => s.name === 'M8x15 Bighead');
+    assert.equal(plainBolt.images[0].url, '/uploads/bolts/ukuran/M8x15.svg');
+    const service = catalog.find((s) => s.itemType === 'JASA');
+    assert.equal(service.images[0].url, `/uploads/bolts/katalog/${service.code}.svg`);
+    // the seed writes its pictures to its own upload folder, so check the drawing itself here
+    const { buildCatalogSvg } = require('../src/utils/catalogIllustration');
+    const svg = buildCatalogSvg(service);
+    assert.match(svg, /^<svg[^>]+viewBox="0 0 640 400"/);
+    assert.ok(svg.includes(service.name.split(' ')[0]) && svg.includes('Jasa'));
+
+    const { data: overview } = await apiRequest('/api/dashboard/overview', { token: staffToken });
+    assert.ok(overview.totals.specs >= items.length);
+    assert.equal(overview.itemsByType.reduce((sum, t) => sum + t.count, 0), overview.totals.specs);
+    assert.ok(overview.imageCoverage.productPhoto >= items.filter((i) => i.photo).length);
+  });
+
+  test('27. Paket Full Bike: real photo, 3D model and one marker per bagian on every motorcycle', async () => {
+    const { photos } = require('../prisma/data/motor-photos.json');
+    const { data: motorcycles } = await apiRequest('/api/motorcycles?includeInactive=true', { token: adminToken });
+    for (const photo of photos) {
+      const motor = motorcycles.find((m) => m.displayName === photo.displayName);
+      assert.ok(motor, photo.displayName);
+      // test 23 uploads a newer main photo for the Scoopy, so only require the real photo to be there
+      assert.ok(motor.images.some((img) => img.url === photo.url), `${photo.displayName} has its real photo`);
+      // tests 11 and 17 upload and delete models on the Beat Deluxe
+      if (motor.model !== 'Beat' || motor.variant !== 'Deluxe') assert.ok(motor.models?.length, `${photo.displayName} has a 3D model`);
+    }
+
+    const genioCard = motorcycles.find((m) => m.displayName === 'Honda Genio CBS / CBS-ISS');
+    assert.match(genioCard.images[0].url, /^\/uploads\/motorcycles\/foto-honda-genio/, 'the real photo is the main picture');
+
+    // estimated rows for an unmeasured motorcycle, copied from the closest measured model
+    const vario160 = motorcycles.find((m) => m.displayName === 'Honda Vario 160 CBS/ABS (2022-2026)');
+    const { data: estimated } = await apiRequest(`/api/motorcycles/${vario160.id}/requirements`, { token: staffToken });
+    assert.ok(estimated.length > 0);
+    assert.ok(estimated.every((r) => r.sizeStatus === 'CEK_FISIK' && /^Perkiraan dari Honda Vario 125/.test(r.notes)));
+
+    // one marker per bagian that has bolts; tapping it covers every position of that category
+    const genio = motorcycles.find((m) => m.displayName === 'Honda Genio CBS / CBS-ISS');
+    const { data: map } = await apiRequest(`/api/motorcycles/${genio.id}/location-map`, { token: staffToken });
+    const parts = map.annotations.filter((a) => a.category);
+    const categories = new Set(map.positionBreakdown.map((r) => r.positionCategory));
+    assert.ok(parts.length > 0 && parts.length <= 8);
+    assert.deepEqual(new Set(parts.map((a) => a.category)), categories, 'one marker for each bagian with bolts');
+    assert.ok(parts.every((a) => a.boltPositionId === null && a.modelId === map.model.id));
+
+    const point = { motorcycleTypeId: genio.id, modelId: map.model.id, x: 0.1, y: 0.5, z: -0.2 };
+    assert.equal((await apiRequest('/api/position-annotations', { method: 'POST', token: adminToken, body: { ...point, category: 'Bagian Asal' } })).status, 400);
+    assert.equal((await apiRequest('/api/position-annotations', { method: 'POST', token: staffToken, body: { ...point, category: 'Rem' } })).status, 403);
+    const created = await apiRequest('/api/position-annotations', { method: 'POST', token: adminToken, body: { ...point, category: 'Rem', label: 'Rem depan & belakang' } });
+    assert.equal(created.status, 201);
+    assert.equal(created.data.boltPositionId, null);
+    assert.equal(created.data.category, 'Rem');
+    const moved = await apiRequest(`/api/position-annotations/${created.data.id}`, { method: 'PUT', token: adminToken, body: { category: 'Knalpot', label: null } });
+    assert.equal(moved.data.category, 'Knalpot');
+    assert.equal((await apiRequest(`/api/position-annotations/${created.data.id}`, { method: 'DELETE', token: adminToken })).status, 200);
   });
 });

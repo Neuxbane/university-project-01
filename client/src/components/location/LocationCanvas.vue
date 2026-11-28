@@ -102,7 +102,7 @@
           :x="ann.x"
           :y="ann.y"
           :index-number="idx + 1"
-          :label="ann.label || ann.boltPosition?.name || 'Penanda Baut'"
+          :label="markerLabel(ann) || 'Penanda Baut'"
           :active="activeAnnotation?.id === ann.id"
           :check-status="getCheckStatus(ann)"
           @select="onSelectAnnotation(ann)"
@@ -156,7 +156,7 @@
         v-if="canAnnotate"
         type="button"
         @click.stop="$emit('enable-annotation')"
-        class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer transition-colors shrink-0"
+        class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer transition-colors shrink-0"
       >
         Tandai Lokasi Sekarang
       </button>
@@ -168,7 +168,7 @@
       class="px-4 py-2.5 bg-amber-50 dark:bg-amber-500/10 border-t border-amber-300 dark:border-amber-500/30 text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between gap-2"
     >
       <span>
-        Baut <strong>{{ selectedBolt.code }}</strong> belum memiliki penanda lokasi yang ditandai pada gambar ini.
+        <strong>{{ selectedBolt.name || selectedBolt.code }}</strong> belum memiliki penanda lokasi yang ditandai pada gambar ini.
       </span>
       <button
         v-if="canAnnotate"
@@ -279,7 +279,7 @@
               <button
                 type="submit"
                 :disabled="isSavingAnnotation || (!draftPositionId && !draftCustomName.trim())"
-                class="w-full sm:w-auto min-w-[120px] min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                class="w-full sm:w-auto min-w-[120px] min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
               >
                 {{ isSavingAnnotation ? '...' : (draftBoltSpecId && !selectedAreaHasBolts ? 'Simpan Penanda & Baut' : 'Simpan Penanda') }}
               </button>
@@ -322,7 +322,7 @@
               </span>
               <div class="min-w-0">
                 <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                  {{ ann.label || ann.boltPosition?.name }}
+                  {{ markerLabel(ann) }}
                 </p>
                 <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
                   {{ ann.x.toFixed(0) }}%, {{ ann.y.toFixed(0) }}%
@@ -333,7 +333,7 @@
             <button
               type="button"
               @click="confirmDeleteTarget = ann"
-              :aria-label="`Hapus penanda ${ann.label || ann.boltPosition?.name}`"
+              :aria-label="`Hapus penanda ${markerLabel(ann)}`"
               class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 cursor-pointer shrink-0"
             >
               <Trash2 class="w-4 h-4" aria-hidden="true" />
@@ -358,6 +358,7 @@
 </template>
 
 <script setup>
+import { markerLabel } from '../../utils/annotationCallouts';
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { Bike, Eye, MapPin, Trash2 } from 'lucide-vue-next';
 import { resolvePartCalloutForAnnotation, resolveChecklistStatus, layoutVisibleCallouts } from '../../utils/annotationCallouts';
@@ -421,7 +422,7 @@ const lineCoords = ref(null);
 
 const activePositionPhoto = computed(() => {
   if (!props.activeAnnotation) return null;
-  const fromMotorPos = props.positions.find((p) => p.id === props.activeAnnotation.boltPositionId);
+  const fromMotorPos = props.activeAnnotation.boltPositionId ? props.positions.find((p) => p.id === props.activeAnnotation.boltPositionId) : null;
   return props.activeAnnotation.boltPosition?.photoUrl || fromMotorPos?.photoUrl || null;
 });
 

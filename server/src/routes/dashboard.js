@@ -4,9 +4,11 @@ const { requireAuth, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
+const { TYPE_LABELS } = require('../utils/catalogIllustration');
+
 const fmt = (value) => String(Number(value));
-const sizeLabel = (spec) => (Number(spec.lengthMm) > 0 ? `M${fmt(spec.diameterMm)} × ${fmt(spec.lengthMm)}` : `${spec.headType} M${fmt(spec.diameterMm)}`);
-const ILLUSTRATION_PREFIX = '/uploads/bolts/ukuran/';
+// generated pictures: size drawings (ukuran/*.svg) and product illustrations (katalog/*.svg); catalog photos are .jpg
+const isGenerated = (url) => url.startsWith('/uploads/bolts/ukuran/') || url.endsWith('.svg');
 
 // GET /api/dashboard/overview — read-only aggregates for the dashboard charts
 router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async (req, res) => {
@@ -14,8 +16,8 @@ router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async 
     const [motorcycles, specs, requirements, positions, packages, sessions] = await Promise.all([
       prisma.motorcycleType.findMany({ select: { id: true, brand: true, displayName: true, isActive: true } }),
       prisma.boltSpec.findMany({
-        where: { itemType: 'BAUT' },
-        select: { id: true, code: true, headType: true, diameterMm: true, lengthMm: true, images: { select: { url: true } } },
+        where: { isArchived: false },
+        select: { id: true, code: true, name: true, itemType: true, diameterMm: true, images: { select: { url: true } } },
       }),
       prisma.motorBoltRequirement.findMany({
         select: { motorcycleTypeId: true, boltSpecId: true, quantity: true, isCritical: true, sizeStatus: true, boltPosition: { select: { category: true } } },
@@ -67,7 +69,8 @@ router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async 
       return [...map.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
     };
 
-    const specsByDiameter = countBy(specs, (s) => fmt(s.diameterMm))
+    const bolts = specs.filter((s) => s.itemType === 'BAUT' && Number(s.diameterMm) > 0);
+    const specsByDiameter = countBy(bolts, (s) => fmt(s.diameterMm))
       .map((e) => ({ label: `M${e.label}`, count: e.count, pcs: pcsByDiameter.get(e.label) || 0, d: Number(e.label) }))
       .sort((a, b) => a.d - b.d)
       .map(({ d, ...rest }) => rest);
@@ -75,14 +78,14 @@ router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async 
     const topSpecs = [...bySpecUsage.entries()]
       .map(([id, e]) => {
         const spec = specById.get(id);
-        return { id, code: spec?.code, size: spec ? sizeLabel(spec) : '–', pcs: e.pcs, motorcycles: e.motors.size, brands: brandsOf(id).size };
+        return { id, code: spec?.code || '', name: spec?.name || spec?.code || '–', pcs: e.pcs, motorcycles: e.motors.size, brands: brandsOf(id).size };
       })
       .sort((a, b) => b.pcs - a.pcs || a.code.localeCompare(b.code))
       .slice(0, 10);
 
     const imageCoverage = { productPhoto: 0, illustrationOnly: 0, none: 0 };
     for (const s of specs) {
-      if (s.images.some((img) => !img.url.startsWith(ILLUSTRATION_PREFIX))) imageCoverage.productPhoto += 1;
+      if (s.images.some((img) => !isGenerated(img.url))) imageCoverage.productPhoto += 1;
       else if (s.images.length) imageCoverage.illustrationOnly += 1;
       else imageCoverage.none += 1;
     }
@@ -90,15 +93,15 @@ router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async 
     const usedSpecIds = new Set(requirements.map((r) => r.boltSpecId));
     const sizesByBrand = new Map();
     for (const id of usedSpecIds) for (const brand of brandsOf(id)) sizesByBrand.set(brand, (sizesByBrand.get(brand) || 0) + 1);
-    const brandCounts = [...usedSpecIds].map((id) => brandsOf(id).size);
+    const itemsByType = countBy(specs, (s) => s.itemType).map((e) => ({ ...e, type: e.label, label: TYPE_LABELS[e.label] || e.label }));
     res.json({
       totals: {
         motorcycles: motorcycles.length,
         activeMotorcycles: motorcycles.filter((m) => m.isActive).length,
         motorcyclesWithData: byMotor.size,
         specs: specs.length,
+        bolts: specs.filter((s) => s.itemType === 'BAUT').length,
         specsInUse: usedSpecIds.size,
-        specsSharedAcrossBrands: brandCounts.filter((n) => n > 1).length,
         positions,
         requirementRows: requirements.length,
         totalPcs: requirements.reduce((sum, r) => sum + r.quantity, 0),
@@ -107,7 +110,7 @@ router.get('/overview', requireAuth, requirePermission('MENU_DASHBOARD'), async 
         sessions: sessions.length,
       },
       sizesByBrand: [...sizesByBrand.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count),
-      specsByBrandCount: countBy(brandCounts, (n) => n).sort((a, b) => a.label - b.label),
+      itemsByType,
       specsByDiameter,
       pcsByMotorcycle,
       pcsByCategory,

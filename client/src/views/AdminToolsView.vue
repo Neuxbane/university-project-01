@@ -126,7 +126,7 @@
             <button
               @click="openAddUserModal"
               type="button"
-              class="min-h-[44px] px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              class="min-h-[44px] px-4 py-2 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             >
               <span aria-hidden="true">+</span>
               <span>Tambah Pengguna</span>
@@ -216,7 +216,7 @@
             <button
               @click="openEditUserModal(selectedUserDetail)"
               type="button"
-              class="min-h-[48px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              class="min-h-[48px] px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <Pencil class="w-4 h-4" aria-hidden="true" />
               Ubah Akun
@@ -316,7 +316,7 @@
             <button
               @click="openCreateRoleModal"
               type="button"
-              class="min-h-[44px] px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              class="min-h-[44px] px-4 py-2 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             >
               <span aria-hidden="true">+</span>
               <span>Buat Peran Baru</span>
@@ -443,7 +443,7 @@
               @click="uploadCsv"
               :disabled="!selectedFile || isUploading"
               type="button"
-              class="min-h-[44px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-40"
+              class="min-h-[44px] px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-40"
             >
               <span v-if="isUploading">Memproses...</span>
               <span v-else>Proses Impor CSV</span>
@@ -520,7 +520,7 @@
         <button
           @click="downloadBackup"
           type="button"
-          class="min-h-[44px] px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm transition-all cursor-pointer inline-flex items-center gap-2"
+          class="min-h-[44px] px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm transition-all cursor-pointer inline-flex items-center gap-2"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
           <span>Unduh Berkas Cadangan (.json)</span>
@@ -726,7 +726,7 @@
             <button
               type="submit"
               :disabled="isSubmittingUser"
-              class="min-h-[44px] px-5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold rounded-xl disabled:opacity-50 cursor-pointer"
+              class="min-h-[44px] px-5 py-2 bg-brand-500 hover:bg-brand-600 text-ink font-semibold rounded-xl disabled:opacity-50 cursor-pointer"
             >
               <span v-if="isSubmittingUser">Menyimpan...</span>
               <span v-else>Simpan Pengguna</span>
@@ -816,7 +816,7 @@
             <button
               type="submit"
               :disabled="isSubmittingUser"
-              class="min-h-[44px] px-5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold rounded-xl disabled:opacity-50 cursor-pointer"
+              class="min-h-[44px] px-5 py-2 bg-brand-500 hover:bg-brand-600 text-ink font-semibold rounded-xl disabled:opacity-50 cursor-pointer"
             >
               <span v-if="isSubmittingUser">Menyimpan...</span>
               <span v-else>Perbarui Data</span>
@@ -981,7 +981,7 @@
             <button
               type="submit"
               :disabled="isSubmittingRole"
-              class="min-h-[44px] px-5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold rounded-xl disabled:opacity-50 cursor-pointer"
+              class="min-h-[44px] px-5 py-2 bg-brand-500 hover:bg-brand-600 text-ink font-semibold rounded-xl disabled:opacity-50 cursor-pointer"
             >
               <span v-if="isSubmittingRole">Menyimpan Peran...</span>
               <span v-else>{{ editingRoleId ? 'Simpan Perubahan Izin' : 'Buat Peran Baru' }}</span>

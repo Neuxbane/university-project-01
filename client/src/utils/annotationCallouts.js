@@ -3,13 +3,42 @@
  * and dynamically lay out auto-callout mini-cards hugging visible points / model silhouette.
  */
 
+// Bagian markers: one marker per category of bolt positions (owner's request, 24 Nov 2026)
+export const PART_LABELS = {
+  'Lampu & Meter': 'Lampu & Speedometer',
+  'Steering/Stang': 'Stang & Handle',
+  Body: 'Body',
+  'Cover Mesin & CVT': 'Cover Mesin & CVT',
+  Rem: 'Rem',
+  Rangka: 'Rangka & Footstep',
+  Knalpot: 'Knalpot',
+  'Jok/Bracket': 'Jok & Bagasi',
+};
+
+/** Name of a marker: its own label, its bagian, or its position. */
+export function markerLabel(annotation) {
+  if (!annotation) return '';
+  return annotation.label
+    || (annotation.category ? PART_LABELS[annotation.category] || annotation.category : '')
+    || annotation.boltPosition?.name
+    || '';
+}
+
+/** A bagian marker covers every position of its category; a position marker only its own position. */
+export function markerCovers(annotation, { positionId, category } = {}) {
+  if (!annotation) return false;
+  if (annotation.category) return Boolean(category) && category === annotation.category;
+  return Boolean(positionId) && positionId === annotation.boltPositionId;
+}
+
 export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdown = []) {
   if (!annotation) return null;
 
   const posId = annotation.boltPositionId;
-  const posName = (annotation.boltPosition?.name || '').toLowerCase();
+  const posName = annotation.category ? '' : (annotation.boltPosition?.name || '').toLowerCase();
 
   const matchingRows = (positionBreakdown || []).filter((row) => {
+    if (annotation.category) return row.positionCategory === annotation.category;
     if (posId && row.positionId === posId) return true;
     return posName && (row.positionName || '').toLowerCase() === posName;
   });
@@ -42,10 +71,11 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
         specIds: Array.from(distinctSpecs),
         quantity: totalPosQty,
         extraSpecsCount: Math.max(0, distinctSpecs.size - 1),
-        positionName: annotation.label || annotation.boltPosition?.name || primaryRow.positionName || 'Posisi Pasang',
+        positionName: markerLabel(annotation) || primaryRow.positionName || 'Posisi Pasang',
       };
     }
   }
+  if (annotation.category) return null;
 
   const matchingBolts = (bolts || []).filter(
     (b) => Array.isArray(b.positionIds) && posId && b.positionIds.includes(posId)
@@ -65,7 +95,7 @@ export function resolveBoltForAnnotation(annotation, bolts = [], positionBreakdo
     specIds,
     quantity: matchBolt.totalQuantity ?? matchBolt.quantity ?? 0,
     extraSpecsCount: Math.max(0, specIds.length - 1),
-    positionName: annotation.label || annotation.boltPosition?.name || 'Posisi Pasang',
+    positionName: markerLabel(annotation) || 'Posisi Pasang',
   };
 }
 
@@ -85,7 +115,7 @@ export function resolvePartCalloutForAnnotation(
   if (!boltResolved) return null;
 
   const posId = annotation.boltPositionId;
-  const closeup = (closeUpPhotos || []).find((c) => c.boltPositionId === posId) || null;
+  const closeup = posId ? (closeUpPhotos || []).find((c) => c.boltPositionId === posId) || null : null;
   // Never fall back to bolt photos or full motorcycle photos for an area/position card
   const partImageUrl = closeup?.imageUrl
     || annotation.boltPosition?.photoUrl
@@ -117,7 +147,7 @@ export function resolveChecklistStatus(annotation, sessionItems = null, bolts = 
   }
 
   if (matchingItems.length === 0) {
-    const posName = (annotation.boltPosition?.name || '').toLowerCase();
+    const posName = annotation.category ? '' : (annotation.boltPosition?.name || '').toLowerCase();
     if (posName) {
       matchingItems = sessionItems.filter((it) =>
         (it.positionSummary || '').toLowerCase().includes(posName)

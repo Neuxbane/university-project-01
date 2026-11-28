@@ -19,8 +19,16 @@
       </div>
 
       <form @submit.prevent="submitCreate" class="space-y-3">
+        <div>
+          <label for="anno3d-part-select" class="block text-[11px] font-mono uppercase text-zinc-600 dark:text-zinc-400 mb-1">Penanda untuk</label>
+          <select id="anno3d-part-select" v-model="draftCategory" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100">
+            <option v-for="(name, cat) in PART_LABELS" :key="cat" :value="cat">Bagian: {{ name }}</option>
+            <option value="">Satu posisi saja (pilih area di bawah)</option>
+          </select>
+          <p class="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">Penanda bagian menampilkan semua baut di bagian itu saat diketuk.</p>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-          <div class="sm:col-span-7">
+          <div v-if="!draftCategory" class="sm:col-span-7">
             <AreaLabelInput
               input-id="anno3d-pos-select"
               label="Area / Posisi Motor"
@@ -96,8 +104,8 @@
           <div :class="allSpecs.length > 0 && !selectedAreaHasBolts ? 'sm:col-span-3' : 'sm:col-span-12 flex justify-end'">
             <button
               type="submit"
-              :disabled="isSaving || (!draftPositionId && !draftCustomName.trim())"
-              class="w-full sm:w-auto min-w-[120px] min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+              :disabled="isSaving || (!draftCategory && !draftPositionId && !draftCustomName.trim())"
+              class="w-full sm:w-auto min-w-[120px] min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
             >
               {{ isSaving ? '...' : (draftBoltSpecId && !selectedAreaHasBolts ? 'Simpan Penanda & Baut' : 'Simpan Penanda') }}
             </button>
@@ -147,10 +155,10 @@
               </span>
               <div class="min-w-0">
                 <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                  {{ ann.label || ann.boltPosition?.name }}
+                  {{ markerLabel(ann) }}
                 </p>
                 <p class="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
-                  {{ ann.boltPosition?.name }} &bull; ({{ ann.x.toFixed(2) }}, {{ ann.y.toFixed(2) }}, {{ ann.z.toFixed(2) }})
+                  {{ ann.category ? 'Penanda bagian' : ann.boltPosition?.name }} &bull; ({{ ann.x.toFixed(2) }}, {{ ann.y.toFixed(2) }}, {{ ann.z.toFixed(2) }})
                 </p>
               </div>
             </button>
@@ -159,7 +167,7 @@
               <button
                 type="button"
                 @click="startEdit(ann)"
-                :aria-label="`Ubah penanda ${ann.label || ann.boltPosition?.name}`"
+                :aria-label="`Ubah penanda ${markerLabel(ann)}`"
                 class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 cursor-pointer"
               >
                 <Pencil class="w-4 h-4" aria-hidden="true" />
@@ -167,7 +175,7 @@
               <button
                 type="button"
                 @click="confirmDeleteTarget = ann"
-                :aria-label="`Hapus penanda ${ann.label || ann.boltPosition?.name}`"
+                :aria-label="`Hapus penanda ${markerLabel(ann)}`"
                 class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 cursor-pointer"
               >
                 <Trash2 class="w-4 h-4" aria-hidden="true" />
@@ -178,7 +186,13 @@
           <!-- Inline Edit Form (not a modal!) -->
           <form v-else @submit.prevent="submitEdit(ann.id)" class="space-y-2.5 pt-1">
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-              <div class="sm:col-span-6">
+              <div v-if="ann.category" class="sm:col-span-6">
+                <label :for="`edit-part-${ann.id}`" class="sr-only">Bagian</label>
+                <select :id="`edit-part-${ann.id}`" v-model="editForm.category" class="w-full min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 dark:bg-[#18181c] border border-zinc-500 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100">
+                  <option v-for="(name, cat) in PART_LABELS" :key="cat" :value="cat">Bagian: {{ name }}</option>
+                </select>
+              </div>
+              <div v-else class="sm:col-span-6">
                 <AreaLabelInput
                   :input-id="`edit-pos-${ann.id}`"
                   label="Area / Posisi Baut"
@@ -211,7 +225,7 @@
               <button
                 type="submit"
                 :disabled="isSaving"
-                class="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold cursor-pointer disabled:opacity-40"
+                class="min-h-[44px] px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-ink text-xs font-bold cursor-pointer disabled:opacity-40"
               >
                 {{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}
               </button>
@@ -225,7 +239,7 @@
     <ConfirmDialog
       :open="Boolean(confirmDeleteTarget)"
       title="Hapus Penanda 3D?"
-      :message="`Penanda &quot;${confirmDeleteTarget?.label || confirmDeleteTarget?.boltPosition?.name || 'Penanda'}&quot; akan dihapus dari model 3D.`"
+      :message="`Penanda &quot;${markerLabel(confirmDeleteTarget) || 'Penanda'}&quot; akan dihapus dari model 3D.`"
       confirm-text="Ya, Hapus"
       :danger="true"
       :loading="isDeleting"
@@ -236,6 +250,7 @@
 </template>
 
 <script setup>
+import { PART_LABELS, markerLabel } from '../../utils/annotationCallouts';
 import { ref, computed, watch } from 'vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 import ConfirmDialog from '../ui/ConfirmDialog.vue';
@@ -271,7 +286,9 @@ const draftLabel = ref('');
 const draftBoltSpecId = ref('');
 const draftQty = ref(1);
 const editingId = ref(null);
-const editForm = ref({ boltPositionId: '', customName: '', customCategory: '', label: '' });
+const editForm = ref({ boltPositionId: '', category: '', customName: '', customCategory: '', label: '' });
+// new markers cover a whole bagian by default (one marker per category instead of one per position)
+const draftCategory = ref('Lampu & Meter');
 const confirmDeleteTarget = ref(null);
 
 const selectedAreaHasBolts = computed(() => {
@@ -285,6 +302,7 @@ watch(
   () => props.initialPositionId,
   (initPosId) => {
     if (initPosId) {
+      draftCategory.value = '';
       draftPositionId.value = initPosId;
       draftCustomName.value = '';
       draftBoltSpecId.value = '';
@@ -311,8 +329,22 @@ watch(selectedAreaHasBolts, (hasBolts) => {
 });
 
 const submitCreate = () => {
-  if (!props.draftPoint || (!draftPositionId.value && !draftCustomName.value.trim())) return;
-  const attachBolt = Boolean(draftBoltSpecId.value && !selectedAreaHasBolts.value);
+  if (!props.draftPoint || (!draftCategory.value && !draftPositionId.value && !draftCustomName.value.trim())) return;
+  const attachBolt = Boolean(!draftCategory.value && draftBoltSpecId.value && !selectedAreaHasBolts.value);
+  if (draftCategory.value) {
+    emit('create-annotation', {
+      category: draftCategory.value,
+      x: props.draftPoint.x,
+      y: props.draftPoint.y,
+      z: props.draftPoint.z,
+      normalX: props.draftPoint.normalX,
+      normalY: props.draftPoint.normalY,
+      normalZ: props.draftPoint.normalZ,
+      label: draftLabel.value.trim() || null,
+    });
+    draftLabel.value = '';
+    return;
+  }
   emit('create-annotation', {
     boltPositionId: draftPositionId.value || null,
     customAreaName: draftCustomName.value.trim() || null,
@@ -338,6 +370,7 @@ const startEdit = (ann) => {
   editingId.value = ann.id;
   editForm.value = {
     boltPositionId: ann.boltPositionId,
+    category: ann.category || '',
     customName: '',
     customCategory: ann.boltPosition?.category || '',
     label: ann.label || '',
@@ -345,6 +378,11 @@ const startEdit = (ann) => {
 };
 
 const submitEdit = (id) => {
+  if (editForm.value.category) {
+    emit('update-annotation', { id, category: editForm.value.category, label: editForm.value.label.trim() || null });
+    editingId.value = null;
+    return;
+  }
   emit('update-annotation', {
     id,
     boltPositionId: editForm.value.boltPositionId || null,

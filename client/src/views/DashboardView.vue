@@ -13,7 +13,7 @@
         <router-link
           v-if="auth.can('MENU_PAKET_FULL_BIKE')"
           to="/pick-list"
-          class="min-h-[48px] px-5 py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-semibold text-sm rounded-xl shadow-sm inline-flex items-center justify-center gap-2 shrink-0 transition-all active:scale-[0.98]"
+          class="min-h-[48px] px-5 py-3 bg-brand-500 hover:bg-brand-600 text-ink font-semibold text-sm rounded-xl shadow-sm inline-flex items-center justify-center gap-2 shrink-0 transition-all active:scale-[0.98]"
         >
           <Bike class="w-5 h-5" aria-hidden="true" />
           Paket Full Bike
@@ -122,25 +122,25 @@
         <ChartCard
           class="lg:col-span-2"
           title="10 baut paling banyak dipakai"
-          description="Ukuran yang paling sering dibutuhkan di semua motor. Prioritaskan stok untuk ukuran ini."
+          description="Barang yang paling banyak dipasang di semua motor. Prioritaskan stok untuk barang ini."
         >
           <BarList :items="topSpecBars" unit="pcs" bar-class="bg-emerald-600 dark:bg-emerald-500" aria-label="10 baut paling banyak dipakai" />
         </ChartCard>
 
-        <ChartCard title="Ukuran baut per diameter" description="Jumlah ukuran di Master Barang untuk tiap diameter; di bawahnya total pcs terpakai.">
-          <ColumnChart :items="diameterColumns" unit="ukuran" aria-label="Ukuran baut per diameter" />
+        <ChartCard title="Baut per diameter" description="Jumlah produk baut di Master Barang untuk tiap diameter; di bawahnya total pcs terpakai di motor.">
+          <ColumnChart :items="diameterColumns" unit="produk" aria-label="Baut per diameter" />
         </ChartCard>
 
-        <ChartCard title="Ukuran dipakai per merek" description="Berapa ukuran dari Master Barang yang dipakai motor tiap merek. Satu ukuran bisa dipakai beberapa merek.">
-          <BarList :items="brandBars" unit="ukuran" aria-label="Ukuran dipakai per merek" />
+        <ChartCard title="Barang dipakai per merek" description="Berapa barang Master Barang yang dipasang di motor tiap merek. Satu barang bisa dipakai beberapa merek.">
+          <BarList :items="brandBars" unit="barang" aria-label="Barang dipakai per merek" />
         </ChartCard>
 
-        <ChartCard title="Ukuran dipakai lintas merek" description="Satu ukuran baut bisa melayani beberapa merek motor sekaligus.">
-          <DonutChart :segments="sharedSegments" center-label="ukuran" aria-label="Ukuran dipakai lintas merek" />
+        <ChartCard title="Master Barang per jenis" description="Isi katalog toko: baut, mur, ring, emblem, sparepart, oli, dan jasa.">
+          <BarList :items="typeBars" unit="barang" bar-class="bg-violet-600 dark:bg-violet-400" aria-label="Master Barang per jenis" />
         </ChartCard>
 
-        <ChartCard title="Kelengkapan gambar baut" description="Ukuran yang sudah punya foto produk, atau baru ilustrasi ukuran.">
-          <DonutChart :segments="imageSegments" center-label="ukuran" aria-label="Kelengkapan gambar baut" />
+        <ChartCard title="Foto Master Barang" description="Barang yang sudah punya foto produk, atau masih memakai gambar ilustrasi.">
+          <DonutChart :segments="imageSegments" center-label="barang" aria-label="Foto Master Barang" />
         </ChartCard>
       </div>
     </template>
@@ -179,7 +179,7 @@ const kpis = computed(() => {
   const sessionStatus = Object.fromEntries(overview.value.sessionsByStatus.map((s) => [s.label, s.count]));
   return [
     { label: 'Motor', icon: Bike, to: '/pick-list', value: num(t.motorcyclesWithData), hint: `dari ${num(t.motorcycles)} motor sudah punya data baut` },
-    { label: 'Ukuran baut', icon: Ruler, to: '/bolt-specs', value: num(t.specs), hint: `${num(t.specsSharedAcrossBrands)} dipakai lintas merek` },
+    { label: 'Master Barang', icon: Ruler, to: '/bolt-specs', value: num(t.specs), hint: `${num(t.bolts)} baut · ${num(t.specsInUse)} dipasang di motor` },
     { label: 'Posisi pasang', icon: MapPin, to: '/pick-list', value: num(t.positions), hint: 'langkah pasang di semua motor' },
     { label: 'Total baut', icon: Boxes, to: '/pick-list', value: num(t.totalPcs), hint: `pcs, dari ${num(t.requirementRows)} baris kebutuhan` },
     { label: 'Bundling', icon: Package, to: '/bundling', value: num(t.packages), hint: `${num(t.activePackages)} aktif` },
@@ -196,7 +196,7 @@ const kpis = computed(() => {
 const motorsWithoutDataText = computed(() => overview.value.completeness.motorsWithoutData.map((m) => m.label).join(', ') || '–');
 
 const motorBars = computed(() =>
-  overview.value.pcsByMotorcycle.map((m) => ({ label: m.label, value: m.pcs, hint: `${m.rows} baris · ${m.sizes} ukuran baut` }))
+  overview.value.pcsByMotorcycle.map((m) => ({ label: m.label, value: m.pcs, hint: `${m.rows} baris · ${m.sizes} jenis barang` }))
 );
 
 const categoryBars = computed(() =>
@@ -205,7 +205,7 @@ const categoryBars = computed(() =>
 
 const topSpecBars = computed(() =>
   overview.value.topSpecs.map((s) => ({
-    label: s.size,
+    label: s.name,
     value: s.pcs,
     hint: `${s.code} · dipakai di ${s.motorcycles} motor, ${s.brands} merek`,
   }))
@@ -225,20 +225,15 @@ const brandBars = computed(() =>
   overview.value.sizesByBrand.map((b) => ({ label: b.label, value: b.count, barClass: BRAND_BARS[b.label] }))
 );
 
-const SHARED_COLORS = ['#A1A1AA', '#2563EB', '#16A34A', '#D97706'];
-const sharedSegments = computed(() =>
-  overview.value.specsByBrandCount.map((b, i) => ({
-    label: Number(b.label) === 1 ? 'Hanya 1 merek' : `Dipakai ${b.label} merek`,
-    value: b.count,
-    color: SHARED_COLORS[i] || '#71717A',
-  }))
+const typeBars = computed(() =>
+  (overview.value.itemsByType || []).map((t) => ({ label: t.label, value: t.count }))
 );
 
 const imageSegments = computed(() => {
   const c = overview.value.imageCoverage;
   return [
     { label: 'Foto produk', value: c.productPhoto, color: '#16A34A' },
-    { label: 'Ilustrasi ukuran saja', value: c.illustrationOnly, color: '#2563EB' },
+    { label: 'Ilustrasi', value: c.illustrationOnly, color: '#2563EB' },
     { label: 'Belum ada gambar', value: c.none, color: '#A1A1AA' },
   ];
 });
