@@ -54,7 +54,7 @@
                 aria-hidden="true"
               ></span>
               <span>
-                Server {{ isBackendOnline ? 'Terhubung' : 'Terputus' }} (Port <strong class="font-bold text-zinc-900 dark:text-zinc-100">{{ backendPort }}</strong>)
+                Server {{ isBackendOnline ? 'Terhubung' : 'Terputus' }}<template v-if="backendHost"> (<strong class="font-bold text-zinc-900 dark:text-zinc-100">{{ backendHost }}</strong>)</template>
               </span>
             </span>
           </div>
@@ -77,7 +77,7 @@ const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const { initTheme } = useTheme();
-const { backendPort, isBackendOnline } = useSystemInfo();
+const { backendHost, isBackendOnline } = useSystemInfo();
 
 const showSidebar = computed(() => {
   return auth.isAuthenticated && route.name !== 'login';

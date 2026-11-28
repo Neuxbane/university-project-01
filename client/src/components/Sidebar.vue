@@ -231,10 +231,10 @@
         </div>
 
         <div class="flex items-center justify-between text-xs font-mono text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-200 dark:border-zinc-800/80 mb-2">
-          <span>Server Lokal</span>
-          <span class="inline-flex items-center gap-1.5 font-semibold" :class="isBackendOnline ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
-            <span class="w-2 h-2 rounded-full" :class="isBackendOnline ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-rose-600 dark:bg-rose-500'" aria-hidden="true"></span>
-            <span>{{ isBackendOnline ? 'Aktif' : 'Terputus' }} (:{{ backendPort }})</span>
+          <span>Server</span>
+          <span class="inline-flex items-center gap-1.5 font-semibold truncate max-w-[160px]" :title="backendHost" :class="isBackendOnline ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+            <span class="w-2 h-2 rounded-full shrink-0" :class="isBackendOnline ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-rose-600 dark:bg-rose-500'" aria-hidden="true"></span>
+            <span class="truncate">{{ isBackendOnline ? 'Aktif' : 'Terputus' }}</span>
           </span>
         </div>
 
@@ -267,7 +267,7 @@ const isMobileOpen = ref(false);
 const isDesktop = ref(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
 const menuBtnRef = ref(null);
 const closeBtnRef = ref(null);
-const { backendPort, isBackendOnline } = useSystemInfo();
+const { backendHost, isBackendOnline } = useSystemInfo();
 
 const updateViewport = () => {
   isDesktop.value = window.innerWidth >= 768;

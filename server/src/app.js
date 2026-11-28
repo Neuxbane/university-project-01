@@ -79,12 +79,17 @@ app.all('/api/*', (req, res) => {
   res.status(404).json({ error: 'Endpoint API tidak ditemukan.' });
 });
 
-// Serve Vue Frontend static build if present
+// Serve Vue Frontend static build if present (prefer server/public, fallback to client/dist)
+const serverPublicPath = path.join(__dirname, '../public');
 const clientDistPath = path.join(__dirname, '../../client/dist');
-if (fs.existsSync(clientDistPath)) {
-  app.use(express.static(clientDistPath));
+const uiDistPath = fs.existsSync(serverPublicPath)
+  ? serverPublicPath
+  : (fs.existsSync(clientDistPath) ? clientDistPath : null);
+
+if (uiDistPath) {
+  app.use(express.static(uiDistPath));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDistPath, 'index.html'));
+    res.sendFile(path.join(uiDistPath, 'index.html'));
   });
 }
 
